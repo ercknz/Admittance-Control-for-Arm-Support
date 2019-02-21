@@ -10,11 +10,12 @@
 
 void forwardKine(double xForce, double yForce, 
                  int32 presVelElbow, int32 presVelShoulder, 
+                 float &elbowAngle,  float &elbowAngVel, float &shoulderAngle,  float &shoulderAngVel,
                  float &xPresPosSI,  float &xPresVelSI,  float &yPresPosSI,     float &yPresVelSI){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   
-  //elbowAngle     = presPosElbow    * DEGREES_PER_COUNT * (PI/180);
-  //shoulderAngle  = presPosShoulder * DEGREES_PER_COUNT * (PI/180);
+  elbowAngle     = presPosElbow    * DEGREES_PER_COUNT * (PI/180);
+  shoulderAngle  = presPosShoulder * DEGREES_PER_COUNT * (PI/180);
   elbowAngVel    = presVelElbow    * RPM_PER_COUNT * (2 * PI / 60);
   shoulderAngVel = presVelShoulder * RPM_PER_COUNT * (2 * PI / 60);
    

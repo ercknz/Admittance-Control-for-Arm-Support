@@ -13,7 +13,7 @@ int goodPacketSize = 16;
 uint8 goodPacket[16];
 uint8 header[4] = {170, 7, 8, 10};
 
-void singleOptoForceRead(int16 &xRaw, int16 &yRaw, int16 &zRaw, double &FxRaw, double &FyRaw, double &FzRaw){
+void singleOptoForceRead(){
   while (Serial1.available() < rawPacketSize){}
   for (i = 0; i<rawPacketSize; i++){
     rawPacket[i] = Serial1.read();

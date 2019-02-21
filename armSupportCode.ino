@@ -84,7 +84,7 @@ void setup() {
   dxl.begin(3); //Baudrate: 1Mbps
   delay(100);
   SerialUSB.println(".....enabling motor.....");
-  while(!dxlEnable(POSITION_CONTROL, 1)){};
+  //while(!dxlEnable(POSITION_CONTROL, 1)){};
   /* Optoforce Serial Connection */
   SerialUSB.println(".....creating sensor port.....");
   Serial1.begin(1000000);
@@ -110,20 +110,20 @@ void loop() {
   SerialUSB.println(".....start of loop.....");
   preTime = millis();
  
-  singleOptoForceRead(xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
+  singleOptoForceRead();
   
-  sensorOrientation(shoulderAngle, elbowAngle, FxRaw, FyRaw, Fx, Fy);
+  sensorOrientation();
   
   dxlPresVelPos(presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
   
-  forwardKine(Fx, Fy, presVelElbow, presVelShoulder, xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI);
+  forwardKine(Fx, Fy, presVelElbow, presVelShoulder, elbowAngle, elbowAngVel, shoulderAngle, shoulderAngVel, xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI);
   
   admittanceControl (Fx, Fy, xPresVelSI, yPresVelSI, xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI);
   
   inverseKine(xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, presPosElbow, presPosShoulder, goalPosElbow, goalVelElbow, goalPosShoulder, goalVelShoulder);
   
   if ((goalPosElbow <= ELBOW_MAX_POS & goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS & goalPosShoulder >= SHOULDER_MIN_POS)){
-    goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+    //goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
   }
   
   postTime = millis();
@@ -136,19 +136,24 @@ void loop() {
   SerialUSB.print(goalPosSI); SerialUSB.print("\t");SerialUSB.print(goalVelSI); SerialUSB.print("\t");
   SerialUSB.print(goalPos); SerialUSB.print("\t");SerialUSB.print(goalVel); SerialUSB.print("\t");
   */
+  SerialUSB.print(FxRaw); SerialUSB.print("\t");SerialUSB.print(FyRaw); SerialUSB.print("\t");
   SerialUSB.print(Fx); SerialUSB.print("\t");SerialUSB.print(Fy); SerialUSB.print("\t");
+  SerialUSB.print(shoulderAngle); SerialUSB.print("\t");SerialUSB.print(elbowAngle); SerialUSB.print("\t");
   
-  SerialUSB.print(xPresPosSI); SerialUSB.print("\t");SerialUSB.print(xPresVelSI); SerialUSB.print("\t");
-  SerialUSB.print(yPresPosSI); SerialUSB.print("\t");SerialUSB.print(yPresVelSI); SerialUSB.print("\t");
   
-  SerialUSB.print(xGoalPosSI); SerialUSB.print("\t");SerialUSB.print(xGoalVelSI); SerialUSB.print("\t");
-  SerialUSB.print(yGoalPosSI); SerialUSB.print("\t");SerialUSB.print(yGoalVelSI); SerialUSB.print("\t");
+  //SerialUSB.print(xPresPosSI); SerialUSB.print("\t");SerialUSB.print(xPresVelSI); SerialUSB.print("\t");
+  //SerialUSB.print(yPresPosSI); SerialUSB.print("\t");SerialUSB.print(yPresVelSI); SerialUSB.print("\t");
   
-  SerialUSB.print(presVelElbow); SerialUSB.print("\t");SerialUSB.print(presPosElbow); SerialUSB.print("\t");
-  SerialUSB.print(presVelShoulder); SerialUSB.print("\t");SerialUSB.print(presPosShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(xGoalPosSI); SerialUSB.print("\t");SerialUSB.print(xGoalVelSI); SerialUSB.print("\t");
+  //SerialUSB.print(yGoalPosSI); SerialUSB.print("\t");SerialUSB.print(yGoalVelSI); SerialUSB.print("\t");
   
-  SerialUSB.print(goalVelElbow); SerialUSB.print("\t");SerialUSB.print(goalPosElbow); SerialUSB.print("\t");
-  SerialUSB.print(goalVelShoulder); SerialUSB.print("\t");SerialUSB.print(goalPosShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(presVelElbow); SerialUSB.print("\t");
+  SerialUSB.print(presPosElbow); SerialUSB.print("\t");
+  //SerialUSB.print(presVelShoulder); SerialUSB.print("\t");
+  SerialUSB.print(presPosShoulder); SerialUSB.print("\t");
+  
+  //SerialUSB.print(goalVelElbow); SerialUSB.print("\t");SerialUSB.print(goalPosElbow); SerialUSB.print("\t");
+  //SerialUSB.print(goalVelShoulder); SerialUSB.print("\t");SerialUSB.print(goalPosShoulder); SerialUSB.print("\t");
   
   SerialUSB.print(postTime-preTime); SerialUSB.print("\t"); 
   SerialUSB.print(goalReturn); SerialUSB.print("\t");  

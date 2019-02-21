@@ -5,7 +5,7 @@
    Script by erick nunez
 */
 
-void sensorOrientation(float alpha, float beta, double xForceRaw, double yForceRaw, double &xForce, double &yForce){
-  xForce = xForceRaw * (cos(alpha + beta)) + yForceRaw * (-sin(alpha + beta));
-  yForce = xForceRaw * (sin(alpha + beta)) + yForceRaw * ( cos(alpha + beta));
+void sensorOrientation(){
+  Fx = FxRaw * (cos(shoulderAngle + elbowAngle)) + FyRaw * (-sin(shoulderAngle + elbowAngle));
+  Fy = FxRaw * (sin(shoulderAngle + elbowAngle)) + FyRaw * ( cos(shoulderAngle + elbowAngle));
 }
