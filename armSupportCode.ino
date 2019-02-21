@@ -116,11 +116,11 @@ void loop() {
   
   dxlPresVelPos(presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
   
-  forwardKine(Fx, Fy, presPosElbow, presVelElbow, presPosShoulder, presVelShoulder, xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI);
+  forwardKine(Fx, Fy, presVelElbow, presVelShoulder, xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI);
   
-  admittanceControl (Fx, Fy, xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI);
+  admittanceControl (Fx, Fy, xPresVelSI, yPresVelSI, xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI);
   
-  inverseKine(xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, goalPosElbow, goalVelElbow, goalPosShoulder, goalVelShoulder);
+  inverseKine(xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, presPosElbow, presPosShoulder, goalPosElbow, goalVelElbow, goalPosShoulder, goalVelShoulder);
   
   if ((goalPosElbow <= ELBOW_MAX_POS & goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS & goalPosShoulder >= SHOULDER_MIN_POS)){
     goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);

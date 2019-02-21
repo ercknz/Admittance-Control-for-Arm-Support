@@ -16,7 +16,7 @@
    solutions:           x(t) = Cy1*exp(-(B/M)*t) + (Fy/B)*t + Cy2
                         x'(t) = -(B/M)*Cy1*exp(-(B/M)*t) + (Fy/B)
    Z Direction ***********************************************************************
-   2nd order eqn:       M*z" = Fz - B*z' - g
+   2nd order eqn:       M*z" = Fz - B*z' - Mg
    general solution:    xg(t) = Cz1*exp(-(B/M)*t) + Cz2
    particular solution: xp(t) = (Fz/B)*t 
    coefficents:         Cz1 = ((Fz/B) - zPresentVelocity)*(M/B)
@@ -29,17 +29,17 @@
 */
 
 void admittanceControl (double xForce, double yForce, 
-                        float xPresPosSI,  float xPresVelSI,  float yPresPosSI,  float yPresVelSI, 
+                        float xPresVelSI,  float yPresVelSI, 
                         float &xGoalPosSI, float &xGoalVelSI, float &yGoalPosSI, float &yGoalVelSI){
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   float Cx1 = ((xForce/DAMPING) - xPresVelSI)*(MASS/DAMPING);
-  float Cx2 = xPresPosSI - Cx1;
+  float Cx2 = - Cx1;
   xGoalPosSI = Cx1*exp(-(DAMPING/MASS)*TIME) + (xForce/DAMPING)*TIME + Cx2;
   xGoalVelSI = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*TIME) + (xForce/DAMPING);
   
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
   float Cy1 = ((yForce/DAMPING) - yPresVelSI)*(MASS/DAMPING);
-  float Cy2 = yPresPosSI - Cy1;
+  float Cy2 = - Cy1;
   yGoalPosSI = Cy1*exp(-(DAMPING/MASS)*TIME) + (yForce/DAMPING)*TIME + Cy2;
   yGoalVelSI = -(DAMPING/MASS)*Cy1*exp(-(DAMPING/MASS)*TIME) + (yForce/DAMPING);
   

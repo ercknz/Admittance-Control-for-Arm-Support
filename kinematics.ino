@@ -9,17 +9,17 @@
 
 
 void forwardKine(double xForce, double yForce, 
-                 int32 presPosElbow, int32 presVelElbow, int32 presPosShoulder, int32 presVelShoulder, 
+                 int32 presVelElbow, int32 presVelShoulder, 
                  float &xPresPosSI,  float &xPresVelSI,  float &yPresPosSI,     float &yPresVelSI){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   
-  elbowAngle     = presPosElbow    * DEGREES_PER_COUNT * (PI/180);
-  shoulderAngle  = presPosShoulder * DEGREES_PER_COUNT * (PI/180);
+  //elbowAngle     = presPosElbow    * DEGREES_PER_COUNT * (PI/180);
+  //shoulderAngle  = presPosShoulder * DEGREES_PER_COUNT * (PI/180);
   elbowAngVel    = presVelElbow    * RPM_PER_COUNT * (2 * PI / 60);
   shoulderAngVel = presVelShoulder * RPM_PER_COUNT * (2 * PI / 60);
    
-  xPresPosSI = SHOULDER_ELBOW_LINK * cos(shoulderAngle) + ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle);
-  yPresPosSI = SHOULDER_ELBOW_LINK * sin(shoulderAngle) + ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle);
+  //xPresPosSI = SHOULDER_ELBOW_LINK * cos(shoulderAngle) + ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle);
+  //yPresPosSI = SHOULDER_ELBOW_LINK * sin(shoulderAngle) + ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle);
   xPresVelSI = shoulderAngVel * (-SHOULDER_ELBOW_LINK * sin(shoulderAngle) - ELBOW_SENSOR_LINK * sin(shoulderAngle+elbowAngle)) + elbowAngVel * (-ELBOW_SENSOR_LINK * sin(shoulderAngle+elbowAngle));
   yPresVelSI = shoulderAngVel * ( SHOULDER_ELBOW_LINK * cos(shoulderAngle) + ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle)) + elbowAngVel * ( ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle));
   
@@ -33,6 +33,7 @@ void forwardKine(double xForce, double yForce,
 }
 
 void inverseKine(float xGoalPosSI,  float xGoalVelSI,  float yGoalPosSI,     float yGoalVelSI, 
+                 int32 presPosElbow, int32 presVelElbow,
                  int &goalPosElbow, int &goalVelElbow, int &goalPosShoulder, int &goalVelShoulder){
   // position/velocity(SI) --> inverseKine() --> motor counts/speed
   
@@ -41,8 +42,8 @@ void inverseKine(float xGoalPosSI,  float xGoalVelSI,  float yGoalPosSI,     flo
   elbowAngVel    = (xGoalVelSI * (ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle)) + yGoalVelSI * (ELBOW_SENSOR_LINK * sin(shoulderAngle+elbowAngle)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(elbowAngle));
   shoulderAngVel = (xGoalVelSI * (SHOULDER_ELBOW_LINK * cos(shoulderAngle) - ELBOW_SENSOR_LINK * cos(shoulderAngle+elbowAngle)) + yGoalVelSI * (-SHOULDER_ELBOW_LINK * sin(shoulderAngle) - ELBOW_SENSOR_LINK * sin(shoulderAngle+elbowAngle)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(elbowAngle));
   
-  goalPosElbow    = elbowAngle    * (180/PI) / DEGREES_PER_COUNT;
-  goalPosShoulder = shoulderAngle * (180/PI) / DEGREES_PER_COUNT;
+  goalPosElbow    = presPosElbow    + elbowAngle    * (180/PI) / DEGREES_PER_COUNT;
+  goalPosShoulder = presPosShoulder + shoulderAngle * (180/PI) / DEGREES_PER_COUNT;
   goalVelElbow    = abs(elbowAngVel    * (60 / (2 * PI)) / RPM_PER_COUNT);
   goalVelShoulder = abs(shoulderAngVel * (60 / (2 * PI)) / RPM_PER_COUNT);
 }
