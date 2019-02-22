@@ -48,8 +48,8 @@ int     goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct
 
 byte goalReturn;
 
-#define ELBOW_MIN_POS 1629
-#define ELBOW_MAX_POS 3640
+#define ELBOW_MIN_POS 1710
+#define ELBOW_MAX_POS 3720
 #define SHOULDER_MIN_POS 3000
 #define SHOULDER_MAX_POS 4000
 #define MIN_VEL 0
@@ -66,7 +66,8 @@ float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
 #define SHOULDER_ELBOW_LINK 0.595
 #define ELBOW_SENSOR_LINK   0.54
-float elbowAngle, elbowAngVel, shoulderAngle, shoulderAngVel; //Radians, Rad/s
+float presElbowAng, presElbowAngVel, presShoulderAng, presShoulderAngVel; //Radians, Rad/s
+float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radians, Rad/s
 
 // Other Variables needed ///////////////////////////////////////////////////////////////////////////
 unsigned long preTime, postTime;
@@ -111,16 +112,11 @@ void loop() {
   preTime = millis();
  
   singleOptoForceRead();
-  
+  dxlPresVelPos();
   sensorOrientation();
-  
-  dxlPresVelPos(presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
-  
-  forwardKine(Fx, Fy, presVelElbow, presVelShoulder, elbowAngle, elbowAngVel, shoulderAngle, shoulderAngVel, xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI);
-  
-  admittanceControl (Fx, Fy, xPresVelSI, yPresVelSI, xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI);
-  
-  inverseKine(xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, presPosElbow, presPosShoulder, goalPosElbow, goalVelElbow, goalPosShoulder, goalVelShoulder);
+  forwardKine();
+  admittanceControl();
+  inverseKine();
   
   if ((goalPosElbow <= ELBOW_MAX_POS & goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS & goalPosShoulder >= SHOULDER_MIN_POS)){
     //goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
@@ -138,7 +134,7 @@ void loop() {
   */
   SerialUSB.print(FxRaw); SerialUSB.print("\t");SerialUSB.print(FyRaw); SerialUSB.print("\t");
   SerialUSB.print(Fx); SerialUSB.print("\t");SerialUSB.print(Fy); SerialUSB.print("\t");
-  SerialUSB.print(shoulderAngle); SerialUSB.print("\t");SerialUSB.print(elbowAngle); SerialUSB.print("\t");
+  SerialUSB.print(presShoulderAng); SerialUSB.print("\t");SerialUSB.print(presElbowAng); SerialUSB.print("\t");
   
   
   //SerialUSB.print(xPresPosSI); SerialUSB.print("\t");SerialUSB.print(xPresVelSI); SerialUSB.print("\t");

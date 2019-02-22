@@ -29,7 +29,7 @@ byte dxlGoalVelPos(int goalVelElbow, int goalPosElbow, int goalVelShoulder, int 
   return (velReturnE & posReturnE) & (velReturnS & posReturnS);
 }
 
-void dxlPresVelPos(int32 &presVelElbow, int32 &presPosElbow, int32 &presVelShoulder, int32 &presPosShoulder){
+void dxlPresVelPos(){
    presVelElbow    = (int32)dxl.readDword(ID_ELBOW,    PRESENT_VELOCITY);
    presVelShoulder = (int32)dxl.readDword(ID_SHOULDER, PRESENT_VELOCITY);
    presPosElbow    = (int32)dxl.readDword(ID_ELBOW,    PRESENT_POSITION);
