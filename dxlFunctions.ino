@@ -23,10 +23,10 @@ byte dxlEnable(int mode, boolean status){
 
 byte dxlGoalVelPos(int goalVelElbow, int goalPosElbow, int goalVelShoulder, int goalPosShoulder){
   byte velReturnE = dxl.writeDword(ID_ELBOW,    PROFILE_VELOCITY, goalVelElbow);
-  byte velReturnS = dxl.writeDword(ID_SHOULDER, PROFILE_VELOCITY, goalVelShoulder);
+  //byte velReturnS = dxl.writeDword(ID_SHOULDER, PROFILE_VELOCITY, goalVelShoulder);
   byte posReturnE = dxl.writeDword(ID_ELBOW,    GOAL_POSITION,    goalPosElbow);
-  byte posReturnS = dxl.writeDword(ID_SHOULDER, GOAL_POSITION,    goalPosShoulder);
-  return (velReturnE & posReturnE) & (velReturnS & posReturnS);
+  //byte posReturnS = dxl.writeDword(ID_SHOULDER, GOAL_POSITION,    goalPosShoulder);
+  return velReturnE & posReturnE;
 }
 
 void dxlPresVelPos(){

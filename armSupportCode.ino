@@ -8,14 +8,14 @@
 */
 
 // Libraries to add /////////////////////////////////////////////////////////////////////////////////
-//#include <math.h>
+//#include <math.h> // Already part of core!!!
 
 // OptoForce variables //////////////////////////////////////////////////////////////////////////////
-int16 xRaw, yRaw, zRaw;
-double Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
 #define xSensitivity 16.45
 #define ySensitivity 18.42
 #define zSensitivity 1.59
+int16 xRaw, yRaw, zRaw;
+double Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
 double xCal = 0, yCal = 0, zCal = 0;
 
 // Dynamixel Variables /////////////////////////////////////////////////////////////////////////////
@@ -50,17 +50,19 @@ byte goalReturn;
 
 #define ELBOW_MIN_POS 1710
 #define ELBOW_MAX_POS 3720
-#define SHOULDER_MIN_POS 3000
-#define SHOULDER_MAX_POS 4000
-#define MIN_VEL 0
-#define MAX_VEL 150
+#define SHOULDER_MIN_POS 0
+#define SHOULDER_MAX_POS 4095
+#define ELBOW_MIN_VEL 0
+#define ELBOW_MAX_VEL 300
+#define SHOULDER_MIN_VEL 0
+#define SHOULDER_MAX_VEL 300
 
 // Admitance Control Variables //////////////////////////////////////////////////////////////////////
-float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
-float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
+double xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
+double xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 #define TIME    0.01 // loop time
 #define MASS    1
-#define DAMPING 1
+#define DAMPING 0.1
 #define GRAVITY 9.81
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
@@ -94,12 +96,12 @@ void setup() {
   optoForceConfig();
   delay(100);
   SerialUSB.println(".....calibrating sensor.....");
-  calibrateForceSensor(xCal, yCal, zCal);
-  delay(100);
+  calibrateForceSensor();
+  delay(1000);
   //got to initial position
-  SerialUSB.println(".....going to initial position.....");
-  goalVelElbow = MAX_VEL;        goalPosElbow = (ELBOW_MAX_POS + ELBOW_MIN_POS)/2;
-  goalVelShoulder = MAX_VEL;     goalPosShoulder = (SHOULDER_MAX_POS + SHOULDER_MIN_POS)/2;
+  //SerialUSB.println(".....going to initial position.....");
+  //goalVelElbow = MAX_VEL;        goalPosElbow = (ELBOW_MAX_POS + ELBOW_MIN_POS)/2;
+  //goalVelShoulder = MAX_VEL;     goalPosShoulder = (SHOULDER_MAX_POS + SHOULDER_MIN_POS)/2;
   // goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);  
   
   SerialUSB.println("leaving setup");
@@ -108,7 +110,6 @@ void setup() {
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
 void loop() {
   /* Starts reading the sensor */
-  SerialUSB.println(".....start of loop.....");
   preTime = millis();
  
   singleOptoForceRead();
@@ -119,7 +120,9 @@ void loop() {
   inverseKine();
   
   if ((goalPosElbow <= ELBOW_MAX_POS & goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS & goalPosShoulder >= SHOULDER_MIN_POS)){
-    //goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+    if ((goalVelElbow <= ELBOW_MAX_VEL & goalVelElbow >= ELBOW_MIN_VEL) & (goalVelShoulder <= SHOULDER_MAX_VEL & goalVelShoulder >= SHOULDER_MIN_VEL)){
+      goalReturn = dxlGoalVelPos(goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+    }
   }
   
   postTime = millis();
@@ -132,27 +135,32 @@ void loop() {
   SerialUSB.print(goalPosSI); SerialUSB.print("\t");SerialUSB.print(goalVelSI); SerialUSB.print("\t");
   SerialUSB.print(goalPos); SerialUSB.print("\t");SerialUSB.print(goalVel); SerialUSB.print("\t");
   */
-  SerialUSB.print(FxRaw); SerialUSB.print("\t");SerialUSB.print(FyRaw); SerialUSB.print("\t");
+  
+  
+  //SerialUSB.print(FxRaw); SerialUSB.print("\t");SerialUSB.print(FyRaw); SerialUSB.print("\t");
   SerialUSB.print(Fx); SerialUSB.print("\t");SerialUSB.print(Fy); SerialUSB.print("\t");
-  SerialUSB.print(presShoulderAng); SerialUSB.print("\t");SerialUSB.print(presElbowAng); SerialUSB.print("\t");
+  //SerialUSB.print(presShoulderAng); SerialUSB.print("\t");SerialUSB.print(presElbowAng); SerialUSB.print("\t");
   
+  //SerialUSB.print(presVelElbow); SerialUSB.print("\t"); SerialUSB.print(presVelShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(presPosElbow); SerialUSB.print("\t"); SerialUSB.print(presPosShoulder); SerialUSB.print("\t");
   
-  //SerialUSB.print(xPresPosSI); SerialUSB.print("\t");SerialUSB.print(xPresVelSI); SerialUSB.print("\t");
-  //SerialUSB.print(yPresPosSI); SerialUSB.print("\t");SerialUSB.print(yPresVelSI); SerialUSB.print("\t");
+  SerialUSB.print(xPresPosSI); SerialUSB.print("\t");SerialUSB.print(xPresVelSI); SerialUSB.print("\t");
+  SerialUSB.print(yPresPosSI); SerialUSB.print("\t");SerialUSB.print(yPresVelSI); SerialUSB.print("\t"); 
   
-  //SerialUSB.print(xGoalPosSI); SerialUSB.print("\t");SerialUSB.print(xGoalVelSI); SerialUSB.print("\t");
-  //SerialUSB.print(yGoalPosSI); SerialUSB.print("\t");SerialUSB.print(yGoalVelSI); SerialUSB.print("\t");
+  SerialUSB.print(xGoalPosSI); SerialUSB.print("\t");SerialUSB.print(xGoalVelSI); SerialUSB.print("\t");
+  SerialUSB.print(yGoalPosSI); SerialUSB.print("\t");SerialUSB.print(yGoalVelSI); SerialUSB.print("\t");
   
-  //SerialUSB.print(presVelElbow); SerialUSB.print("\t");
-  SerialUSB.print(presPosElbow); SerialUSB.print("\t");
-  //SerialUSB.print(presVelShoulder); SerialUSB.print("\t");
-  SerialUSB.print(presPosShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(goalElbowAng); SerialUSB.print("\t");SerialUSB.print(goalShoulderAng); SerialUSB.print("\t");
+  //SerialUSB.print(goalElbowAngVel); SerialUSB.print("\t");SerialUSB.print(goalShoulderAngVel); SerialUSB.print("\t");
   
-  //SerialUSB.print(goalVelElbow); SerialUSB.print("\t");SerialUSB.print(goalPosElbow); SerialUSB.print("\t");
-  //SerialUSB.print(goalVelShoulder); SerialUSB.print("\t");SerialUSB.print(goalPosShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(goalVelElbow); SerialUSB.print("\t"); SerialUSB.print(goalVelShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(goalPosElbow); SerialUSB.print("\t");  SerialUSB.print(goalPosShoulder); SerialUSB.print("\t");
   
   SerialUSB.print(postTime-preTime); SerialUSB.print("\t"); 
   SerialUSB.print(goalReturn); SerialUSB.print("\t");  
   SerialUSB.print("\n");
+  
+  
+  goalReturn = 0;
   
 }

@@ -8,7 +8,7 @@
 double xTotal, yTotal, zTotal;
 int samples = 2000;
 
-void calibrateForceSensor(double &xCal, double &yCal, double &zCal){
+void calibrateForceSensor(){
   SerialUSB.println("..... Calibrating.....");
   for (k = 0; k < samples; k++) {
     singleOptoForceRead();

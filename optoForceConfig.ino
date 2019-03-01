@@ -12,33 +12,30 @@ int configPacket[9];
 int configPacketSize = 9;
 uint8 returnPacket[32];
 int returnPacketSize = 32;
+int packetSum = 0;
 
 void optoForceConfig(){
   SerialUSB.println(".....configuring.....");
   //header
   configPacket[0] = 170;   configPacket[1] = 0;   configPacket[2] = 50;   configPacket[3] = 3;
   // speed
+  // 0:noData, 1:1000Hz, 3:333Hz, 10:100Hz, 33:30Hz, 100:10Hz
   configPacket[4] = 1;
-  // filter, change this if need and check sum accordingly. 
+  // filter
+  // 0:noFilter, 1:500Hz, 2:150Hz, 3:50Hz, 4:15Hz, 5:5Hz, 6:1.5Hz
   configPacket[5] = 6;
   // zero
-  configPacket[6] = 0;
+  // 0:originalValues, 255:zeroSensor
+  configPacket[6] = 255;
   // check sum 
-  configPacket[7] = 0;     configPacket[8] = 230;
+  for (i=0; i<7; i++){
+    packetSum += configPacket[i];
+  }
+  configPacket[7] = floor(packetSum/256);     configPacket[8] = floor(packetSum % 256);
   // write config packet
   for (i = 0; i<configPacketSize; i++){
     Serial1.write(configPacket[i]);
   }
-  // read return packet
-  /*
-  while (Serial1.available() < returnPacketSize){}
-  for (i = 0; i<returnPacketSize; i++){
-    returnPacket[i] = Serial1.read();
-  }
-  for (i = 0; i<returnPacketSize; i++){
-    SerialUSB.println(returnPacket[i]);
-  }
-  */
 }
 
 
