@@ -7,26 +7,28 @@
    script by erick nunez
 */
 
-byte dxlEnable(int mode, boolean status){
+byte dxlEnable(int mode, boolean state){
   byte returnE = dxl.writeByte(ID_ELBOW,    OPERATING_MODE, mode);
   byte returnS = dxl.writeByte(ID_SHOULDER, OPERATING_MODE, mode);
   if (returnE & returnS){
-    returnE = dxl.writeByte(ID_ELBOW,    TORQUE_ENABLE,  status);
-    returnS = dxl.writeByte(ID_SHOULDER, TORQUE_ENABLE,  status);
+    returnE = dxl.writeByte(ID_ELBOW,    TORQUE_ENABLE,  state);
+    returnS = dxl.writeByte(ID_SHOULDER, TORQUE_ENABLE,  state);
   }
   if (returnE & returnS){
-    returnE = dxl.writeByte(ID_ELBOW,    LED,            status);
-    returnS = dxl.writeByte(ID_SHOULDER, LED,            status);
+    returnE = dxl.writeByte(ID_ELBOW,    LED,            state);
+    returnS = dxl.writeByte(ID_SHOULDER, LED,            state);
   } 
   return returnE & returnS;   
 }
 
 byte dxlGoalVelPos(int goalVelElbow, int goalPosElbow, int goalVelShoulder, int goalPosShoulder){
   byte velReturnE = dxl.writeDword(ID_ELBOW,    PROFILE_VELOCITY, goalVelElbow);
-  //byte velReturnS = dxl.writeDword(ID_SHOULDER, PROFILE_VELOCITY, goalVelShoulder);
+  byte velReturnS = dxl.writeDword(ID_SHOULDER, PROFILE_VELOCITY, goalVelShoulder);
   byte posReturnE = dxl.writeDword(ID_ELBOW,    GOAL_POSITION,    goalPosElbow);
-  //byte posReturnS = dxl.writeDword(ID_SHOULDER, GOAL_POSITION,    goalPosShoulder);
-  return velReturnE & posReturnE;
+  byte posReturnS = dxl.writeDword(ID_SHOULDER, GOAL_POSITION,    goalPosShoulder);
+  boolean returnE = velReturnE & posReturnE;
+  boolean returnS = velReturnS & posReturnS;
+  return returnE & returnS;
 }
 
 void dxlPresVelPos(){

@@ -6,7 +6,7 @@
 */
 
 void sensorOrientation(){
-  presElbowAng     = (presPosElbow - ELBOW_MIN_POS)    * DEGREES_PER_COUNT * (PI/180);
+  presElbowAng     = PI - (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI/180);
   presShoulderAng  = (presPosShoulder) * DEGREES_PER_COUNT * (PI/180);
   Fx = FxRaw * (cos(presShoulderAng + presElbowAng + PI/2)) + FyRaw * (-sin(presShoulderAng + presElbowAng + PI/2));
   Fy = FxRaw * (sin(presShoulderAng + presElbowAng + PI/2)) + FyRaw * ( cos(presShoulderAng + presElbowAng + PI/2));

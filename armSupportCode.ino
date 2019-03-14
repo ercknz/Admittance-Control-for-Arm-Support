@@ -8,62 +8,72 @@
 */
 
 // Libraries to add /////////////////////////////////////////////////////////////////////////////////
-//#include <math.h> // Already part of core!!!
+#include <math.h> 
+#include <DynamixelSDK.h>
 
 // OptoForce variables //////////////////////////////////////////////////////////////////////////////
 #define xSensitivity 16.45
 #define ySensitivity 18.42
 #define zSensitivity 1.59
-int16 xRaw, yRaw, zRaw;
-double Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
-double xCal = 0, yCal = 0, zCal = 0;
+int16_t xRaw, yRaw, zRaw;
+double  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
+double  xCal = 0, yCal = 0, zCal = 0;
 
 // Dynamixel Variables /////////////////////////////////////////////////////////////////////////////
 /* Communication Parameters */
+#define PROTOCOL_VERSION 2.0
 #define DXL_BUS_SERIAL   3
+#define BAUDRATE         1000000
+#define DEVICEPORT       "3"
 /* Motor Parameters */
 #define ID_SHOULDER      3
 #define ID_ELBOW         7
 /* Control Table Addresses */
-#define OPERATING_MODE   11
-#define MAX_POSITION     48
-#define MIN_POSITION     52
-#define TORQUE_ENABLE    64
-#define LED              65
-#define GOAL_VELOCITY    104
-#define PROFILE_VELOCITY 112
-#define GOAL_POSITION    116
-#define MOVING           122
-#define PRESENT_VELOCITY 128
-#define PRESENT_POSITION 132
-
-#define POSITION_CONTROL 3
+#define ADDRESS_OPERATING_MODE   11
+#define ADDRESS_MAX_POSITION     48
+#define ADDRESS_MIN_POSITION     52
+#define ADDRESS_TORQUE_ENABLE    64
+#define ADDRESS_LED              65
+#define ADDRESS_GOAL_VELOCITY    104
+#define ADDRESS_PROFILE_VELOCITY 112
+#define ADDRESS_GOAL_POSITION    116
+#define ADDRESS_MOVING           122
+#define ADDRESS_PRESENT_VELOCITY 128
+#define ADDRESS_PRESENT_POSITION 132
+/* Packet Parameters */
 #define VELOCITY_CONTROL 1
-
+#define POSITION_CONTROL 3
+#define LENGTH_GOAL_POSITION      4
+#define LENGTH_PROFILE_VELOCITY   4
+#define LENGTH_PRESENT_POSITION   4
+#define LENGTH_PRESENT_VELOCITY   4
+#define ENABLE                    1
+#define DISABLE                   0
+#define ESC_ASCII_VALUE           0x1b
+/* Parameters for calculations */
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
-
-int32   presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct, presVelAct;
-int     goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct, goalVelAct;
-
-byte goalReturn;
-
-#define ELBOW_MIN_POS 1710
-#define ELBOW_MAX_POS 3720
+/* Motor Limits */
+#define ELBOW_MIN_POS 1705
+#define ELBOW_MAX_POS 3715
 #define SHOULDER_MIN_POS 0
 #define SHOULDER_MAX_POS 4095
 #define ELBOW_MIN_VEL 0
 #define ELBOW_MAX_VEL 300
 #define SHOULDER_MIN_VEL 0
 #define SHOULDER_MAX_VEL 300
+/* Initialization of Variables */
+int32_t presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct, presVelAct;
+int     goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct, goalVelAct;
+byte    goalReturn;
 
 // Admitance Control Variables //////////////////////////////////////////////////////////////////////
 double xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 double xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
-#define TIME    0.01 // loop time
-#define MASS    1
-#define DAMPING 0.1
-#define GRAVITY 9.81
+#define TIME         0.01 // loop time
+#define MASS         5
+#define DAMPING      0.5
+#define GRAVITY      9.81
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
 #define SHOULDER_ELBOW_LINK 0.595
@@ -76,8 +86,6 @@ unsigned long preTime, postTime;
 int i, j, k;
 
 // Setup function ///////////////////////////////////////////////////////////////////////////////////
-Dynamixel dxl(DXL_BUS_SERIAL); 
- 
 void setup() {
   /* Serial Monitor */
   SerialUSB.begin();
@@ -126,7 +134,7 @@ void loop() {
   }
   
   postTime = millis();
-  delay(10-(postTime-preTime));
+  //delay(10-(postTime-preTime));
   
   /*
   SerialUSB.print(Fz); SerialUSB.print("\t"); SerialUSB.print(zCal); SerialUSB.print("\t");
@@ -137,24 +145,44 @@ void loop() {
   */
   
   
-  //SerialUSB.print(FxRaw); SerialUSB.print("\t");SerialUSB.print(FyRaw); SerialUSB.print("\t");
-  SerialUSB.print(Fx); SerialUSB.print("\t");SerialUSB.print(Fy); SerialUSB.print("\t");
-  //SerialUSB.print(presShoulderAng); SerialUSB.print("\t");SerialUSB.print(presElbowAng); SerialUSB.print("\t");
+  //SerialUSB.print(FxRaw); SerialUSB.print("\t");
+  //SerialUSB.print(FyRaw); SerialUSB.print("\t");
   
-  //SerialUSB.print(presVelElbow); SerialUSB.print("\t"); SerialUSB.print(presVelShoulder); SerialUSB.print("\t");
-  //SerialUSB.print(presPosElbow); SerialUSB.print("\t"); SerialUSB.print(presPosShoulder); SerialUSB.print("\t");
+  //SerialUSB.print(Fx); SerialUSB.print("\t");
+  //SerialUSB.print(Fy); SerialUSB.print("\t");
   
-  SerialUSB.print(xPresPosSI); SerialUSB.print("\t");SerialUSB.print(xPresVelSI); SerialUSB.print("\t");
-  SerialUSB.print(yPresPosSI); SerialUSB.print("\t");SerialUSB.print(yPresVelSI); SerialUSB.print("\t"); 
+  //SerialUSB.print(presElbowAng); SerialUSB.print("\t"); 
+  //SerialUSB.print(presShoulderAng); SerialUSB.print("\t");
   
-  SerialUSB.print(xGoalPosSI); SerialUSB.print("\t");SerialUSB.print(xGoalVelSI); SerialUSB.print("\t");
-  SerialUSB.print(yGoalPosSI); SerialUSB.print("\t");SerialUSB.print(yGoalVelSI); SerialUSB.print("\t");
+  //SerialUSB.print(presVelElbow); SerialUSB.print("\t"); 
+  //SerialUSB.print(presVelShoulder); SerialUSB.print("\t");
   
-  //SerialUSB.print(goalElbowAng); SerialUSB.print("\t");SerialUSB.print(goalShoulderAng); SerialUSB.print("\t");
-  //SerialUSB.print(goalElbowAngVel); SerialUSB.print("\t");SerialUSB.print(goalShoulderAngVel); SerialUSB.print("\t");
+  //SerialUSB.print(presPosElbow); SerialUSB.print("\t"); 
+  //SerialUSB.print(presPosShoulder); SerialUSB.print("\t");
   
-  //SerialUSB.print(goalVelElbow); SerialUSB.print("\t"); SerialUSB.print(goalVelShoulder); SerialUSB.print("\t");
-  //SerialUSB.print(goalPosElbow); SerialUSB.print("\t");  SerialUSB.print(goalPosShoulder); SerialUSB.print("\t");
+  SerialUSB.print(xPresPosSI); SerialUSB.print("\t");
+  //SerialUSB.print(xPresVelSI); SerialUSB.print("\t");
+  
+  SerialUSB.print(yPresPosSI); SerialUSB.print("\t");
+  //SerialUSB.print(yPresVelSI); SerialUSB.print("\t"); 
+  
+  SerialUSB.print(xGoalPosSI); SerialUSB.print("\t");
+  //SerialUSB.print(xGoalVelSI); SerialUSB.print("\t");
+  
+  SerialUSB.print(yGoalPosSI); SerialUSB.print("\t");
+  //SerialUSB.print(yGoalVelSI); SerialUSB.print("\t");
+  
+  SerialUSB.print(goalElbowAng); SerialUSB.print("\t"); 
+  SerialUSB.print(goalShoulderAng); SerialUSB.print("\t");
+  
+  //SerialUSB.print(goalElbowAngVel); SerialUSB.print("\t");
+  //SerialUSB.print(goalShoulderAngVel); SerialUSB.print("\t");
+  
+  //SerialUSB.print(goalVelElbow); SerialUSB.print("\t"); 
+  //SerialUSB.print(goalVelShoulder); SerialUSB.print("\t");
+  
+  //SerialUSB.print(goalPosElbow); SerialUSB.print("\t");  
+  //SerialUSB.print(goalPosShoulder); SerialUSB.print("\t");
   
   SerialUSB.print(postTime-preTime); SerialUSB.print("\t"); 
   SerialUSB.print(goalReturn); SerialUSB.print("\t");  

@@ -8,11 +8,11 @@
    Script by erick nunez
 */
 
-int configPacket[9];
-int configPacketSize = 9;
-uint8 returnPacket[32];
-int returnPacketSize = 32;
-int packetSum = 0;
+int     configPacket[9];
+int     configPacketSize = 9;
+uint8_t returnPacket[32];
+int     returnPacketSize = 32;
+int     packetSum = 0;
 
 void optoForceConfig(){
   SerialUSB.println(".....configuring.....");

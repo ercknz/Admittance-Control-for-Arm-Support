@@ -28,10 +28,11 @@
    Script by erick nunez
 */
 
+
 void admittanceControl (){
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   double Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
-  double Cx2 =  xPresPosSI - Cx1;
+  double Cx2 = xPresPosSI - Cx1;
   xGoalPosSI = Cx1*exp(-(DAMPING/MASS)*TIME) + (Fx/DAMPING)*TIME + Cx2;
   xGoalVelSI = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*TIME) + (Fx/DAMPING);
   

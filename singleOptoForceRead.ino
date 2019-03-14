@@ -7,11 +7,11 @@
    Script by erick nunez
 */
 
-int rawPacketSize = 32;
-uint8 rawPacket[32];
-int goodPacketSize = 16;
-uint8 goodPacket[16];
-uint8 header[4] = {170, 7, 8, 10};
+int     rawPacketSize = 32;
+uint8_t rawPacket[32];
+int     goodPacketSize = 16;
+uint8_t goodPacket[16];
+uint8_t header[4] = {170, 7, 8, 10};
 
 void singleOptoForceRead(){
   while (Serial1.available() < rawPacketSize){}

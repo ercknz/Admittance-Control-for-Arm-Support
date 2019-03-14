@@ -4,7 +4,7 @@
    Script by erick nunez
 */
 
-int16 bytesToCounts(uint8 hByte, uint8 lByte){
-  int16 decimal = hByte * 256 + lByte;
+int16_t bytesToCounts(uint8_t hByte, uint8_t lByte){
+  int16_t decimal = hByte * 256 + lByte;
   return decimal;
 }
