@@ -7,37 +7,55 @@
    script by erick nunez
 */
 
-byte dxlEnable(int mode, boolean state){
-  byte returnE = dxl.writeByte(ID_ELBOW,    OPERATING_MODE, mode);
-  byte returnS = dxl.writeByte(ID_SHOULDER, OPERATING_MODE, mode);
-  if (returnE & returnS){
-    returnE = dxl.writeByte(ID_ELBOW,    TORQUE_ENABLE,  state);
-    returnS = dxl.writeByte(ID_SHOULDER, TORQUE_ENABLE,  state);
+byte dxlAbling(byte mode, byte state){
+  commResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_LED, state, &dxl_error);
+  commResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_LED, state, &dxl_error);
+  if (commResult){
+    commResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_OPERATING_MODE, mode, &dxl_error);
+    commResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_OPERATING_MODE, mode, &dxl_error);
   }
-  if (returnE & returnS){
-    returnE = dxl.writeByte(ID_ELBOW,    LED,            state);
-    returnS = dxl.writeByte(ID_SHOULDER, LED,            state);
+  if (commResult){
+    commResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_TORQUE_ENABLE, !state, &dxl_error);
+    commResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_TORQUE_ENABLE, !state, &dxl_error);
   } 
-  return returnE & returnS;   
+  return commResult;   
 }
 
-byte dxlGoalVelPos(int goalVelElbow, int goalPosElbow, int goalVelShoulder, int goalPosShoulder){
-  byte velReturnE = dxl.writeDword(ID_ELBOW,    PROFILE_VELOCITY, goalVelElbow);
-  byte velReturnS = dxl.writeDword(ID_SHOULDER, PROFILE_VELOCITY, goalVelShoulder);
-  byte posReturnE = dxl.writeDword(ID_ELBOW,    GOAL_POSITION,    goalPosElbow);
-  byte posReturnS = dxl.writeDword(ID_SHOULDER, GOAL_POSITION,    goalPosShoulder);
-  boolean returnE = velReturnE & posReturnE;
-  boolean returnS = velReturnS & posReturnS;
-  return returnE & returnS;
+bool writeGoalPacket(int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVelShoulder, int32_t goalPosShoulder){
+  // Elbow Parameters Goal Packet
+  elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelElbow));
+  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelElbow));
+  elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelElbow));
+  elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(goalVelElbow));
+  elbowParam[4] = DXL_LOBYTE(DXL_LOWORD(goalPosElbow));
+  elbowParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosElbow));
+  elbowParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosElbow));
+  elbowParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosElbow));
+  // Shoulder Parameters Goal Packet 
+  shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelShoulder));
+  shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelShoulder));
+  shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelShoulder));
+  shoulderParam[3] = DXL_HIBYTE(DXL_HIWORD(goalVelShoulder));
+  shoulderParam[4] = DXL_LOBYTE(DXL_LOWORD(goalPosShoulder));
+  shoulderParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosShoulder));
+  shoulderParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosShoulder));
+  shoulderParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosShoulder));
+  // Writes packet
+  addParamResult = syncWritePacket.addParam(ID_SHOULDER, shoulderParam);
+  addParamResult = syncWritePacket.addParam(ID_ELBOW, elbowParam);
+  commResult = syncWritePacket.txPacket();
+  syncWritePacket.clearParam();
+  return commResult;
 }
 
-void dxlPresVelPos(){
-   presVelElbow    = (int32)dxl.readDword(ID_ELBOW,    PRESENT_VELOCITY);
-   presVelShoulder = (int32)dxl.readDword(ID_SHOULDER, PRESENT_VELOCITY);
-   presPosElbow    = (int32)dxl.readDword(ID_ELBOW,    PRESENT_POSITION);
-   presPosShoulder = (int32)dxl.readDword(ID_SHOULDER, PRESENT_POSITION);
+void readPresentPacket(){
+   commResult = syncReadPacket.txRxPacket();
+   presVelElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+   presPosElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+   presVelShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+   presPosShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
 }
 
 byte isDxlMoving (int ID){
-  return dxl.readByte(ID,MOVING);
+  //return dxl.readByte(ID,MOVING);
 }

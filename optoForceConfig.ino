@@ -15,7 +15,7 @@ int     returnPacketSize = 32;
 int     packetSum = 0;
 
 void optoForceConfig(){
-  SerialUSB.println(".....configuring.....");
+  Serial.println(".....configuring.....");
   //header
   configPacket[0] = 170;   configPacket[1] = 0;   configPacket[2] = 50;   configPacket[3] = 3;
   // speed

@@ -9,7 +9,7 @@ double xTotal, yTotal, zTotal;
 int samples = 2000;
 
 void calibrateForceSensor(){
-  SerialUSB.println("..... Calibrating.....");
+  Serial.println("..... Calibrating.....");
   for (k = 0; k < samples; k++) {
     singleOptoForceRead();
     xTotal += Fx;
@@ -19,5 +19,5 @@ void calibrateForceSensor(){
   xCal = xTotal/samples;
   yCal = yTotal/samples;
   zCal = zTotal/samples;
-  SerialUSB.println(".....Done calibrating.....");
+  Serial.println(".....Done calibrating.....");
 }
