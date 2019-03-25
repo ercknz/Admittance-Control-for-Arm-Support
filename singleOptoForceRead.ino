@@ -7,24 +7,22 @@
    Script by erick nunez
 */
 
-int     rawPacketSize = 32;
-uint8_t rawPacket[32];
-int     goodPacketSize = 16;
-uint8_t goodPacket[16];
-uint8_t header[4] = {170, 7, 8, 10};
-
-void singleOptoForceRead(){
-  while (Serial1.available() < rawPacketSize){}
-  for (i = 0; i<rawPacketSize; i++){
+void singleOptoForceRead(int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxRaw, float &FyRaw, float &FzRaw){
+  byte rawPacket[32];
+  byte goodPacket[16];
+  byte header[4] = {170, 7, 8, 10};
+  // Reads 2xpacket length for incase of a packet shift
+  while (Serial1.available() < 32){}
+  for (i = 0; i<32; i++){
     rawPacket[i] = Serial1.read();
   }
   // Searches for good packet
-  for (i=0; i<rawPacketSize-12; i++) {
+  for (i=0; i<32-12; i++) {
     if (rawPacket[i] == header[0]){
       if (rawPacket[i+1] == header[1]){
         if (rawPacket[i+2] == header[2]){
           if (rawPacket[i+3] == header[3]){
-            for (j=0; j<goodPacketSize; j++){
+            for (j=0; j<16; j++){
               goodPacket[j]=rawPacket[i+j];
             }
             xRaw = bytesToCounts(goodPacket[8], goodPacket[9]);

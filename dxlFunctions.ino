@@ -7,21 +7,23 @@
    script by erick nunez
 */
 
-byte dxlAbling(byte mode, byte state){
-  commResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_LED, state, &dxl_error);
-  commResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_LED, state, &dxl_error);
-  if (commResult){
-    commResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_OPERATING_MODE, mode, &dxl_error);
-    commResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_OPERATING_MODE, mode, &dxl_error);
-  }
-  if (commResult){
-    commResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_TORQUE_ENABLE, !state, &dxl_error);
-    commResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_TORQUE_ENABLE, !state, &dxl_error);
-  } 
-  return commResult;   
+int dxlAbling(uint8_t mode, uint8_t state){
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_LED, state, &dxl_error);
+  goalReturn += dxlCommResult;
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_LED, state, &dxl_error);
+  goalReturn += dxlCommResult;
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_OPERATING_MODE, mode, &dxl_error);
+  goalReturn += dxlCommResult;
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_OPERATING_MODE, mode, &dxl_error);
+  goalReturn += dxlCommResult;
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  goalReturn += dxlCommResult;
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  goalReturn += dxlCommResult;  
+  return goalReturn;
 }
 
-bool writeGoalPacket(int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVelShoulder, int32_t goalPosShoulder){
+int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVelShoulder, int32_t goalPosShoulder){
   // Elbow Parameters Goal Packet
   elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelElbow));
   elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelElbow));
@@ -43,13 +45,13 @@ bool writeGoalPacket(int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVel
   // Writes packet
   addParamResult = syncWritePacket.addParam(ID_SHOULDER, shoulderParam);
   addParamResult = syncWritePacket.addParam(ID_ELBOW, elbowParam);
-  commResult = syncWritePacket.txPacket();
+  dxlCommResult = syncWritePacket.txPacket();
   syncWritePacket.clearParam();
-  return commResult;
+  return dxlCommResult;
 }
 
-void readPresentPacket(){
-   commResult = syncReadPacket.txRxPacket();
+void readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket, int32_t &presVelElbow, int32_t &presPosElbow, int32_t &presVelShoulder, int32_t &presPosShoulder){
+   dxlCommResult = syncReadPacket.txRxPacket();
    presVelElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
    presPosElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
    presVelShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);

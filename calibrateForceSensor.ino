@@ -5,13 +5,12 @@
    Script by erick nunez
 */
 
-double xTotal, yTotal, zTotal;
-int samples = 2000;
-
-void calibrateForceSensor(){
+void calibrateForceSensor(float &xCal, float &yCal, float &zCal){
+  float xTotal, yTotal, zTotal;
+  int samples = 2000;
   Serial.println("..... Calibrating.....");
   for (k = 0; k < samples; k++) {
-    singleOptoForceRead();
+    singleOptoForceRead(xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
     xTotal += Fx;
     yTotal += Fy;
     zTotal += Fz;

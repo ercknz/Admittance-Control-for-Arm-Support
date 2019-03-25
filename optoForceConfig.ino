@@ -8,13 +8,9 @@
    Script by erick nunez
 */
 
-int     configPacket[9];
-int     configPacketSize = 9;
-uint8_t returnPacket[32];
-int     returnPacketSize = 32;
-int     packetSum = 0;
-
 void optoForceConfig(){
+  byte configPacket[9];
+  uint16_t packetSum = 0;
   Serial.println(".....configuring.....");
   //header
   configPacket[0] = 170;   configPacket[1] = 0;   configPacket[2] = 50;   configPacket[3] = 3;
@@ -31,9 +27,11 @@ void optoForceConfig(){
   for (i=0; i<7; i++){
     packetSum += configPacket[i];
   }
-  configPacket[7] = floor(packetSum/256);     configPacket[8] = floor(packetSum % 256);
+  configPacket[7] = floor(packetSum/256);     
+  configPacket[8] = floor(packetSum % 256);
+
   // write config packet
-  for (i = 0; i<configPacketSize; i++){
+  for (i = 0; i<9; i++){
     Serial1.write(configPacket[i]);
   }
 }

@@ -29,16 +29,16 @@
 */
 
 
-void admittanceControl (){
+void admittanceControl (float Fx, float xPresPosSI, float xPresVelSI, float &xGoalPosSI, float &xGoalVelSI, float Fy, float yPresPosSI, float yPresVelSI, float &yGoalPosSI, float &yGoalVelSI){
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  double Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
-  double Cx2 = xPresPosSI - Cx1;
+  float Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
+  float Cx2 = xPresPosSI - Cx1;
   xGoalPosSI = Cx1*exp(-(DAMPING/MASS)*TIME) + (Fx/DAMPING)*TIME + Cx2;
   xGoalVelSI = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*TIME) + (Fx/DAMPING);
   
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  double Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
-  double Cy2 = yPresPosSI - Cy1;
+  float Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
+  float Cy2 = yPresPosSI - Cy1;
   yGoalPosSI = Cy1*exp(-(DAMPING/MASS)*TIME) + (Fy/DAMPING)*TIME + Cy2;
   yGoalVelSI = -(DAMPING/MASS)*Cy1*exp(-(DAMPING/MASS)*TIME) + (Fy/DAMPING);
   
