@@ -18,6 +18,13 @@ int16_t xRaw, yRaw, zRaw;
 float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
 float  xCal = 0, yCal = 0, zCal = 0;
 
+// Encoder Variables ////////////////////////////////////////////////////////////////////////////////
+#define encoderPinA  9
+#define encoderPinB 10
+int encoderCount    = 0;
+int protectedCount  = 0;
+int previousCount   = 0;
+
 // Dynamixel Variables /////////////////////////////////////////////////////////////////////////////
 /* Communication Parameters */
 #define PROTOCOL_VERSION 2.0
@@ -52,8 +59,8 @@ float  xCal = 0, yCal = 0, zCal = 0;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     1705
-#define ELBOW_MAX_POS     3715
+#define ELBOW_MIN_POS     1739
+#define ELBOW_MAX_POS     3774
 #define SHOULDER_MIN_POS  0
 #define SHOULDER_MAX_POS  4095
 #define ELBOW_MIN_VEL     0
@@ -73,8 +80,8 @@ int     dxlCommResult = COMM_TX_FAIL;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 #define TIME         0.01 // loop time
-#define MASS         5
-#define DAMPING      0.5
+#define MASS         0.5
+#define DAMPING      25
 #define GRAVITY      9.81
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
@@ -92,6 +99,11 @@ dynamixel::PacketHandler *packetHandler;
 
 // Setup function ///////////////////////////////////////////////////////////////////////////////////
 void setup() {
+  /* Encoder Pin Setup */
+  pinMode(encoderPinA, INPUT_PULLUP);
+  pinMode(encoderPinB, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(encoderPinA), isEncoderA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(encoderPinB), isEncoderB, CHANGE);
   /* Serial Monitor */
   Serial.begin(115200);
   while(!Serial);
@@ -132,7 +144,8 @@ void loop() {
   while(1){
     /* Starts reading the sensor */
     preTime = millis();
- 
+    
+    
     singleOptoForceRead(xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
     readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
     sensorOrientation(FxRaw, FyRaw, presPosElbow, presPosShoulder, Fx, Fy, presElbowAng, presShoulderAng);
@@ -148,6 +161,8 @@ void loop() {
   
     postTime = millis();
     //delay(10-(postTime-preTime));
+
+    Serial.print(encoderCount); Serial.print("\t");
     
     Serial.print(FxRaw); Serial.print("\t");
     Serial.print(FyRaw); Serial.print("\t");
@@ -155,11 +170,11 @@ void loop() {
     //Serial.print(Fx); Serial.print("\t");
     //Serial.print(Fy); Serial.print("\t");
   
-    //Serial.print(presElbowAng); Serial.print("\t"); 
-    //Serial.print(presShoulderAng); Serial.print("\t");
+    Serial.print(presElbowAng); Serial.print("\t"); 
+    Serial.print(presShoulderAng); Serial.print("\t");
   
-    Serial.print(presVelElbow); Serial.print("\t"); 
-    Serial.print(presVelShoulder); Serial.print("\t");
+    //Serial.print(presVelElbow); Serial.print("\t"); 
+    //Serial.print(presVelShoulder); Serial.print("\t");
   
     Serial.print(presPosElbow); Serial.print("\t"); 
     Serial.print(presPosShoulder); Serial.print("\t");
@@ -176,14 +191,14 @@ void loop() {
     //Serial.print(yGoalPosSI); Serial.print("\t");
     //Serial.print(yGoalVelSI); Serial.print("\t");
   
-    //Serial.print(goalElbowAng); Serial.print("\t"); 
-    //Serial.print(goalShoulderAng); Serial.print("\t");
+    Serial.print(goalElbowAng); Serial.print("\t"); 
+    Serial.print(goalShoulderAng); Serial.print("\t");
   
     //Serial.print(goalElbowAngVel); Serial.print("\t");
     //Serial.print(goalShoulderAngVel); Serial.print("\t");
   
-    Serial.print(goalVelElbow); Serial.print("\t"); 
-    Serial.print(goalVelShoulder); Serial.print("\t");
+    //Serial.print(goalVelElbow); Serial.print("\t"); 
+    //Serial.print(goalVelShoulder); Serial.print("\t");
   
     Serial.print(goalPosElbow); Serial.print("\t");  
     Serial.print(goalPosShoulder); Serial.print("\t");
