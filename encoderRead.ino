@@ -4,25 +4,23 @@
    Script by erick nunez
 */
 
-
-
 void isEncoderA(){
-  byte readA = digitalRead(encoderPinA);
-  byte readB = digitalRead(encoderPinB);
+  byte readA = digitalReadFast(encoderPinA);
+  byte readB = digitalReadFast(encoderPinB);
   if (readB != readA){
-    encoderCount ++;
+    encoderCounter ++;
   } else {
-    encoderCount --;
+    encoderCounter --;
   }
 }
 
 void isEncoderB(){
-  byte readA = digitalRead(encoderPinA);
-  byte readB = digitalRead(encoderPinB);
+  byte readA = digitalReadFast(encoderPinA);
+  byte readB = digitalReadFast(encoderPinB);
   if (readA == readB){
-    encoderCount ++;
+    encoderCounter ++;
   } else {
-    encoderCount --;
+    encoderCounter --;
   }
 }
 

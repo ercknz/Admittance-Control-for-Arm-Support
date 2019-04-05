@@ -9,6 +9,7 @@
 
 // Libraries to add /////////////////////////////////////////////////////////////////////////////////
 #include <DynamixelSDK.h>
+#include <PID_v1.h>
 
 // OptoForce variables ////////////////////////////////////////////////////////////////////////////// 
 #define xSensitivity 16.45
@@ -21,9 +22,7 @@ float  xCal = 0, yCal = 0, zCal = 0;
 // Encoder Variables ////////////////////////////////////////////////////////////////////////////////
 #define encoderPinA  9
 #define encoderPinB 10
-int encoderCount    = 0;
-int protectedCount  = 0;
-int previousCount   = 0;
+int encoderCounter = 0;
 
 // Dynamixel Variables /////////////////////////////////////////////////////////////////////////////
 /* Communication Parameters */
@@ -76,6 +75,17 @@ uint8_t dxl_error = 0;
 int     goalReturn; 
 int     dxlCommResult = COMM_TX_FAIL;
 
+// Linear Actuator Variables ////////////////////////////////////////////////////////////////////////
+#define ACTUATOR_PIN_A    2
+#define ACTUATOR_PIN_B    3
+#define ACTUATOR_PWM_PIN  8
+#define ACTUATOR_EN_PIN   0
+#define ACTUATOR_CS_PIN   1
+int Kp = 10, Ki = 0, Kd = 0;
+double inputPID = 0, outputPID = 0, setPointPID = 0;
+PID actuatorPID(&inputPID, &outputPID, &setPointPID, Kp, Ki, Kd, DIRECT); 
+double goalPoint, maxHeight, minHeight;
+
 // Admitance Control Variables //////////////////////////////////////////////////////////////////////
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
@@ -99,40 +109,51 @@ dynamixel::PacketHandler *packetHandler;
 
 // Setup function ///////////////////////////////////////////////////////////////////////////////////
 void setup() {
-  /* Encoder Pin Setup */
-  pinMode(encoderPinA, INPUT_PULLUP);
-  pinMode(encoderPinB, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(encoderPinA), isEncoderA, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoderPinB), isEncoderB, CHANGE);
-  /* Serial Monitor */
+    /* Serial Monitor */
   Serial.begin(115200);
   while(!Serial);
   // Adds parameters to read packet 
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
   delay(100);
-  /* Opens motor port */
+  /* Encoder Pin Setup */
+  pinMode(encoderPinA, INPUT);
+  pinMode(encoderPinB, INPUT);
+  attachInterrupt(digitalPinToInterrupt(encoderPinA), isEncoderA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(encoderPinB), isEncoderB, CHANGE);
   delay(100);
+  /* Linear Actuator Pin Setup */
+  pinMode(ACTUATOR_PIN_A, OUTPUT);
+  pinMode(ACTUATOR_PIN_B, OUTPUT);
+  pinMode(ACTUATOR_PWM_PIN, OUTPUT);
+  pinMode(ACTUATOR_CS_PIN, OUTPUT);
+  pinMode(ACTUATOR_EN_PIN, OUTPUT);
+  digitalWrite(ACTUATOR_EN_PIN, HIGH);
+  actuatorPID.SetMode(AUTOMATIC);
+  actuatorPID.SetSampleTime(1);
+  actuatorPID.SetOutputLimits(-255,255);
+  delay(100);
+  /* Dynamixel Setup */
   if (portHandler -> openPort()){
-    Serial.println("Opened the Dynamixel Port");
+    Serial.println(".....Opened the Dynamixel Port.....");
   }
   if (portHandler->setBaudRate(BAUDRATE)){
-    Serial.println("Set baudrate!\n");
+    Serial.println(".....Set baudrate.....");
   }
-  Serial.println(".....enabling motors.....");
-  goalReturn = dxlAbling(POSITION_CONTROL, !ENABLE);
-  Serial.println(goalReturn);
+  if (!dxlAbling(POSITION_CONTROL, !ENABLE)){
+    Serial.println(".....Enabled motors.....");
+  }
   /* Optoforce Serial Connection */
-  Serial.println(".....creating sensor port.....");
+  Serial.println(".....Creating sensor port.....");
   Serial1.begin(BAUDRATE);
   delay(100);
-  Serial.println(".....configuring sensor.....");
+  Serial.println(".....Configuring sensor.....");
   optoForceConfig();
   delay(100);
-  Serial.println(".....calibrating sensor.....");
+  Serial.println(".....Calibrating sensor.....");
   calibrateForceSensor(xCal, yCal, zCal);  
   delay(1000);
-  Serial.println("leaving setup");
+  Serial.println(".....leaving setup.....");
 }
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
@@ -141,8 +162,17 @@ void loop() {
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
+  /* Actuator Calibration */
+  actuatorCalibration();
+  /* Main Loop */
   while(1){
-    /* Starts reading the sensor */
+    /* Starts reading the sensor */ 
+
+    if(Serial.available()>0){
+        String goal = Serial.readString();
+        goalPoint = goal.toInt();
+    }
+    
     preTime = millis();
     
     
@@ -153,31 +183,40 @@ void loop() {
     admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
     inverseKine();
   
-    if ((goalPosElbow <= ELBOW_MAX_POS & goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS & goalPosShoulder >= SHOULDER_MIN_POS)){
-      if ((goalVelElbow <= ELBOW_MAX_VEL & goalVelElbow >= ELBOW_MIN_VEL) & (goalVelShoulder <= SHOULDER_MAX_VEL & goalVelShoulder >= SHOULDER_MIN_VEL)){
+    if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)){
+      if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) & (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)){
         goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+        if(goalPoint <= maxHeight && goalPoint >= minHeight){
+          actuatorControl(goalPoint);
+        }
       }
     }
   
     postTime = millis();
+    
+    noInterrupts();
+    
     //delay(10-(postTime-preTime));
 
-    Serial.print(encoderCount); Serial.print("\t");
+    Serial.print(encoderCounter); Serial.print("\t");
+    Serial.print(inputPID); Serial.print("\t");
+    Serial.print(setPointPID); Serial.print("\t");
+    Serial.print(outputPID); Serial.print("\t");
     
-    Serial.print(FxRaw); Serial.print("\t");
-    Serial.print(FyRaw); Serial.print("\t");
+    //Serial.print(FxRaw); Serial.print("\t");
+    //Serial.print(FyRaw); Serial.print("\t");
   
     //Serial.print(Fx); Serial.print("\t");
     //Serial.print(Fy); Serial.print("\t");
   
-    Serial.print(presElbowAng); Serial.print("\t"); 
-    Serial.print(presShoulderAng); Serial.print("\t");
+    //Serial.print(presElbowAng); Serial.print("\t"); 
+    //Serial.print(presShoulderAng); Serial.print("\t");
   
     //Serial.print(presVelElbow); Serial.print("\t"); 
     //Serial.print(presVelShoulder); Serial.print("\t");
   
-    Serial.print(presPosElbow); Serial.print("\t"); 
-    Serial.print(presPosShoulder); Serial.print("\t");
+    //Serial.print(presPosElbow); Serial.print("\t"); 
+    //Serial.print(presPosShoulder); Serial.print("\t");
   
     //Serial.print(xPresPosSI); Serial.print("\t");
     //Serial.print(xPresVelSI); Serial.print("\t");
@@ -191,8 +230,8 @@ void loop() {
     //Serial.print(yGoalPosSI); Serial.print("\t");
     //Serial.print(yGoalVelSI); Serial.print("\t");
   
-    Serial.print(goalElbowAng); Serial.print("\t"); 
-    Serial.print(goalShoulderAng); Serial.print("\t");
+    //Serial.print(goalElbowAng); Serial.print("\t"); 
+    //Serial.print(goalShoulderAng); Serial.print("\t");
   
     //Serial.print(goalElbowAngVel); Serial.print("\t");
     //Serial.print(goalShoulderAngVel); Serial.print("\t");
@@ -200,8 +239,8 @@ void loop() {
     //Serial.print(goalVelElbow); Serial.print("\t"); 
     //Serial.print(goalVelShoulder); Serial.print("\t");
   
-    Serial.print(goalPosElbow); Serial.print("\t");  
-    Serial.print(goalPosShoulder); Serial.print("\t");
+    //Serial.print(goalPosElbow); Serial.print("\t");  
+    //Serial.print(goalPosShoulder); Serial.print("\t");
   
     Serial.print(postTime-preTime); Serial.print("\t"); 
     Serial.print(goalReturn); Serial.print("\t");  

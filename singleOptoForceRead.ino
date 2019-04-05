@@ -10,7 +10,7 @@
 void singleOptoForceRead(int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxRaw, float &FyRaw, float &FzRaw){
   byte rawPacket[32];
   byte goodPacket[16];
-  byte header[4] = {170, 7, 8, 10};
+  static byte header[4] = {170, 7, 8, 10};
   // Reads 2xpacket length for incase of a packet shift
   while (Serial1.available() < 32){}
   for (i = 0; i<32; i++){

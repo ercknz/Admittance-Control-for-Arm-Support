@@ -8,7 +8,6 @@
 void calibrateForceSensor(float &xCal, float &yCal, float &zCal){
   float xTotal, yTotal, zTotal;
   int samples = 2000;
-  Serial.println("..... Calibrating.....");
   for (k = 0; k < samples; k++) {
     singleOptoForceRead(xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
     xTotal += Fx;
@@ -18,5 +17,5 @@ void calibrateForceSensor(float &xCal, float &yCal, float &zCal){
   xCal = xTotal/samples;
   yCal = yTotal/samples;
   zCal = zTotal/samples;
-  Serial.println(".....Done calibrating.....");
+  Serial.println(".....Done calibrating sensor.....");
 }
