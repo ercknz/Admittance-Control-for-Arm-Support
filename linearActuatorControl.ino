@@ -32,15 +32,10 @@ void actuatorControl(double setPoint){
 }
 
 void actuatorMove(int16_t pwm){
-  if(pwm < 0){
-    digitalWrite(ACTUATOR_PIN_A, LOW); 
-    digitalWrite(ACTUATOR_PIN_B, HIGH);
-  } else if(pwm > 0){
-    digitalWrite(ACTUATOR_PIN_A, HIGH);
-    digitalWrite(ACTUATOR_PIN_B, LOW);      
+  if(pwm > 0){
+    digitalWrite(ACTUATOR_DIR_PIN, HIGH);      
   } else {
-    digitalWrite(ACTUATOR_PIN_A, LOW);
-    digitalWrite(ACTUATOR_PIN_B, LOW);            
+    digitalWrite(ACTUATOR_DIR_PIN, LOW);            
   }
   analogWrite(ACTUATOR_PWM_PIN, abs(pwm)); 
 }

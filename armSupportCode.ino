@@ -1,6 +1,9 @@
 /* This code is combines the admittance control loop for the 3 DoF arm support. 
    This code takes the 1 DoF code and expands it to 3 DoF and includes the kinematics of the arm support.
    Functions needed are should be included in the folder.
+
+   Files are pushed to github:
+   https://github.com/ercknz/Lab-ArmSupport
    
    Script by erick nunez
    created: 1/24/2019
@@ -76,12 +79,9 @@ int     goalReturn;
 int     dxlCommResult = COMM_TX_FAIL;
 
 // Linear Actuator Variables ////////////////////////////////////////////////////////////////////////
-#define ACTUATOR_PIN_A    2
-#define ACTUATOR_PIN_B    3
+#define ACTUATOR_DIR_PIN  2
 #define ACTUATOR_PWM_PIN  8
-#define ACTUATOR_EN_PIN   0
-#define ACTUATOR_CS_PIN   1
-int Kp = 10, Ki = 0, Kd = 0;
+int Kp = 1, Ki = 1, Kd = 0;
 double inputPID = 0, outputPID = 0, setPointPID = 0;
 PID actuatorPID(&inputPID, &outputPID, &setPointPID, Kp, Ki, Kd, DIRECT); 
 double goalPoint, maxHeight, minHeight;
@@ -103,7 +103,9 @@ float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radi
 // Other Variables needed ///////////////////////////////////////////////////////////////////////////
 unsigned long preTime, postTime;
 int i, j, k;
+bool diagMode = true;
 
+// Port and Packet variable ///////////////////////////////////////////////////////////////////////////
 dynamixel::PortHandler *portHandler; 
 dynamixel::PacketHandler *packetHandler; 
 
@@ -123,12 +125,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encoderPinB), isEncoderB, CHANGE);
   delay(100);
   /* Linear Actuator Pin Setup */
-  pinMode(ACTUATOR_PIN_A, OUTPUT);
-  pinMode(ACTUATOR_PIN_B, OUTPUT);
+  pinMode(ACTUATOR_DIR_PIN, OUTPUT);
   pinMode(ACTUATOR_PWM_PIN, OUTPUT);
-  pinMode(ACTUATOR_CS_PIN, OUTPUT);
-  pinMode(ACTUATOR_EN_PIN, OUTPUT);
-  digitalWrite(ACTUATOR_EN_PIN, HIGH);
   actuatorPID.SetMode(AUTOMATIC);
   actuatorPID.SetSampleTime(1);
   actuatorPID.SetOutputLimits(-255,255);
@@ -166,15 +164,15 @@ void loop() {
   actuatorCalibration();
   /* Main Loop */
   while(1){
-    /* Starts reading the sensor */ 
-
-    if(Serial.available()>0){
+    /* This is used for manually tunnig the actuator PID */
+    if(diagMode && Serial.available()>0){
         String goal = Serial.readString();
         goalPoint = goal.toInt();
+        Serial.print("..... New Goal Point entered....."); Serial.println(goalPoint);
     }
-    
+
+    /* Starts the main loop */ 
     preTime = millis();
-    
     
     singleOptoForceRead(xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
     readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
@@ -198,52 +196,8 @@ void loop() {
     
     //delay(10-(postTime-preTime));
 
-    Serial.print(encoderCounter); Serial.print("\t");
-    Serial.print(inputPID); Serial.print("\t");
-    Serial.print(setPointPID); Serial.print("\t");
-    Serial.print(outputPID); Serial.print("\t");
-    
-    //Serial.print(FxRaw); Serial.print("\t");
-    //Serial.print(FyRaw); Serial.print("\t");
-  
-    //Serial.print(Fx); Serial.print("\t");
-    //Serial.print(Fy); Serial.print("\t");
-  
-    //Serial.print(presElbowAng); Serial.print("\t"); 
-    //Serial.print(presShoulderAng); Serial.print("\t");
-  
-    //Serial.print(presVelElbow); Serial.print("\t"); 
-    //Serial.print(presVelShoulder); Serial.print("\t");
-  
-    //Serial.print(presPosElbow); Serial.print("\t"); 
-    //Serial.print(presPosShoulder); Serial.print("\t");
-  
-    //Serial.print(xPresPosSI); Serial.print("\t");
-    //Serial.print(xPresVelSI); Serial.print("\t");
-  
-    //Serial.print(yPresPosSI); Serial.print("\t");
-    //Serial.print(yPresVelSI); Serial.print("\t"); 
-  
-    //Serial.print(xGoalPosSI); Serial.print("\t");
-    //Serial.print(xGoalVelSI); Serial.print("\t");
-  
-    //Serial.print(yGoalPosSI); Serial.print("\t");
-    //Serial.print(yGoalVelSI); Serial.print("\t");
-  
-    //Serial.print(goalElbowAng); Serial.print("\t"); 
-    //Serial.print(goalShoulderAng); Serial.print("\t");
-  
-    //Serial.print(goalElbowAngVel); Serial.print("\t");
-    //Serial.print(goalShoulderAngVel); Serial.print("\t");
-  
-    //Serial.print(goalVelElbow); Serial.print("\t"); 
-    //Serial.print(goalVelShoulder); Serial.print("\t");
-  
-    //Serial.print(goalPosElbow); Serial.print("\t");  
-    //Serial.print(goalPosShoulder); Serial.print("\t");
-  
-    Serial.print(postTime-preTime); Serial.print("\t"); 
-    Serial.print(goalReturn); Serial.print("\t");  
-    Serial.print("\n");
+    if (diagMode){
+      diagnosticMode();
+    }
   }
 }

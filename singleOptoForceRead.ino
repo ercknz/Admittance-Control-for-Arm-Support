@@ -11,7 +11,7 @@ void singleOptoForceRead(int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxR
   byte rawPacket[32];
   byte goodPacket[16];
   static byte header[4] = {170, 7, 8, 10};
-  // Reads 2xpacket length for incase of a packet shift
+  // Reads 2xpacket length incase of a packet shift
   while (Serial1.available() < 32){}
   for (i = 0; i<32; i++){
     rawPacket[i] = Serial1.read();
@@ -38,3 +38,10 @@ void singleOptoForceRead(int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxR
     }
   }
 }
+
+void clearSensorBuffer(){
+  while (Serial1.available()){
+    Serial1.read();
+  }
+}
+
