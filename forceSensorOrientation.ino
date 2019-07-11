@@ -5,9 +5,10 @@
    Script by erick nunez
 */
 
-void sensorOrientation(float FxRaw, float FyRaw, int32_t presPosElbow, int32_t presPosShoulder, float &Fx, float &Fy, float &presElbowAng, float &presShoulderAng){
+void sensorOrientation(float FxRaw, float FyRaw, float FzRaw, int32_t presPosElbow, int32_t presPosShoulder, float &Fx, float &Fy, float &Fz, float &presElbowAng, float &presShoulderAng){
   presElbowAng     = PI - (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI/180);
   presShoulderAng  = (presPosShoulder) * DEGREES_PER_COUNT * (PI/180);
   Fx = FxRaw * (cos(presShoulderAng + presElbowAng + PI/2)) + FyRaw * (-sin(presShoulderAng + presElbowAng + PI/2));
   Fy = FxRaw * (sin(presShoulderAng + presElbowAng + PI/2)) + FyRaw * ( cos(presShoulderAng + presElbowAng + PI/2));
+  Fz = FzRaw;
 }

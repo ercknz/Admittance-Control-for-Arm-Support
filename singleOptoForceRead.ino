@@ -7,7 +7,7 @@
    Script by erick nunez
 */
 
-void singleOptoForceRead(int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxRaw, float &FyRaw, float &FzRaw){
+void singleOptoForceRead(float xCal, float yCal, float zCal, int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxRaw, float &FyRaw, float &FzRaw){
   byte rawPacket[32];
   byte goodPacket[16];
   static byte header[4] = {170, 7, 8, 10};

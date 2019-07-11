@@ -61,8 +61,8 @@ int encoderCounter = 0;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     1739
-#define ELBOW_MAX_POS     3774
+#define ELBOW_MIN_POS     953
+#define ELBOW_MAX_POS     2996
 #define SHOULDER_MIN_POS  0
 #define SHOULDER_MAX_POS  4095
 #define ELBOW_MIN_VEL     0
@@ -139,6 +139,7 @@ void setup() {
     Serial.println(".....Set baudrate.....");
   }
   if (!dxlAbling(POSITION_CONTROL, !ENABLE)){
+    // add or remove ! to ENABLE to enable/disable torque
     Serial.println(".....Enabled motors.....");
   }
   /* Optoforce Serial Connection */
@@ -161,7 +162,7 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
   /* Actuator Calibration */
-  actuatorCalibration();
+  //actuatorCalibration();
   /* Main Loop */
   while(1){
     /* This is used for manually tunnig the actuator PID */
@@ -173,10 +174,10 @@ void loop() {
 
     /* Starts the main loop */ 
     preTime = millis();
-    
-    singleOptoForceRead(xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
+     
+    singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
     readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
-    sensorOrientation(FxRaw, FyRaw, presPosElbow, presPosShoulder, Fx, Fy, presElbowAng, presShoulderAng);
+    sensorOrientation(FxRaw, FyRaw, FzRaw, presPosElbow, presPosShoulder, Fx, Fy, Fz, presElbowAng, presShoulderAng);
     forwardKine();
     admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
     inverseKine();
@@ -184,9 +185,9 @@ void loop() {
     if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)){
       if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) & (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)){
         goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
-        if(goalPoint <= maxHeight && goalPoint >= minHeight){
-          actuatorControl(goalPoint);
-        }
+//        if(goalPoint <= maxHeight && goalPoint >= minHeight){
+//          actuatorControl(goalPoint);
+//        }
       }
     }
   

@@ -8,6 +8,7 @@
 
 
 
+//void forwardKine(presVelElbow, presVelShoulder, presShoulderAng, presElbowAng, &xPresPosSI, &yPresPosSI, &xPresVelSI. &yPresVelSI){
 void forwardKine(){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   
