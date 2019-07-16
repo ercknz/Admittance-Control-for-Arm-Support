@@ -52,7 +52,7 @@ int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelE
 
 void readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket, int32_t &presVelElbow, int32_t &presPosElbow, int32_t &presVelShoulder, int32_t &presPosShoulder){
    dxlCommResult = syncReadPacket.txRxPacket();
-   presVelElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+   presVelElbow = -syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY); // Elbow Direction appears to be inversed.
    presPosElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
    presVelShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
    presPosShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);

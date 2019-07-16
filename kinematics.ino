@@ -12,21 +12,17 @@ void forwardKine(int32_t presVelElbow, int32_t  presVelShoulder, float presShoul
 //void forwardKine(){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   
+  // Convert motor counts to RPM
   presElbowAngVel    = presVelElbow    * RPM_PER_COUNT * (2 * PI / 60);
   presShoulderAngVel = presVelShoulder * RPM_PER_COUNT * (2 * PI / 60);
-   
+  
+  // Compute the XY positions from angles 
   xPresPosSI = SHOULDER_ELBOW_LINK * cos(presShoulderAng) + ELBOW_SENSOR_LINK * cos(presShoulderAng+presElbowAng);
   yPresPosSI = SHOULDER_ELBOW_LINK * sin(presShoulderAng) + ELBOW_SENSOR_LINK * sin(presShoulderAng+presElbowAng);
+  
+  // Multiply velocities with Jacobian Matrix to find the XY velocities
   xPresVelSI = presShoulderAngVel * (-SHOULDER_ELBOW_LINK * sin(presShoulderAng) - ELBOW_SENSOR_LINK * sin(presShoulderAng + presElbowAng)) + presElbowAngVel * (-ELBOW_SENSOR_LINK * sin(presShoulderAng + presElbowAng));
   yPresVelSI = presShoulderAngVel * ( SHOULDER_ELBOW_LINK * cos(presShoulderAng) + ELBOW_SENSOR_LINK * cos(presShoulderAng + presElbowAng)) + presElbowAngVel * ( ELBOW_SENSOR_LINK * cos(presShoulderAng + presElbowAng));
-  
-  if (Fx < 0) {
-    xPresVelSI = - xPresVelSI;
-  }
-  if (Fy < 0) {
-    yPresVelSI = -yPresVelSI;
-  }
-    
 }
 
 void inverseKine(float xGoalPosSI, float yGoalPosSI, float xGoalVelSI, float yGoalVelSI, float &goalElbowAng, float &goalShoulderAng, float &goalElbowAngVel, float &goalShoulderAngVel, int32_t &goalPosElbow, int32_t &goalPosShoulder, int32_t &goalVelElbow, int32_t &goalVelShoulder){
