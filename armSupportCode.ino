@@ -63,8 +63,8 @@ int encoderCounter = 0;
 /* Motor Limits */
 #define ELBOW_MIN_POS     953
 #define ELBOW_MAX_POS     2996
-#define SHOULDER_MIN_POS  0
-#define SHOULDER_MAX_POS  4095
+#define SHOULDER_MIN_POS  100
+#define SHOULDER_MAX_POS  4000
 #define ELBOW_MIN_VEL     0
 #define ELBOW_MAX_VEL     300
 #define SHOULDER_MIN_VEL  0
@@ -91,7 +91,7 @@ float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 #define TIME         0.01 // loop time
 #define MASS         0.5
-#define DAMPING      25
+#define DAMPING      20
 #define GRAVITY      9.81
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
@@ -138,7 +138,7 @@ void setup() {
   if (portHandler->setBaudRate(BAUDRATE)){
     Serial.println(".....Set baudrate.....");
   }
-  if (!dxlAbling(POSITION_CONTROL, !ENABLE)){
+  if (!dxlAbling(POSITION_CONTROL, ENABLE)){
     // add or remove ! to ENABLE to enable/disable torque
     Serial.println(".....Enabled motors.....");
   }
@@ -182,8 +182,8 @@ void loop() {
     admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
     inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
   
-    if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) & (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)){
-      if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) & (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)){
+    if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) && (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)){
+      if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) && (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)){
         goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
 //        if(goalPoint <= maxHeight && goalPoint >= minHeight){
 //          actuatorControl(goalPoint);
