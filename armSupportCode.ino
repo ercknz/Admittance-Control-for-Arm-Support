@@ -1,10 +1,10 @@
-/* This code is combines the admittance control loop for the 3 DoF arm support. 
+/* This code is combines the admittance control loop for the 3 DoF arm support.
    This code takes the 1 DoF code and expands it to 3 DoF and includes the kinematics of the arm support.
    Functions needed are should be included in the folder.
 
    Files are pushed to github:
    https://github.com/ercknz/Lab-ArmSupport
-   
+
    Script by erick nunez
    created: 1/24/2019
 
@@ -14,7 +14,7 @@
 #include <DynamixelSDK.h>
 #include <PID_v1.h>
 
-// OptoForce variables ////////////////////////////////////////////////////////////////////////////// 
+// OptoForce variables //////////////////////////////////////////////////////////////////////////////
 #define xSensitivity 16.45
 #define ySensitivity 18.42
 #define zSensitivity 1.59
@@ -75,7 +75,7 @@ int32_t presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct
 int32_t goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct, goalVelAct;
 bool    addParamResult;
 uint8_t dxl_error = 0;
-int     goalReturn; 
+int     goalReturn;
 int     dxlCommResult = COMM_TX_FAIL;
 
 // Linear Actuator Variables ////////////////////////////////////////////////////////////////////////
@@ -83,16 +83,16 @@ int     dxlCommResult = COMM_TX_FAIL;
 #define ACTUATOR_PWM_PIN  8
 int Kp = 1, Ki = 1, Kd = 0;
 double inputPID = 0, outputPID = 0, setPointPID = 0;
-PID actuatorPID(&inputPID, &outputPID, &setPointPID, Kp, Ki, Kd, DIRECT); 
+PID actuatorPID(&inputPID, &outputPID, &setPointPID, Kp, Ki, Kd, DIRECT);
 double goalPoint, maxHeight, minHeight;
 
 // Admitance Control Variables //////////////////////////////////////////////////////////////////////
 float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
-#define TIME         0.01 // loop time
-#define MASS         0.5
-#define DAMPING      20
-#define GRAVITY      9.81
+#define TIME_INTERVAL 10 // Milliseconds
+#define MASS          0.5
+#define DAMPING       1
+#define GRAVITY       9.81
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
 #define SHOULDER_ELBOW_LINK 0.595
@@ -101,20 +101,20 @@ float presElbowAng, presElbowAngVel, presShoulderAng, presShoulderAngVel; //Radi
 float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radians, Rad/s
 
 // Other Variables needed ///////////////////////////////////////////////////////////////////////////
-unsigned long preTime, postTime;
+unsigned long previousTime, currentTime;
 int i, j, k;
 bool diagMode = true;
 
 // Port and Packet variable ///////////////////////////////////////////////////////////////////////////
-dynamixel::PortHandler *portHandler; 
-dynamixel::PacketHandler *packetHandler; 
+dynamixel::PortHandler *portHandler;
+dynamixel::PacketHandler *packetHandler;
 
 // Setup function ///////////////////////////////////////////////////////////////////////////////////
 void setup() {
-    /* Serial Monitor */
+  /* Serial Monitor */
   Serial.begin(115200);
-  while(!Serial);
-  // Adds parameters to read packet 
+  while (!Serial);
+  // Adds parameters to read packet
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
   delay(100);
@@ -129,16 +129,16 @@ void setup() {
   pinMode(ACTUATOR_PWM_PIN, OUTPUT);
   actuatorPID.SetMode(AUTOMATIC);
   actuatorPID.SetSampleTime(1);
-  actuatorPID.SetOutputLimits(-255,255);
+  actuatorPID.SetOutputLimits(-255, 255);
   delay(100);
   /* Dynamixel Setup */
-  if (portHandler -> openPort()){
+  if (portHandler -> openPort()) {
     Serial.println(".....Opened the Dynamixel Port.....");
   }
-  if (portHandler->setBaudRate(BAUDRATE)){
+  if (portHandler->setBaudRate(BAUDRATE)) {
     Serial.println(".....Set baudrate.....");
   }
-  if (!dxlAbling(POSITION_CONTROL, ENABLE)){
+  if (!dxlAbling(POSITION_CONTROL, ENABLE)) {
     // add or remove ! to ENABLE to enable/disable torque
     Serial.println(".....Enabled motors.....");
   }
@@ -150,13 +150,14 @@ void setup() {
   optoForceConfig();
   delay(100);
   Serial.println(".....Calibrating sensor.....");
-  calibrateForceSensor(xCal, yCal, zCal);  
+  calibrateForceSensor(xCal, yCal, zCal);
   delay(1000);
   Serial.println(".....leaving setup.....");
 }
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
 void loop() {
+  // Sets up dynamixel read/write packet parameters
   dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
@@ -164,41 +165,42 @@ void loop() {
   /* Actuator Calibration */
   //actuatorCalibration();
   /* Main Loop */
-  while(1){
+  previousTime = millis();
+  while (1) {
     /* This is used for manually tunnig the actuator PID */
-    if(diagMode && Serial.available()>0){
-        String goal = Serial.readString();
-        goalPoint = goal.toInt();
-        Serial.print("..... New Goal Point entered....."); Serial.println(goalPoint);
-    }
-
-    /* Starts the main loop */ 
-    preTime = millis();
-     
-    singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
-    readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
-    sensorOrientation(FxRaw, FyRaw, FzRaw, presPosElbow, presPosShoulder, Fx, Fy, Fz, presElbowAng, presShoulderAng);
-    forwardKine(presVelElbow, presVelShoulder, presShoulderAng, presElbowAng, xPresPosSI, yPresPosSI, xPresVelSI, yPresVelSI);
-    admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
-    inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
-  
-    if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) && (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)){
-      if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) && (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)){
-        goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
-//        if(goalPoint <= maxHeight && goalPoint >= minHeight){
-//          actuatorControl(goalPoint);
-//        }
+//    if (diagMode) {
+//      diagnosticMode();
+//      if (Serial.available() > 0) {
+//        String goal = Serial.readString();
+//        goalPoint = goal.toInt();
+//        Serial.print("..... New Goal Point entered....."); Serial.println(goalPoint);
+//      }
+//    }
+    currentTime = millis();
+    if (currentTime - previousTime >= TIME_INTERVAL) {
+      Serial.print(currentTime - previousTime); Serial.print("\t");
+      previousTime = currentTime;
+      /* Starts the main loop */
+      singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
+      readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
+      sensorOrientation(FxRaw, FyRaw, FzRaw, presPosElbow, presPosShoulder, Fx, Fy, Fz, presElbowAng, presShoulderAng);
+      forwardKine(presVelElbow, presVelShoulder, presShoulderAng, presElbowAng, xPresPosSI, yPresPosSI, xPresVelSI, yPresVelSI);
+      admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
+      inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
+      if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) && (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)) {
+        if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) && (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)) {
+          goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+          //Serial.println(goalReturn);
+          //        if(goalPoint <= maxHeight && goalPoint >= minHeight){
+          //          actuatorControl(goalPoint);
+          //        }
+        }
+      }
+      if (diagMode) {
+        diagnosticMode();
       }
     }
-  
-    postTime = millis();
-    
-    noInterrupts();
-    
-    //delay(10-(postTime-preTime));
 
-    if (diagMode){
-      diagnosticMode();
-    }
+    //noInterrupts();
   }
 }
