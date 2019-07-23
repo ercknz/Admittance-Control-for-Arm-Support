@@ -15,12 +15,12 @@
 #include <PID_v1.h>
 
 // OptoForce variables //////////////////////////////////////////////////////////////////////////////
-#define xSensitivity 16.45
-#define ySensitivity 18.42
-#define zSensitivity 1.59
+#define xSensitivity 16.450
+#define ySensitivity 18.420
+#define zSensitivity 1.590
 int16_t xRaw, yRaw, zRaw;
 float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
-float  xCal = 0, yCal = 0, zCal = 0;
+float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 
 // Encoder Variables ////////////////////////////////////////////////////////////////////////////////
 #define encoderPinA  9
@@ -61,8 +61,8 @@ int encoderCounter = 0;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     953
-#define ELBOW_MAX_POS     2996
+#define ELBOW_MIN_POS     1076
+#define ELBOW_MAX_POS     3119
 #define SHOULDER_MIN_POS  100
 #define SHOULDER_MAX_POS  4000
 #define ELBOW_MIN_VEL     0
@@ -82,7 +82,7 @@ int     dxlCommResult = COMM_TX_FAIL;
 #define ACTUATOR_DIR_PIN  2
 #define ACTUATOR_PWM_PIN  8
 int Kp = 1, Ki = 1, Kd = 0;
-double inputPID = 0, outputPID = 0, setPointPID = 0;
+double inputPID = 0.0, outputPID = 0.0, setPointPID = 0.0;
 PID actuatorPID(&inputPID, &outputPID, &setPointPID, Kp, Ki, Kd, DIRECT);
 double goalPoint, maxHeight, minHeight;
 
@@ -90,13 +90,13 @@ double goalPoint, maxHeight, minHeight;
 float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 #define TIME_INTERVAL 10 // Milliseconds
-#define MASS          0.5
-#define DAMPING       1
-#define GRAVITY       9.81
+#define MASS          0.500
+#define DAMPING       1.000
+#define GRAVITY       9.80665
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
 #define SHOULDER_ELBOW_LINK 0.595
-#define ELBOW_SENSOR_LINK   0.54
+#define ELBOW_SENSOR_LINK   0.540
 float presElbowAng, presElbowAngVel, presShoulderAng, presShoulderAngVel; //Radians, Rad/s
 float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radians, Rad/s
 

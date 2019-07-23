@@ -32,14 +32,14 @@
 void admittanceControl (float Fx, float xPresPosSI, float xPresVelSI, float &xGoalPosSI, float &xGoalVelSI, float Fy, float yPresPosSI, float yPresVelSI, float &yGoalPosSI, float &yGoalVelSI){
   static float dT = 0.001 * TIME_INTERVAL;
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  static double Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
-  static double Cx2 = xPresPosSI - Cx1;
+  static float Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
+  static float Cx2 = xPresPosSI - Cx1;
   xGoalPosSI = Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING)*dT + Cx2;
   xGoalVelSI = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING);
   
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  static double Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
-  static double Cy2 = yPresPosSI - Cy1;
+  static float Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
+  static float Cy2 = yPresPosSI - Cy1;
   yGoalPosSI = Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING)*dT + Cy2;
   yGoalVelSI = -(DAMPING/MASS)*Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING);
   
