@@ -23,9 +23,6 @@ float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 
 // Encoder Variables ////////////////////////////////////////////////////////////////////////////////
-#define encoderPinA  9
-#define encoderPinB 10
-int encoderCounter = 0;
 
 // Dynamixel Variables /////////////////////////////////////////////////////////////////////////////
 /* Communication Parameters */
@@ -61,8 +58,8 @@ int encoderCounter = 0;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     1076
-#define ELBOW_MAX_POS     3119
+#define ELBOW_MIN_POS     1102
+#define ELBOW_MAX_POS     3146
 #define SHOULDER_MIN_POS  100
 #define SHOULDER_MAX_POS  4000
 #define ELBOW_MIN_VEL     0
@@ -90,7 +87,7 @@ double goalPoint, maxHeight, minHeight;
 float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 #define TIME_INTERVAL 10 // Milliseconds
-#define MASS          0.500
+#define MASS          1.000
 #define DAMPING       1.000
 #define GRAVITY       9.80665
 
@@ -118,12 +115,6 @@ void setup() {
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
   delay(100);
-  /* Encoder Pin Setup */
-  pinMode(encoderPinA, INPUT);
-  pinMode(encoderPinB, INPUT);
-  attachInterrupt(digitalPinToInterrupt(encoderPinA), isEncoderA, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoderPinB), isEncoderB, CHANGE);
-  delay(100);
   /* Linear Actuator Pin Setup */
   pinMode(ACTUATOR_DIR_PIN, OUTPUT);
   pinMode(ACTUATOR_PWM_PIN, OUTPUT);
@@ -138,7 +129,7 @@ void setup() {
   if (portHandler->setBaudRate(BAUDRATE)) {
     Serial.println(".....Set baudrate.....");
   }
-  if (!dxlAbling(POSITION_CONTROL, ENABLE)) {
+  if (!dxlAbling(POSITION_CONTROL, !ENABLE)) {
     // add or remove ! to ENABLE to enable/disable torque
     Serial.println(".....Enabled motors.....");
   }
@@ -162,20 +153,9 @@ void loop() {
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
-  /* Actuator Calibration */
-  //actuatorCalibration();
   /* Main Loop */
   previousTime = millis();
   while (1) {
-    /* This is used for manually tunnig the actuator PID */
-//    if (diagMode) {
-//      diagnosticMode();
-//      if (Serial.available() > 0) {
-//        String goal = Serial.readString();
-//        goalPoint = goal.toInt();
-//        Serial.print("..... New Goal Point entered....."); Serial.println(goalPoint);
-//      }
-//    }
     currentTime = millis();
     if (currentTime - previousTime >= TIME_INTERVAL) {
       Serial.print(currentTime - previousTime); Serial.print("\t");
@@ -200,7 +180,5 @@ void loop() {
         diagnosticMode();
       }
     }
-
-    //noInterrupts();
   }
 }

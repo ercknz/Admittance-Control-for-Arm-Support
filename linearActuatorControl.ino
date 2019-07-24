@@ -4,30 +4,10 @@
    Script by erick nunez
 */
 
-void actuatorCalibration(){
-  Serial.println(".....calibrating the Actuator.....");
-  interrupts();
-  actuatorMove(200);
-  delay(5000);
-  actuatorMove(0);
-  maxHeight = encoderCounter;
-  Serial.println(maxHeight);
-  delay(100);
-  actuatorMove(round(-200));
-  delay(5000);
-  actuatorMove(0);
-  minHeight = encoderCounter;
-  Serial.println(minHeight);
-  noInterrupts();
-  Serial.println(".....done calibrating actuator.....");
-  goalPoint = minHeight;
-}
-
 void actuatorControl(double setPoint){
   setPointPID = setPoint;
   inputPID = encoderCounter;
   actuatorPID.Compute();
-  interrupts();
   actuatorMove(outputPID);
 }
 

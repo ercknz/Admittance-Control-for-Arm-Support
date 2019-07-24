@@ -5,22 +5,8 @@
 */
 
 void isEncoderA(){
-  byte readA = digitalReadFast(encoderPinA);
-  byte readB = digitalReadFast(encoderPinB);
-  if (readB != readA){
-    encoderCounter ++;
-  } else {
-    encoderCounter --;
-  }
 }
 
 void isEncoderB(){
-  byte readA = digitalReadFast(encoderPinA);
-  byte readB = digitalReadFast(encoderPinB);
-  if (readA == readB){
-    encoderCounter ++;
-  } else {
-    encoderCounter --;
-  }
 }
 
