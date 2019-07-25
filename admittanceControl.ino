@@ -28,22 +28,21 @@
    Script by erick nunez
 */
 
-
 void admittanceControl (float Fx, float xPresPosSI, float xPresVelSI, float &xGoalPosSI, float &xGoalVelSI, float Fy, float yPresPosSI, float yPresVelSI, float &yGoalPosSI, float &yGoalVelSI){
   static float dT = 0.001 * TIME_INTERVAL;
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  static float Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
-  static float Cx2 = xPresPosSI - Cx1;
+  float Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
+  float Cx2 = xPresPosSI - Cx1;
   xGoalPosSI = Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING)*dT + Cx2;
   xGoalVelSI = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING);
   
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  static float Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
-  static float Cy2 = yPresPosSI - Cy1;
+  float Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
+  float Cy2 = yPresPosSI - Cy1;
   yGoalPosSI = Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING)*dT + Cy2;
   yGoalVelSI = -(DAMPING/MASS)*Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING);
-  
-  /* / Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
+
+  /*/ Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
   float Cz1 = ((zForce/DAMPING) - zPresVelSI)*(MASS/DAMPING);
   float Cz2 = zPresPosSI - Cz1;
   zGoalPosSI = Cz1*exp(-(DAMPING/MASS)*TIME) + (zForce/DAMPING)*TIME + Cz2;

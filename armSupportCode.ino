@@ -88,7 +88,7 @@ float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 #define TIME_INTERVAL 10 // Milliseconds
 #define MASS          1.000
-#define DAMPING       1.000
+#define DAMPING       0.100
 #define GRAVITY       9.80665
 
 // Kinematic Variables and Constants ////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ void setup() {
   if (portHandler->setBaudRate(BAUDRATE)) {
     Serial.println(".....Set baudrate.....");
   }
-  if (!dxlAbling(POSITION_CONTROL, !ENABLE)) {
+  if (!dxlAbling(POSITION_CONTROL, ENABLE)) {
     // add or remove ! to ENABLE to enable/disable torque
     Serial.println(".....Enabled motors.....");
   }

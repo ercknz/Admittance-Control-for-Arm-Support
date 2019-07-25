@@ -16,7 +16,7 @@ void diagnosticMode(){
 
   Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); Serial.print(Fz); Serial.print("\t"); Serial.print("||\t");
 
-  Serial.print(presPosElbow); Serial.print("\t"); Serial.print(presPosShoulder); Serial.print("\t"); Serial.print("||\t");
+  //Serial.print(presPosElbow); Serial.print("\t"); Serial.print(presPosShoulder); Serial.print("\t"); Serial.print("||\t");
 
   //Serial.print(presVelElbow); Serial.print("\t"); Serial.print(presVelShoulder); Serial.print("\t"); Serial.print("||\t");
 

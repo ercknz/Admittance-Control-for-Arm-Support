@@ -6,7 +6,7 @@
 
 void actuatorControl(double setPoint){
   setPointPID = setPoint;
-  inputPID = encoderCounter;
+//  inputPID = encoderCounter;
   actuatorPID.Compute();
   actuatorMove(outputPID);
 }
