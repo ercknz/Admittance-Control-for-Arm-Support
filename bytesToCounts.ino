@@ -5,7 +5,6 @@
 */
 
 int16_t bytesToCounts(byte hByte, byte lByte){
-  int16_t decimal;
-  decimal = hByte * 256 + lByte;
+  int16_t decimal = hByte * 256 + lByte;
   return decimal;
 }

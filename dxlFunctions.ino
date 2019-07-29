@@ -24,7 +24,28 @@ int dxlAbling(uint8_t mode, uint8_t state){
 }
 
 int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVelShoulder, int32_t goalPosShoulder){
-  // Elbow Parameters Goal Packet
+  // Check limits before writing /////////////////////////////////////////////////////////////////////////
+  if (goalPosElbow > ELBOW_MAX_POS){
+    goalPosElbow = ELBOW_MAX_POS;
+  } else if (goalPosElbow < ELBOW_MIN_POS) {
+    goalPosElbow = ELBOW_MIN_POS;
+  }
+  if (goalPosShoulder > SHOULDER_MAX_POS){
+    goalPosShoulder = SHOULDER_MAX_POS;
+  } else if (goalPosShoulder < SHOULDER_MIN_POS) {
+    goalPosShoulder = SHOULDER_MIN_POS;
+  }
+  if (goalVelElbow > ELBOW_MAX_VEL){
+    goalVelElbow = ELBOW_MAX_VEL;
+  } else if (goalVelElbow < ELBOW_MIN_VEL) {
+    goalVelElbow = ELBOW_MIN_VEL;
+  }
+  if (goalVelShoulder > SHOULDER_MAX_VEL){
+    goalVelShoulder = SHOULDER_MAX_VEL;
+  } else if (goalVelShoulder < SHOULDER_MIN_VEL) {
+    goalVelShoulder = SHOULDER_MIN_VEL;
+  }
+  // Elbow Parameters Goal Packet /////////////////////////////////////////////////////////////////////////
   elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelElbow));
   elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelElbow));
   elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelElbow));
@@ -33,7 +54,7 @@ int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelE
   elbowParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosElbow));
   elbowParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosElbow));
   elbowParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosElbow));
-  // Shoulder Parameters Goal Packet 
+  // Shoulder Parameters Goal Packet /////////////////////////////////////////////////////////////////////////
   shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelShoulder));
   shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelShoulder));
   shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelShoulder));
@@ -42,7 +63,7 @@ int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelE
   shoulderParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosShoulder));
   shoulderParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosShoulder));
   shoulderParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosShoulder));
-  // Writes packet
+  // Writes packet /////////////////////////////////////////////////////////////////////////
   addParamResult = syncWritePacket.addParam(ID_SHOULDER, shoulderParam);
   addParamResult = syncWritePacket.addParam(ID_ELBOW, elbowParam);
   dxlCommResult = syncWritePacket.txPacket();
@@ -56,8 +77,4 @@ void readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket, int32_t &presV
    presPosElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
    presVelShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
    presPosShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-}
-
-byte isDxlMoving (int ID){
-  //return dxl.readByte(ID,MOVING);
 }

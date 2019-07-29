@@ -19,7 +19,7 @@ void optoForceConfig(){
   configPacket[4] = 1;
   // filter
   // 0:noFilter, 1:500Hz, 2:150Hz, 3:50Hz, 4:15Hz, 5:5Hz, 6:1.5Hz
-  configPacket[5] = 6;
+  configPacket[5] = 5;
   // zero
   // 0:originalValues, 255:zeroSensor
   configPacket[6] = 255;

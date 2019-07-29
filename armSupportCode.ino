@@ -58,14 +58,14 @@ float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     1102
-#define ELBOW_MAX_POS     3146
+#define ELBOW_MIN_POS     912
+#define ELBOW_MAX_POS     2963
 #define SHOULDER_MIN_POS  100
 #define SHOULDER_MAX_POS  4000
 #define ELBOW_MIN_VEL     0
-#define ELBOW_MAX_VEL     300
+#define ELBOW_MAX_VEL     1000
 #define SHOULDER_MIN_VEL  0
-#define SHOULDER_MAX_VEL  300
+#define SHOULDER_MAX_VEL  1000
 /* Initialization of Variables */
 uint8_t elbowParam[8], shoulderParam[8];
 int32_t presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct, presVelAct;
@@ -87,7 +87,7 @@ double goalPoint, maxHeight, minHeight;
 float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
 float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
 #define TIME_INTERVAL 10 // Milliseconds
-#define MASS          1.000
+#define MASS          3.000
 #define DAMPING       0.100
 #define GRAVITY       9.80665
 
@@ -167,15 +167,11 @@ void loop() {
       forwardKine(presVelElbow, presVelShoulder, presShoulderAng, presElbowAng, xPresPosSI, yPresPosSI, xPresVelSI, yPresVelSI);
       admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
       inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
-      if ((goalPosElbow <= ELBOW_MAX_POS && goalPosElbow >= ELBOW_MIN_POS) && (goalPosShoulder <= SHOULDER_MAX_POS && goalPosShoulder >= SHOULDER_MIN_POS)) {
-        if ((goalVelElbow <= ELBOW_MAX_VEL && goalVelElbow >= ELBOW_MIN_VEL) && (goalVelShoulder <= SHOULDER_MAX_VEL && goalVelShoulder >= SHOULDER_MIN_VEL)) {
-          goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
-          //Serial.println(goalReturn);
-          //        if(goalPoint <= maxHeight && goalPoint >= minHeight){
-          //          actuatorControl(goalPoint);
-          //        }
-        }
-      }
+      goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+      //Serial.println(goalReturn);
+      //        if(goalPoint <= maxHeight && goalPoint >= minHeight){
+      //          actuatorControl(goalPoint);
+      //        }
       if (diagMode) {
         diagnosticMode();
       }
