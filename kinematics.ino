@@ -6,10 +6,7 @@
    Script by erick nunez
 */
 
-
-
 void forwardKine(int32_t presVelElbow, int32_t  presVelShoulder, float presShoulderAng, float presElbowAng, float &xPresPosSI, float &yPresPosSI, float &xPresVelSI, float &yPresVelSI){
-//void forwardKine(){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   
   // Convert motor counts to RPM
@@ -26,9 +23,8 @@ void forwardKine(int32_t presVelElbow, int32_t  presVelShoulder, float presShoul
 }
 
 void inverseKine(float xGoalPosSI, float yGoalPosSI, float xGoalVelSI, float yGoalVelSI, float &goalElbowAng, float &goalShoulderAng, float &goalElbowAngVel, float &goalShoulderAngVel, int32_t &goalPosElbow, int32_t &goalPosShoulder, int32_t &goalVelElbow, int32_t &goalVelShoulder){
-//void inverseKine(){
   // position/velocity(SI) --> inverseKine() --> motor counts/speed
- 
+  
   // Solving for joint angles
   goalElbowAng = acos((pow(xGoalPosSI,2) + pow(yGoalPosSI,2) - pow(SHOULDER_ELBOW_LINK,2) - pow(ELBOW_SENSOR_LINK,2))/(2.0 * SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK));
   if (yGoalPosSI < 0){

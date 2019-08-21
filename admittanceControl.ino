@@ -29,18 +29,23 @@
 */
 
 void admittanceControl (float Fx, float xPresPosSI, float xPresVelSI, float &xGoalPosSI, float &xGoalVelSI, float Fy, float yPresPosSI, float yPresVelSI, float &yGoalPosSI, float &yGoalVelSI){
+//void admittanceControl (float Fx, float &xGoalPosSI, float &xGoalVelSI, float Fy, float &yGoalPosSI, float &yGoalVelSI){
   static float dT = 0.001 * TIME_INTERVAL;
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  float Cx1 = ((Fx/DAMPING) - xPresVelSI)*(MASS/DAMPING);
-  float Cx2 = xPresPosSI - Cx1;
-  xGoalPosSI = Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING)*dT + Cx2;
-  xGoalVelSI = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING);
+  float Cx1 = ((Fx/DAMPING))*(MASS/DAMPING);
+  float Cx2 = - Cx1;
+  float xModelPos = Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING)*dT + Cx2;
+  float xModelVel = -(DAMPING/MASS)*Cx1*exp(-(DAMPING/MASS)*dT) + (Fx/DAMPING);
+  xGoalPosSI = xModelPos + xPresPosSI;
+  xGoalVelSI = xModelVel + xPresVelSI;
   
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  float Cy1 = ((Fy/DAMPING) - yPresVelSI)*(MASS/DAMPING);
-  float Cy2 = yPresPosSI - Cy1;
-  yGoalPosSI = Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING)*dT + Cy2;
-  yGoalVelSI = -(DAMPING/MASS)*Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING);
+  float Cy1 = ((Fy/DAMPING))*(MASS/DAMPING);
+  float Cy2 = - Cy1;
+  float yModelPos = Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING)*dT + Cy2;
+  float yModelVel = -(DAMPING/MASS)*Cy1*exp(-(DAMPING/MASS)*dT) + (Fy/DAMPING);
+  yGoalPosSI = yModelPos + yPresPosSI;
+  yGoalVelSI = yModelVel + yPresVelSI;
 
   /*/ Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
   float Cz1 = ((zForce/DAMPING) - zPresVelSI)*(MASS/DAMPING);
