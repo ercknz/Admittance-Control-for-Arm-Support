@@ -11,7 +11,7 @@
 void optoForceConfig(){
   byte configPacket[9];
   uint16_t packetSum = 0;
-  Serial.println(".....configuring.....");
+  //Serial.println(".....configuring.....");
   //header
   configPacket[0] = 170;   configPacket[1] = 0;   configPacket[2] = 50;   configPacket[3] = 3;
   // speed

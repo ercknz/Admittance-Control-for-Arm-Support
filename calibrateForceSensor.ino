@@ -13,9 +13,11 @@ void calibrateForceSensor(float &xCal, float &yCal, float &zCal){
     yCal += FyRaw/samples;
     zCal += FzRaw/samples;
   }
+  /*
   Serial.println(".....Done calibrating sensor.....");
   Serial.print("X Cal:"); Serial.print(xCal); Serial.print("\t");
   Serial.print("Y Cal:"); Serial.print(yCal); Serial.print("\t");  
   Serial.print("Z Cal:"); Serial.print(zCal); Serial.print("\t");  
   Serial.print("\n");
+  */
 }

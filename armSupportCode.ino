@@ -98,7 +98,7 @@ float presElbowAng, presElbowAngVel, presShoulderAng, presShoulderAngVel; //Radi
 float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radians, Rad/s
 
 // Other Variables needed ///////////////////////////////////////////////////////////////////////////
-unsigned long previousTime, currentTime;
+unsigned long previousTime, currentTime, totalTime;
 int i, j, k;
 bool diagMode = true;
 
@@ -124,26 +124,26 @@ void setup() {
   delay(100);
   /* Dynamixel Setup */
   if (portHandler -> openPort()) {
-    Serial.println(".....Opened the Dynamixel Port.....");
+    //Serial.println(".....Opened the Dynamixel Port.....");
   }
   if (portHandler->setBaudRate(BAUDRATE)) {
-    Serial.println(".....Set baudrate.....");
+    //Serial.println(".....Set baudrate.....");
   }
   if (!dxlAbling(POSITION_CONTROL, ENABLE)) {
     // add or remove ! to ENABLE to enable/disable torque
-    Serial.println(".....Enabled motors.....");
+    //Serial.println(".....Enabled motors.....");
   }
   /* Optoforce Serial Connection */
-  Serial.println(".....Creating sensor port.....");
+  //Serial.println(".....Creating sensor port.....");
   Serial1.begin(BAUDRATE);
   delay(100);
-  Serial.println(".....Configuring sensor.....");
+  //Serial.println(".....Configuring sensor.....");
   optoForceConfig();
   delay(100);
-  Serial.println(".....Calibrating sensor.....");
+  //Serial.println(".....Calibrating sensor.....");
   calibrateForceSensor(xCal, yCal, zCal);
-  delay(1000);
-  Serial.println(".....leaving setup.....");
+  delay(2000);
+  //Serial.println(".....leaving setup.....");
 }
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,8 @@ void loop() {
   while (1) {
     currentTime = millis();
     if (currentTime - previousTime >= TIME_INTERVAL) {
-      Serial.print(currentTime - previousTime); Serial.print("\t");
+      totalTime += (currentTime - previousTime);
+      Serial.print(totalTime); Serial.print("\t");
       previousTime = currentTime;
       /* Starts the main loop */
       singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
