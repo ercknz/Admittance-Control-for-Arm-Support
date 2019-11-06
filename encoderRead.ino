@@ -4,9 +4,4 @@
    Script by erick nunez
 */
 
-void isEncoderA(){
-}
-
-void isEncoderB(){
-}
 

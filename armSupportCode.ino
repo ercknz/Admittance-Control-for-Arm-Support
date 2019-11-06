@@ -22,16 +22,15 @@ int16_t xRaw, yRaw, zRaw;
 float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 
-// Encoder Variables ////////////////////////////////////////////////////////////////////////////////
-
 // Dynamixel Variables /////////////////////////////////////////////////////////////////////////////
 /* Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
 #define DEVICEPORT       "3"
 /* Motor Parameters */
-#define ID_SHOULDER      3
-#define ID_ELBOW         7
+#define ID_SHOULDER       3
+#define ID_SHOULDER_SLV   13
+#define ID_ELBOW          7
 /* Control Table Addresses */
 #define ADDRESS_OPERATING_MODE   11
 #define ADDRESS_MAX_POSITION     48
@@ -58,10 +57,10 @@ float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     912
-#define ELBOW_MAX_POS     2963
-#define SHOULDER_MIN_POS  100
-#define SHOULDER_MAX_POS  4000
+#define ELBOW_MIN_POS     1078
+#define ELBOW_MAX_POS     3136
+#define SHOULDER_MIN_POS  458
+#define SHOULDER_MAX_POS  3321
 #define ELBOW_MIN_VEL     0
 #define ELBOW_MAX_VEL     1000
 #define SHOULDER_MIN_VEL  0
@@ -75,7 +74,7 @@ uint8_t dxl_error = 0;
 int     goalReturn;
 int     dxlCommResult = COMM_TX_FAIL;
 
-// Linear Actuator Variables ////////////////////////////////////////////////////////////////////////
+// Elevation Actuator Variables ////////////////////////////////////////////////////////////////////////
 #define ACTUATOR_DIR_PIN  2
 #define ACTUATOR_PWM_PIN  8
 int Kp = 1, Ki = 1, Kd = 0;
@@ -123,27 +122,16 @@ void setup() {
   actuatorPID.SetOutputLimits(-255, 255);
   delay(100);
   /* Dynamixel Setup */
-  if (portHandler -> openPort()) {
-    //Serial.println(".....Opened the Dynamixel Port.....");
-  }
-  if (portHandler->setBaudRate(BAUDRATE)) {
-    //Serial.println(".....Set baudrate.....");
-  }
-  if (!dxlAbling(POSITION_CONTROL, ENABLE)) {
-    // add or remove ! to ENABLE to enable/disable torque
-    //Serial.println(".....Enabled motors.....");
-  }
+  portHandler -> openPort()
+  portHandler->setBaudRate(BAUDRATE)
+  dxlAbling(POSITION_CONTROL, !ENABLE)    // Toggle torque for troubleshooting
   /* Optoforce Serial Connection */
-  //Serial.println(".....Creating sensor port.....");
   Serial1.begin(BAUDRATE);
   delay(100);
-  //Serial.println(".....Configuring sensor.....");
   optoForceConfig();
   delay(100);
-  //Serial.println(".....Calibrating sensor.....");
   calibrateForceSensor(xCal, yCal, zCal);
   delay(2000);
-  //Serial.println(".....leaving setup.....");
 }
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
@@ -153,14 +141,16 @@ void loop() {
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
+  
   /* Main Loop */
   previousTime = millis();
-  while (1) {
+  
+  while (Serial) {
     currentTime = millis();
     if (currentTime - previousTime >= TIME_INTERVAL) {
       totalTime += (currentTime - previousTime);
-      Serial.print(totalTime); Serial.print("\t");
       previousTime = currentTime;
+      
       /* Starts the main loop */
       singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
       readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
@@ -169,13 +159,13 @@ void loop() {
       admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
       inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
       goalReturn = writeGoalPacket(syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
-      //Serial.println(goalReturn);
-      //        if(goalPoint <= maxHeight && goalPoint >= minHeight){
-      //          actuatorControl(goalPoint);
-      //        }
+      
       if (diagMode) {
         diagnosticMode();
       }
     }
   }
+  /* Hold Position Before disabling */
+  delay(2000);
+  dxlAbling(POSITION_CONTROL, DISABLE);
 }
