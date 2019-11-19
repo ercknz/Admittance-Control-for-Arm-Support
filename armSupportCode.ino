@@ -57,17 +57,17 @@ float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Motor Limits */
-#define ELBOW_MIN_POS     1078
-#define ELBOW_MAX_POS     3136
-#define SHOULDER_MIN_POS  458
-#define SHOULDER_MAX_POS  3321
+#define ELBOW_MIN_POS     1023
+#define ELBOW_MAX_POS     3055
+#define SHOULDER_MIN_POS  456
+#define SHOULDER_MAX_POS  3331
 #define ELBOW_MIN_VEL     0
 #define ELBOW_MAX_VEL     1000
 #define SHOULDER_MIN_VEL  0
 #define SHOULDER_MAX_VEL  1000
 /* Initialization of Variables */
 uint8_t elbowParam[8], shoulderParam[8];
-int32_t presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct, presVelAct;
+int32_t presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct, presVelAct; 
 int32_t goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct, goalVelAct;
 bool    addParamResult;
 uint8_t dxl_error = 0;
@@ -122,9 +122,9 @@ void setup() {
   actuatorPID.SetOutputLimits(-255, 255);
   delay(100);
   /* Dynamixel Setup */
-  portHandler -> openPort()
-  portHandler->setBaudRate(BAUDRATE)
-  dxlAbling(POSITION_CONTROL, !ENABLE)    // Toggle torque for troubleshooting
+  portHandler -> openPort();
+  portHandler->setBaudRate(BAUDRATE);
+  dxlAbling(POSITION_CONTROL, !ENABLE);    // Toggle torque for troubleshooting
   /* Optoforce Serial Connection */
   Serial1.begin(BAUDRATE);
   delay(100);

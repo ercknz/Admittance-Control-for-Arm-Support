@@ -11,17 +11,17 @@ void diagnosticMode(){
   
   //Serial.print(FxRaw); Serial.print("\t"); Serial.print(FyRaw); Serial.print("\t"); Serial.print(FzRaw); Serial.print("\t"); 
 
-  //Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); Serial.print(Fz); Serial.print("\t"); 
+  Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); Serial.print(Fz); Serial.print("\t"); 
 
   Serial.print(presPosElbow); Serial.print("\t"); Serial.print(presPosShoulder); Serial.print("\t"); 
 
-  Serial.print(presVelElbow); Serial.print("\t"); Serial.print(presVelShoulder); Serial.print("\t");
+  //Serial.print(presVelElbow); Serial.print("\t"); Serial.print(presVelShoulder); Serial.print("\t");
 
-  //Serial.print(presElbowAng); Serial.print("\t"); Serial.print(presShoulderAng); Serial.print("\t");
+  Serial.print(presElbowAng); Serial.print("\t"); Serial.print(presShoulderAng); Serial.print("\t");
 
   //Serial.print(presElbowAngVel); Serial.print("\t"); Serial.print(presShoulderAngVel); Serial.print("\t");
 
-  //Serial.print(xPresPosSI,4); Serial.print("\t"); Serial.print(yPresPosSI,4); Serial.print("\t");
+  Serial.print(xPresPosSI,4); Serial.print("\t"); Serial.print(yPresPosSI,4); Serial.print("\t");
 
   //Serial.print(xPresVelSI,4); Serial.print("\t"); Serial.print(yPresVelSI,4); Serial.print("\t");
 
