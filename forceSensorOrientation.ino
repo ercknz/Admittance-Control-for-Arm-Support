@@ -6,8 +6,10 @@
 */
 
 void sensorOrientation(float FxRaw, float FyRaw, float FzRaw, int32_t presPosElbow, int32_t presPosShoulder, float &Fx, float &Fy, float &Fz, float &presElbowAng, float &presShoulderAng){
-  presElbowAng     = PI - (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI/180.0);
+  
+  presElbowAng     = (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI/180.0);
   presShoulderAng  = (presPosShoulder) * DEGREES_PER_COUNT * (PI/180.0);
+  
   Fx = FxRaw * (cos(presShoulderAng + presElbowAng + PI/2.0)) + FyRaw * (-sin(presShoulderAng + presElbowAng + PI/2.0));
   Fy = FxRaw * (sin(presShoulderAng + presElbowAng + PI/2.0)) + FyRaw * ( cos(presShoulderAng + presElbowAng + PI/2.0));
   Fz = FzRaw;

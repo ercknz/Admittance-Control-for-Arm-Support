@@ -6,7 +6,7 @@
    Script by erick nunez
 */
 
-void forwardKine(int32_t presVelElbow, int32_t  presVelShoulder, float presShoulderAng, float presElbowAng, float &xPresPosSI, float &yPresPosSI, float &xPresVelSI, float &yPresVelSI){
+void forwardKine(int32_t presVelElbow, int32_t  presVelShoulder, float presShoulderAng, float presElbowAng, float &presElbowAngVel, float &presShoulderAngVel, float &xPresPosSI, float &yPresPosSI, float &xPresVelSI, float &yPresVelSI){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   
   // Convert motor counts to RPM
@@ -36,7 +36,7 @@ void inverseKine(float xGoalPosSI, float yGoalPosSI, float xGoalVelSI, float yGo
   goalShoulderAngVel = (xGoalVelSI * (SHOULDER_ELBOW_LINK * cos(goalShoulderAng) - ELBOW_SENSOR_LINK * cos(goalShoulderAng + goalElbowAng)) + yGoalVelSI * (-SHOULDER_ELBOW_LINK * sin(goalShoulderAng) - ELBOW_SENSOR_LINK * sin(goalShoulderAng + goalElbowAng)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(goalElbowAng));
   
   // Finding goal motor counts from join angles. 
-  goalPosElbow    = ELBOW_MAX_POS - goalElbowAng * (180.0/PI) / DEGREES_PER_COUNT;
+  goalPosElbow    = ELBOW_MIN_POS + goalElbowAng * (180.0/PI) / DEGREES_PER_COUNT;
   goalPosShoulder = goalShoulderAng * (180.0/PI) / DEGREES_PER_COUNT;
   goalVelElbow    = abs(goalElbowAngVel    * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
   goalVelShoulder = abs(goalShoulderAngVel * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);

@@ -14,16 +14,16 @@ void singleOptoForceRead(float xCal, float yCal, float zCal, int16_t &xRaw, int1
   int16_t sensorStatus;
   clearSensorBuffer();
   while (Serial1.available() < 32){} // Reads 2xpacket length incase of a packet shift
-  for (i = 0; i<32; i++){
+  for (int i = 0; i<32; i++){
     rawPacket[i] = Serial1.read();
   }
   // Searches for good packet
-  for (i=0; i<32-12; i++) {
+  for (int i=0; i<32-12; i++) {
     if (rawPacket[i] == header[0]){
       if (rawPacket[i+1] == header[1]){
         if (rawPacket[i+2] == header[2]){
           if (rawPacket[i+3] == header[3]){
-            for (j=0; j<16; j++){
+            for (int j=0; j<16; j++){
               goodPacket[j]=rawPacket[i+j];
             }
             

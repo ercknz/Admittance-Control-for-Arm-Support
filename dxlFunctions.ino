@@ -7,23 +7,19 @@
    script by erick nunez
 */
 
-int dxlAbling(uint8_t mode, uint8_t state) {
+void dxlAbling(uint8_t mode, uint8_t state, uint8_t &dxl_error) {
+  int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_LED, state, &dxl_error);
-  goalReturn += dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_LED, state, &dxl_error);
-  goalReturn += dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_OPERATING_MODE, mode, &dxl_error);
-  goalReturn += dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_OPERATING_MODE, mode, &dxl_error);
-  goalReturn += dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
-  goalReturn += dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
-  goalReturn += dxlCommResult;
-  return goalReturn;
 }
 
-int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVelShoulder, int32_t goalPosShoulder) {
+int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelElbow, int32_t goalPosElbow, int32_t goalVelShoulder, int32_t goalPosShoulder) {
+  int dxlCommResult;
+  uint8_t elbowParam[8], shoulderParam[8];
   // Check limits before writing /////////////////////////////////////////////////////////////////////////
   if (goalVelElbow > ELBOW_MAX_VEL) {
     goalVelElbow = ELBOW_MAX_VEL;
@@ -65,10 +61,11 @@ int writeGoalPacket(dynamixel::GroupSyncWrite &syncWritePacket, int32_t goalVelE
   }
 }
 
-void readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket, int32_t &presVelElbow, int32_t &presPosElbow, int32_t &presVelShoulder, int32_t &presPosShoulder) {
-  dxlCommResult = syncReadPacket.txRxPacket();
+int readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket, int32_t &presVelElbow, int32_t &presPosElbow, int32_t &presVelShoulder, int32_t &presPosShoulder) {
+  int dxlCommResult = syncReadPacket.txRxPacket();
   presVelElbow = -syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY); // Elbow Direction appears to be inversed.
   presPosElbow = syncReadPacket.getData(ID_ELBOW, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
   presVelShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
   presPosShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  return dxlCommResult;
 }

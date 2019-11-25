@@ -7,7 +7,9 @@
 
 void calibrateForceSensor(float &xCal, float &yCal, float &zCal){
   static int samples = 2000.0;
-  for (k = 0; k < samples; k++) {
+  int16_t xRaw, yRaw, zRaw;
+  float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
+  for (int i = 0; i < samples; i++) {
     singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
     xCal += FxRaw/samples;
     yCal += FyRaw/samples;

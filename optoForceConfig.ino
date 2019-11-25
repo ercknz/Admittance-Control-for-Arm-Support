@@ -24,14 +24,14 @@ void optoForceConfig(){
   // 0:originalValues, 255:zeroSensor
   configPacket[6] = 255;
   // check sum 
-  for (i=0; i<7; i++){
+  for (int i=0; i<7; i++){
     packetSum += configPacket[i];
   }
   configPacket[7] = floor(packetSum/256);     
   configPacket[8] = floor(packetSum % 256);
 
   // write config packet
-  for (i = 0; i<9; i++){
+  for (int i = 0; i<9; i++){
     Serial1.write(configPacket[i]);
   }
 }
