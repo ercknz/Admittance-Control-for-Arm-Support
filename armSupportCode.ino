@@ -65,12 +65,12 @@ float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 #define SHOULDER_MAX_VEL  3000
 /* Admitance Control Constants */
 #define TIME_INTERVAL 10 // Milliseconds
-#define MASS          1.000
-#define DAMPING       0.100
+#define MASS          3.000
+#define DAMPING       70.000
 #define GRAVITY       9.80665
 /* Kinematic Constants */
-#define SHOULDER_ELBOW_LINK 0.595
-#define ELBOW_SENSOR_LINK   0.540
+#define SHOULDER_ELBOW_LINK 0.510
+#define ELBOW_SENSOR_LINK   0.505
 static bool diagMode = true;
 
 // Port and Packet variable ///////////////////////////////////////////////////////////////////////////
@@ -100,20 +100,22 @@ void setup() {
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
 void loop() {
-  /* Optoforce Variable Initialization */
+  /* Optoforce Variable Declaration */
   int16_t xRaw, yRaw, zRaw;
   float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
-  /* Dynamixel Variables Initialization */
-  //  motorCountState presMC;
-  //  motorCountState goalMC;
-
-  int32_t presPosShoulder, presVelShoulder, presPosElbow, presVelElbow, presPosAct, presVelAct;
+  /* Data Structures Declaration */
+  //  motorCountStruct  prevMC;         motorCountStruct  goalMC;
+  //  forceStruct       rForces;        forceStruct       forces;
+  //  modelStruct       prevSI;         modelStruct       goalSI;
+  //  angularStruct     prevAng;        angularStruct     goalAng;
+  /* Dynamixel Variables Declaration */
+  int32_t prevPosShoulder, prevVelShoulder, prevPosElbow, prevVelElbow, prevPosAct, prevVelAct;
   int32_t goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct, goalVelAct;
-  /* Admitance Control Variable Initialization */
-  float xPresPosSI, xPresVelSI, yPresPosSI, yPresVelSI, zPresPosSI, zPresVelSI;
+  /* Admitance Control Variable Declaration */
+  float xPrevPosSI, xPrevVelSI, yPrevPosSI, yPrevVelSI, zPrevPosSI, zPrevVelSI;
   float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
-  /* Kinematic Variable Initialization */
-  float presElbowAng, presElbowAngVel, presShoulderAng, presShoulderAngVel; //Radians, Rad/s
+  /* Kinematic Variable Declaration */
+  float prevElbowAng, prevElbowAngVel, prevShoulderAng, prevShoulderAngVel; //Radians, Rad/s
   float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radians, Rad/s
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
@@ -131,9 +133,23 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
 
-  /* Main Loop */
+  /* Initialize Model */
   previousTime = millis();
+  singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
+  readPresentPacket(syncReadPacket, prevVelElbow, prevPosElbow, prevVelShoulder, prevPosShoulder);
+  sensorOrientation(FxRaw, FyRaw, FzRaw, prevPosElbow, prevPosShoulder, Fx, Fy, Fz, prevElbowAng, prevShoulderAng);
+  forwardKine(prevVelElbow, prevVelShoulder, prevShoulderAng, prevElbowAng, prevElbowAngVel, prevShoulderAngVel, xPrevPosSI, yPrevPosSI, xPrevVelSI, yPrevVelSI);
+  admittanceControlModel(Fx, xPrevPosSI, xPrevVelSI, xGoalPosSI, xGoalVelSI, Fy, yPrevPosSI, yPrevVelSI, yGoalPosSI, yGoalVelSI);
 
+/*
+  singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, rForces);
+  readPresentPacket(syncReadPacket, prevMC);
+  sensorOrientation(rForces, prevMC, oForces, prevAng);
+  forwardKine(prevMC, prevAng, prevSI);
+  admittanceControlModel(forces, prevSI, goalSI);
+  */
+
+  /* Main Loop */
   while (Serial) {
     currentTime = millis();
     if (currentTime - previousTime >= TIME_INTERVAL) {
@@ -142,10 +158,13 @@ void loop() {
 
       /* Starts the main loop */
       singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
-      readPresentPacket(syncReadPacket, presVelElbow, presPosElbow, presVelShoulder, presPosShoulder);
-      sensorOrientation(FxRaw, FyRaw, FzRaw, presPosElbow, presPosShoulder, Fx, Fy, Fz, presElbowAng, presShoulderAng);
-      forwardKine(presVelElbow, presVelShoulder, presShoulderAng, presElbowAng, presElbowAngVel, presShoulderAngVel, xPresPosSI, yPresPosSI, xPresVelSI, yPresVelSI);
-      admittanceControl(Fx, xPresPosSI, xPresVelSI, xGoalPosSI, xGoalVelSI, Fy, yPresPosSI, yPresVelSI, yGoalPosSI, yGoalVelSI);
+      readPresentPacket(syncReadPacket, prevVelElbow, prevPosElbow, prevVelShoulder, prevPosShoulder);
+      sensorOrientation(FxRaw, FyRaw, FzRaw, prevPosElbow, prevPosShoulder, Fx, Fy, Fz, prevElbowAng, prevShoulderAng);
+      //forwardKine(prevVelElbow, prevVelShoulder, prevShoulderAng, prevElbowAng, prevElbowAngVel, prevShoulderAngVel, xPrevPosSI, yPrevPosSI, xPrevVelSI, yPrevVelSI);
+      xPrevPosSI = xGoalPosSI;  xPrevVelSI = xGoalVelSI;
+      yPrevPosSI = yGoalPosSI;  yPrevVelSI = yGoalVelSI;
+
+      admittanceControlModel(Fx, xPrevPosSI, xPrevVelSI, xGoalPosSI, xGoalVelSI, Fy, yPrevPosSI, yPrevVelSI, yGoalPosSI, yGoalVelSI);
       inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
       goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
 
@@ -156,31 +175,31 @@ void loop() {
 
         //Serial.print(FxRaw); Serial.print("\t"); Serial.print(FyRaw); Serial.print("\t"); Serial.print(FzRaw); Serial.print("\t");
 
-        //Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); Serial.print(Fz); Serial.print("\t");
+        Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); //Serial.print(Fz); Serial.print("\t");
 
-        //Serial.print(presPosElbow); Serial.print("\t"); Serial.print(presPosShoulder); Serial.print("\t");
+        Serial.print(prevPosElbow); Serial.print("\t"); Serial.print(prevPosShoulder); Serial.print("\t");
 
-        //Serial.print(presVelElbow); Serial.print("\t"); Serial.print(presVelShoulder); Serial.print("\t");
+        Serial.print(prevVelElbow); Serial.print("\t"); Serial.print(prevVelShoulder); Serial.print("\t");
 
-        //Serial.print(presElbowAng); Serial.print("\t"); Serial.print(presShoulderAng); Serial.print("\t");
+        //Serial.print(prevElbowAng); Serial.print("\t"); Serial.print(prevShoulderAng); Serial.print("\t");
 
-        //Serial.print(presElbowAngVel); Serial.print("\t"); Serial.print(presShoulderAngVel); Serial.print("\t");
+        //Serial.print(prevElbowAngVel); Serial.print("\t"); Serial.print(prevShoulderAngVel); Serial.print("\t");
 
-        //Serial.print(xPresPosSI,4); Serial.print("\t"); Serial.print(yPresPosSI,4); Serial.print("\t");
+        Serial.print(xPrevPosSI, 4); Serial.print("\t"); Serial.print(yPrevPosSI, 4); Serial.print("\t");
 
-        //Serial.print(xPresVelSI,4); Serial.print("\t"); Serial.print(yPresVelSI,4); Serial.print("\t");
+        Serial.print(xPrevVelSI,4); Serial.print("\t"); Serial.print(yPrevVelSI,4); Serial.print("\t");
 
-        //Serial.print(xGoalPosSI,4); Serial.print("\t"); Serial.print(yGoalPosSI,4); Serial.print("\t");
+        Serial.print(xGoalPosSI, 4); Serial.print("\t"); Serial.print(yGoalPosSI, 4); Serial.print("\t");
 
-        //Serial.print(xGoalVelSI,4); Serial.print("\t"); Serial.print(yGoalVelSI,4); Serial.print("\t");
+        Serial.print(xGoalVelSI,4); Serial.print("\t"); Serial.print(yGoalVelSI,4); Serial.print("\t");
 
         //Serial.print(goalElbowAng); Serial.print("\t"); Serial.print(goalShoulderAng); Serial.print("\t");
 
         //Serial.print(goalElbowAngVel); Serial.print("\t"); Serial.print(goalShoulderAngVel); Serial.print("\t");
 
-        //Serial.print(goalPosElbow); Serial.print("\t"); Serial.print(goalPosShoulder); Serial.print("\t");
+        Serial.print(goalPosElbow); Serial.print("\t"); Serial.print(goalPosShoulder); Serial.print("\t");
 
-        //Serial.print(goalVelElbow); Serial.print("\t"); Serial.print(goalVelShoulder); Serial.print("\t");
+        Serial.print(goalVelElbow); Serial.print("\t"); Serial.print(goalVelShoulder); Serial.print("\t");
 
         //Serial.print(currentTime-previousTime); Serial.print("\t");
         Serial.print(goalReturn); Serial.print("\n");

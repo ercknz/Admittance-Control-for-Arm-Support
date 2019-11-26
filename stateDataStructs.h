@@ -14,25 +14,25 @@ typedef struct{
   int32_t elbowVel;
   int32_t shldrPos;
   int32_t shldrVel;
-} motorCountState;
+} motorCountStruct;
 
 typedef struct{
   float X;
   float Y;
   float Z;
-} forceReadings;
+} forceStruct;
 
 typedef struct{
   float X;
   float Y;
   float U;
   float V;
-} modelStateSI;
+} modelStruct;
 
 typedef struct{
   float elbowAng;
   float elbowAVel;
   float shldrAng;
   float shldrAVel;
-} angularState;
+} angularStruct;
 
