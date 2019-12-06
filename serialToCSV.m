@@ -14,6 +14,7 @@ secs = input('Collection time duration in Secs? ');
 s1 = serial('COM24');
 s1.BaudRate = 115200;
 %% Waits for data
+disp('........opening port...........');
 fopen(s1);
 s1.ReadAsyncMode = 'continuous';
 readasync(s1);
