@@ -177,13 +177,13 @@ void loop() {
 
         Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); //Serial.print(Fz); Serial.print("\t");
 
-        Serial.print(prevPosElbow); Serial.print("\t"); Serial.print(prevPosShoulder); Serial.print("\t");
+        //Serial.print(prevPosElbow); Serial.print("\t"); Serial.print(prevPosShoulder); Serial.print("\t");
 
-        Serial.print(prevVelElbow); Serial.print("\t"); Serial.print(prevVelShoulder); Serial.print("\t");
+        //Serial.print(prevVelElbow); Serial.print("\t"); Serial.print(prevVelShoulder); Serial.print("\t");
 
-        //Serial.print(prevElbowAng); Serial.print("\t"); Serial.print(prevShoulderAng); Serial.print("\t");
+        Serial.print(prevElbowAng); Serial.print("\t"); Serial.print(prevShoulderAng); Serial.print("\t");
 
-        //Serial.print(prevElbowAngVel); Serial.print("\t"); Serial.print(prevShoulderAngVel); Serial.print("\t");
+        Serial.print(prevElbowAngVel); Serial.print("\t"); Serial.print(prevShoulderAngVel); Serial.print("\t");
 
         Serial.print(xPrevPosSI, 4); Serial.print("\t"); Serial.print(yPrevPosSI, 4); Serial.print("\t");
 
@@ -193,13 +193,13 @@ void loop() {
 
         Serial.print(xGoalVelSI,4); Serial.print("\t"); Serial.print(yGoalVelSI,4); Serial.print("\t");
 
-        //Serial.print(goalElbowAng); Serial.print("\t"); Serial.print(goalShoulderAng); Serial.print("\t");
+        Serial.print(goalElbowAng); Serial.print("\t"); Serial.print(goalShoulderAng); Serial.print("\t");
 
-        //Serial.print(goalElbowAngVel); Serial.print("\t"); Serial.print(goalShoulderAngVel); Serial.print("\t");
+        Serial.print(goalElbowAngVel); Serial.print("\t"); Serial.print(goalShoulderAngVel); Serial.print("\t");
 
-        Serial.print(goalPosElbow); Serial.print("\t"); Serial.print(goalPosShoulder); Serial.print("\t");
+        //Serial.print(goalPosElbow); Serial.print("\t"); Serial.print(goalPosShoulder); Serial.print("\t");
 
-        Serial.print(goalVelElbow); Serial.print("\t"); Serial.print(goalVelShoulder); Serial.print("\t");
+        //Serial.print(goalVelElbow); Serial.print("\t"); Serial.print(goalVelShoulder); Serial.print("\t");
 
         //Serial.print(currentTime-previousTime); Serial.print("\t");
         Serial.print(goalReturn); Serial.print("\n");

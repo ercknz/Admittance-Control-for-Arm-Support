@@ -1,20 +1,20 @@
-function [x,y,u,v] = armSupportFKine(qE, qS, qDotE, qDotS)
+function [X,Y,U,V] = armSupportFKine(qE, qS, qDotE, qDotS)
 %% Arm Support Forward Kinematics
 % This function is used to calculate the position and velocity of the end
 % effector of the robot in the workpace given the joint angles and
 % velocities.
 %
 % Script by erick nunez
-%%
-presElbowAngVel    = presVelElbow    * RPM_PER_COUNT * (2.0 * PI / 60.0);
-presShoulderAngVel = presVelShoulder * RPM_PER_COUNT * (2.0 * PI / 60.0);
 
+%% constants
+L1 = 0.510;
+L2 = 0.505;
 
-xPresPosSI = SHOULDER_ELBOW_LINK * cos(presShoulderAng) + ELBOW_SENSOR_LINK * cos(presShoulderAng+presElbowAng);
-yPresPosSI = SHOULDER_ELBOW_LINK * sin(presShoulderAng) + ELBOW_SENSOR_LINK * sin(presShoulderAng+presElbowAng);
+%% Calculate
+X = L1 * cos(qS) + L2 * cos(qS+qE);
+Y = L1 * sin(qS) + L2 * sin(qS+qE);
 
-
-xPresVelSI = presShoulderAngVel * (-SHOULDER_ELBOW_LINK * sin(presShoulderAng) - ELBOW_SENSOR_LINK * sin(presShoulderAng + presElbowAng)) + presElbowAngVel * (-ELBOW_SENSOR_LINK * sin(presShoulderAng + presElbowAng));
-yPresVelSI = presShoulderAngVel * ( SHOULDER_ELBOW_LINK * cos(presShoulderAng) + ELBOW_SENSOR_LINK * cos(presShoulderAng + presElbowAng)) + presElbowAngVel * ( ELBOW_SENSOR_LINK * cos(presShoulderAng + presElbowAng));
+U = qDotS * (-L1 * sin(qS) - L2 * sin(qS + qE)) + qDotE * (-L2 * sin(qS + qE));
+V = qDotS * ( L1 * cos(qS) + L2 * cos(qS + qE)) + qDotE * ( L2 * cos(qS + qE));
 
 end

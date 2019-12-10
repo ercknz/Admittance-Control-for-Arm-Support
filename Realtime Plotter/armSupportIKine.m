@@ -1,4 +1,4 @@
-function [qE, qS, qDot] = armSupportIKine(x,y,u,v)
+function [qE, qS, qDotE, qDotS] = armSupportIKine(X,Y,U,V)
 %% Arm Support Inverse Kinematics
 % This function is used to calculate the joint angles and angular
 % velocities of the robot given the position and velocity of the object in
@@ -6,18 +6,18 @@ function [qE, qS, qDot] = armSupportIKine(x,y,u,v)
 %
 % Script by erick nunez
 
-goalElbowAng = acos((pow(xGoalPosSI,2) + pow(yGoalPosSI,2) - pow(SHOULDER_ELBOW_LINK,2) - pow(ELBOW_SENSOR_LINK,2))/(2.0 * SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK));
-if yGoalPosSI < 0
-    goalShoulderAng = atan2(yGoalPosSI,xGoalPosSI) - atan2((ELBOW_SENSOR_LINK * sin(goalElbowAng)),(SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK * cos(goalElbowAng))) + 2.0*PI;
-else
-    goalShoulderAng = atan2(yGoalPosSI,xGoalPosSI) - atan2((ELBOW_SENSOR_LINK * sin(goalElbowAng)),(SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK * cos(goalElbowAng)));
-end
-goalElbowAngVel    = (xGoalVelSI * (ELBOW_SENSOR_LINK * cos(goalShoulderAng + goalElbowAng)) + yGoalVelSI * (ELBOW_SENSOR_LINK * sin(goalShoulderAng + goalElbowAng)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(goalElbowAng));
-goalShoulderAngVel = (xGoalVelSI * (SHOULDER_ELBOW_LINK * cos(goalShoulderAng) - ELBOW_SENSOR_LINK * cos(goalShoulderAng + goalElbowAng)) + yGoalVelSI * (-SHOULDER_ELBOW_LINK * sin(goalShoulderAng) - ELBOW_SENSOR_LINK * sin(goalShoulderAng + goalElbowAng)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(goalElbowAng));
+%% Constants
+L1 = 0.510;
+L2 = 0.505;
 
-goalPosElbow    = ELBOW_MIN_POS + goalElbowAng * (180.0/PI) / DEGREES_PER_COUNT;
-goalPosShoulder = goalShoulderAng * (180.0/PI) / DEGREES_PER_COUNT;
-goalVelElbow    = abs(goalElbowAngVel    * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
-goalVelShoulder = abs(goalShoulderAngVel * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+%% Calculation
+qE = acos((X^2 + Y^2 - L1^2 - L2^2)/(2.0 * L1 * L2));
+if Y < 0
+    qS = atan2(Y,X) - atan2((L2 * sin(qE)),(L1 + L2 * cos(qE))) + 2.0*PI;
+else
+    qS = atan2(Y,X) - atan2((L2 * sin(qE)),(L1 + L2 * cos(qE)));
+end
+qDotE    = (U * (L2 * cos(qS + qE)) + V * (L2 * sin(qS + qE)))/(L1 * L2 * sin(qE));
+qDotS = (U * (L1 * cos(qS) - L2 * cos(qS + qE)) + V * (-L1 * sin(qS) - L2 * sin(qS + qE)))/(L1 * L2 * sin(qE));
 
 end
