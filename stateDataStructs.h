@@ -10,29 +10,22 @@
 */
 
 typedef struct{
-  int32_t elbowPos;
-  int32_t elbowVel;
-  int32_t shldrPos;
-  int32_t shldrVel;
-} motorCountStruct;
-
-typedef struct{
   float X;
   float Y;
   float Z;
 } forceStruct;
 
 typedef struct{
-  float X;
-  float Y;
-  float U;
-  float V;
-} modelStruct;
+  float x;
+  float y;
+  float xDot;
+  float yDot;
+} modelSpace;
 
 typedef struct{
-  float elbowAng;
-  float elbowAVel;
-  float shldrAng;
-  float shldrAVel;
-} angularStruct;
+  float q1;       // Shoulder Angle
+  float q1Dot;    // Shoulder Angular Velocity
+  float q2;       // Elbow Angle
+  float q2Dot;    // Elbow Angular Velocity
+} jointSpace;
 

@@ -1,4 +1,4 @@
-function [X,Y,U,V] = armSupportFKine(qE, qS, qDotE, qDotS)
+function [X,Y,Xdot,Ydot] = armSupportFKine(qS, qE, qDotS, qDotE)
 %% Arm Support Forward Kinematics
 % This function is used to calculate the position and velocity of the end
 % effector of the robot in the workpace given the joint angles and
@@ -14,7 +14,7 @@ L2 = 0.505;
 X = L1 * cos(qS) + L2 * cos(qS+qE);
 Y = L1 * sin(qS) + L2 * sin(qS+qE);
 
-U = qDotS * (-L1 * sin(qS) - L2 * sin(qS + qE)) + qDotE * (-L2 * sin(qS + qE));
-V = qDotS * ( L1 * cos(qS) + L2 * cos(qS + qE)) + qDotE * ( L2 * cos(qS + qE));
+Xdot = qDotS * (-L1 * sin(qS) - L2 * sin(qS + qE)) + qDotE * (-L2 * sin(qS + qE));
+Ydot = qDotS * ( L1 * cos(qS) + L2 * cos(qS + qE)) + qDotE * ( L2 * cos(qS + qE));
 
 end

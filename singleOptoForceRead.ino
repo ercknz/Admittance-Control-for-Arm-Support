@@ -7,7 +7,8 @@
    Script by erick nunez
 */
 
-void singleOptoForceRead(float xCal, float yCal, float zCal, int16_t &xRaw, int16_t &yRaw, int16_t &zRaw, float &FxRaw, float &FyRaw, float &FzRaw){
+forceStruct singleOptoForceRead(float xCal, float yCal, float zCal){
+  forceStruct force;
   byte rawPacket[32];
   byte goodPacket[16];
   static byte header[4] = {170, 7, 8, 10};
@@ -29,18 +30,19 @@ void singleOptoForceRead(float xCal, float yCal, float zCal, int16_t &xRaw, int1
             
             sensorStatus = bytesToCounts(goodPacket[6], goodPacket[7]);
             
-            xRaw = bytesToCounts(goodPacket[8], goodPacket[9]);
-            yRaw = bytesToCounts(goodPacket[10], goodPacket[11]);
-            zRaw = bytesToCounts(goodPacket[12], goodPacket[13]);
+            int16_t xRaw = bytesToCounts(goodPacket[8], goodPacket[9]);
+            int16_t yRaw = bytesToCounts(goodPacket[10], goodPacket[11]);
+            int16_t zRaw = bytesToCounts(goodPacket[12], goodPacket[13]);
             
-            FxRaw = xRaw/xSensitivity - xCal;
-            FyRaw = yRaw/ySensitivity - yCal;
-            FzRaw = zRaw/zSensitivity - zCal;
+            force.X = xRaw/xSensitivity - xCal;
+            force.Y = yRaw/ySensitivity - yCal;
+            force.Z = zRaw/zSensitivity - zCal;
           }
         }
       }
     }
   }
+  return force;
 }
 
 void clearSensorBuffer(){

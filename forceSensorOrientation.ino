@@ -5,12 +5,11 @@
    Script by erick nunez
 */
 
-void sensorOrientation(float FxRaw, float FyRaw, float FzRaw, int32_t presPosElbow, int32_t presPosShoulder, float &Fx, float &Fy, float &Fz, float &presElbowAng, float &presShoulderAng){
-  
-  presElbowAng     = (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI/180.0);
-  presShoulderAng  = (presPosShoulder) * DEGREES_PER_COUNT * (PI/180.0);
-  
-  Fx = FxRaw * (cos(presShoulderAng + presElbowAng + PI/2.0)) + FyRaw * (-sin(presShoulderAng + presElbowAng + PI/2.0));
-  Fy = FxRaw * (sin(presShoulderAng + presElbowAng + PI/2.0)) + FyRaw * ( cos(presShoulderAng + presElbowAng + PI/2.0));
-  Fz = FzRaw;
+forceStruct sensorOrientation(forceStruct rawF, jointSpace pres){
+  forceStruct globalF;
+  globalF.X = rawF.X * (cos(pres.q1 + pres.q2 + PI/2.0)) + rawF.Y * (-sin(pres.q1 + pres.q2 + PI/2.0));
+  globalF.Y = rawF.X * (sin(pres.q1 + pres.q2 + PI/2.0)) + rawF.Y * ( cos(pres.q1 + pres.q2 + PI/2.0));
+  globalF.Z = rawF.Z;
+
+  return globalF;
 }

@@ -8,11 +8,11 @@
 void calibrateForceSensor(float &xCal, float &yCal, float &zCal){
   static int samples = 2000.0;
   int16_t xRaw, yRaw, zRaw;
-  float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
+  forceStruct F;
   for (int i = 0; i < samples; i++) {
-    singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
-    xCal += FxRaw/samples;
-    yCal += FyRaw/samples;
-    zCal += FzRaw/samples;
+    F = singleOptoForceRead(xCal, yCal, zCal);
+    xCal += F.X/samples;
+    yCal += F.Y/samples;
+    zCal += F.Z/samples;
   }
 }

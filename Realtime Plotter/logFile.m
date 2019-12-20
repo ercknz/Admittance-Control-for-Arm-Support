@@ -30,9 +30,15 @@ methods
         if ~exist(obj.folderPath,'dir')
             mkdir(obj.folderPath)
         end
-        obj.fileTime = datestr(now,'mmddyyHHMM');
-        obj.fullFileName = [obj.folderPath, obj.fileName, obj.fileTime, obj.fileExt];
     end
+        
+    function obj = createLog(obj)
+        if isempty(obj.fullFileName)
+            obj.fileTime = datestr(now,'mmddyyHHMM');
+            obj.fullFileName = [obj.folderPath, obj.fileName, obj.fileTime, obj.fileExt];
+        end
+    end
+    
     function obj = fileHeaders(obj,headers)
         if obj.lineNum == 1
             obj.frameLength = length(headers);
@@ -51,6 +57,14 @@ methods
             obj.lineNum = obj.lineNum + 1;
         end
     end
+    
+    function obj = deleteLog(obj)
+        if ~isempty(obj.fullFileName)
+            obj.fileTime = [];
+            obj.fullFileName = [];
+        end
+    end
+    
     function fullFileName = getName(obj)
         fullFileName = obj.fullFileName;
     end

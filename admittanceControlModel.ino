@@ -28,22 +28,23 @@
    Script by erick nunez
 */
 
-void admittanceControlModel (float Fx, float xPresPosSI, float xPresVelSI, float &xGoalPosSI, float &xGoalVelSI, float Fy, float yPresPosSI, float yPresVelSI, float &yGoalPosSI, float &yGoalVelSI) {
+modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
+  modelSpace goal;
   // Boundaries for Model /////////////////////////////////////////////////////////////////////////
   static float outBoundary = SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK;
   static float inBoundary = abs(SHOULDER_ELBOW_LINK - ELBOW_SENSOR_LINK);
   static float dT = 0.001 * TIME_INTERVAL;
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  float Cx1 = ((Fx / DAMPING) - xPresVelSI) * (MASS / DAMPING);
-  float Cx2 = xPresPosSI - Cx1;
-  xGoalPosSI = Cx1 * exp(-(DAMPING / MASS) * dT) + (Fx / DAMPING) * dT + Cx2;
-  xGoalVelSI = (Fx / DAMPING) - (DAMPING / MASS) * Cx1 * exp(-(DAMPING / MASS) * dT);
+  float Cx1 = ((F.X / DAMPING) - init.xDot) * (MASS / DAMPING);
+  float Cx2 = init.x - Cx1;
+  goal.x    = Cx1 * exp(-(DAMPING / MASS) * dT) + (F.X / DAMPING) * dT + Cx2;
+  goal.xDot = (F.X / DAMPING) - (DAMPING / MASS) * Cx1 * exp(-(DAMPING / MASS) * dT);
 
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  float Cy1 = ((Fy / DAMPING) - yPresVelSI) * (MASS / DAMPING);
-  float Cy2 = yPresPosSI - Cy1;
-  yGoalPosSI = Cy1 * exp(-(DAMPING / MASS) * dT) + (Fy / DAMPING) * dT + Cy2;
-  yGoalVelSI = (Fy / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * dT);
+  float Cy1 = ((F.Y / DAMPING) - init.yDot) * (MASS / DAMPING);
+  float Cy2 = init.y - Cy1;
+  goal.y    = Cy1 * exp(-(DAMPING / MASS) * dT) + (F.Y / DAMPING) * dT + Cy2;
+  goal.yDot = (F.Y / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * dT);
 
   /*/ Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
     float Cz1 = ((zForce/DAMPING) - zPresVelSI)*(MASS/DAMPING);
@@ -52,9 +53,10 @@ void admittanceControlModel (float Fx, float xPresPosSI, float xPresVelSI, float
     zGoalVelSI = -(DAMPING/MASS)*Cz1*exp(-(DAMPING/MASS)*TIME) + (zForce/DAMPING); */
 
   // Check Model Limits ////////////////////////////////////////////////////////////////////////////
-  float goalXY = sqrt(pow(xGoalPosSI, 2) + pow(yGoalPosSI, 2));
+  float goalXY = sqrt(pow(goal.x, 2) + pow(goal.y, 2));
   if (goalXY > outBoundary || goalXY < inBoundary) {
-    xGoalPosSI = xPresPosSI;
-    yGoalPosSI = yPresPosSI;
+    goal.x = init.x;
+    goal.y = init.y;
   }
+  return goal;
 }

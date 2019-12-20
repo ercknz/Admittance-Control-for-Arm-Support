@@ -6,38 +6,32 @@
    Script by erick nunez
 */
 
-void forwardKine(int32_t presVelElbow, int32_t  presVelShoulder, float presShoulderAng, float presElbowAng, float &presElbowAngVel, float &presShoulderAngVel, float &xPresPosSI, float &yPresPosSI, float &xPresVelSI, float &yPresVelSI){
+modelSpace forwardKine(jointSpace Q){
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
-  
-  // Convert motor counts to RPM
-  presElbowAngVel    = presVelElbow    * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  presShoulderAngVel = presVelShoulder * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  
+  modelSpace M;
   // Compute the XY positions from angles 
-  xPresPosSI = SHOULDER_ELBOW_LINK * cos(presShoulderAng) + ELBOW_SENSOR_LINK * cos(presShoulderAng+presElbowAng);
-  yPresPosSI = SHOULDER_ELBOW_LINK * sin(presShoulderAng) + ELBOW_SENSOR_LINK * sin(presShoulderAng+presElbowAng);
+  M.x = SHOULDER_ELBOW_LINK * cos(Q.q1) + ELBOW_SENSOR_LINK * cos(Q.q1 + Q.q2);
+  M.y = SHOULDER_ELBOW_LINK * sin(Q.q1) + ELBOW_SENSOR_LINK * sin(Q.q1 + Q.q2);
   
   // Multiply velocities with Jacobian Matrix to find the XY velocities
-  xPresVelSI = presShoulderAngVel * (-SHOULDER_ELBOW_LINK * sin(presShoulderAng) - ELBOW_SENSOR_LINK * sin(presShoulderAng + presElbowAng)) + presElbowAngVel * (-ELBOW_SENSOR_LINK * sin(presShoulderAng + presElbowAng));
-  yPresVelSI = presShoulderAngVel * ( SHOULDER_ELBOW_LINK * cos(presShoulderAng) + ELBOW_SENSOR_LINK * cos(presShoulderAng + presElbowAng)) + presElbowAngVel * ( ELBOW_SENSOR_LINK * cos(presShoulderAng + presElbowAng));
+  M.xDot = Q.q1Dot * (-SHOULDER_ELBOW_LINK * sin(Q.q1) - ELBOW_SENSOR_LINK * sin(Q.q1 + Q.q2)) + Q.q2Dot * (-ELBOW_SENSOR_LINK * sin(Q.q1 + Q.q2));
+  M.yDot = Q.q1Dot * ( SHOULDER_ELBOW_LINK * cos(Q.q1) + ELBOW_SENSOR_LINK * cos(Q.q1 + Q.q2)) + Q.q2Dot * ( ELBOW_SENSOR_LINK * cos(Q.q1 + Q.q2));
+  
+  return M;
 }
 
-void inverseKine(float xGoalPosSI, float yGoalPosSI, float xGoalVelSI, float yGoalVelSI, float &goalElbowAng, float &goalShoulderAng, float &goalElbowAngVel, float &goalShoulderAngVel, int32_t &goalPosElbow, int32_t &goalPosShoulder, int32_t &goalVelElbow, int32_t &goalVelShoulder){
+jointSpace inverseKine(modelSpace M){
   // position/velocity(SI) --> inverseKine() --> motor counts/speed
-  
+  jointSpace Q;
   // Solving for joint angles
-  goalElbowAng = acos((pow(xGoalPosSI,2) + pow(yGoalPosSI,2) - pow(SHOULDER_ELBOW_LINK,2) - pow(ELBOW_SENSOR_LINK,2))/(2.0 * SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK));
-  if (yGoalPosSI < 0){
-    goalShoulderAng = atan2(yGoalPosSI,xGoalPosSI) - atan2((ELBOW_SENSOR_LINK * sin(goalElbowAng)),(SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK * cos(goalElbowAng))) + 2.0*PI;
+  Q.q2 = acos((pow(M.x,2) + pow(M.y,2) - pow(SHOULDER_ELBOW_LINK,2) - pow(ELBOW_SENSOR_LINK,2))/(2.0 * SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK));
+  if (M.y < 0){
+    Q.q1 = atan2(M.y, M.x) - atan2((ELBOW_SENSOR_LINK * sin(Q.q2)),(SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK * cos(Q.q2))) + 2.0*PI;
   } else {
-    goalShoulderAng = atan2(yGoalPosSI,xGoalPosSI) - atan2((ELBOW_SENSOR_LINK * sin(goalElbowAng)),(SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK * cos(goalElbowAng)));
+    Q.q1 = atan2(M.y, M.x) - atan2((ELBOW_SENSOR_LINK * sin(Q.q2)),(SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK * cos(Q.q2)));
   }
-  goalElbowAngVel    = (xGoalVelSI * (ELBOW_SENSOR_LINK * cos(goalShoulderAng + goalElbowAng)) + yGoalVelSI * (ELBOW_SENSOR_LINK * sin(goalShoulderAng + goalElbowAng)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(goalElbowAng));
-  goalShoulderAngVel = (xGoalVelSI * (SHOULDER_ELBOW_LINK * cos(goalShoulderAng) - ELBOW_SENSOR_LINK * cos(goalShoulderAng + goalElbowAng)) + yGoalVelSI * (-SHOULDER_ELBOW_LINK * sin(goalShoulderAng) - ELBOW_SENSOR_LINK * sin(goalShoulderAng + goalElbowAng)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(goalElbowAng));
-  
-  // Finding goal motor counts from join angles. 
-  goalPosElbow    = ELBOW_MIN_POS + goalElbowAng * (180.0/PI) / DEGREES_PER_COUNT;
-  goalPosShoulder = goalShoulderAng * (180.0/PI) / DEGREES_PER_COUNT;
-  goalVelElbow    = abs(goalElbowAngVel    * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
-  goalVelShoulder = abs(goalShoulderAngVel * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  Q.q2Dot = (M.xDot * (ELBOW_SENSOR_LINK * cos(Q.q1 + Q.q2)) + M.yDot * (ELBOW_SENSOR_LINK * sin(Q.q1 + Q.q2)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(Q.q2));
+  Q.q1Dot = (M.xDot * (SHOULDER_ELBOW_LINK * cos(Q.q1) - ELBOW_SENSOR_LINK * cos(Q.q1 + Q.q2)) + M.yDot * (-SHOULDER_ELBOW_LINK * sin(Q.q1) - ELBOW_SENSOR_LINK * sin(Q.q1 + Q.q2)))/(SHOULDER_ELBOW_LINK * ELBOW_SENSOR_LINK * sin(Q.q2));
+
+  return Q;
 }
