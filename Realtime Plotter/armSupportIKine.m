@@ -12,11 +12,11 @@ L2 = 0.505;
 
 %% Calculation
 qE = acos((X^2 + Y^2 - L1^2 - L2^2)/(2*L1*L2));
-if Y < 0
-    qS = atan2(Y,X) - atan2((L2 * sin(qE)),(L1 + L2 * cos(qE))) + 2*pi;
-else
-    qS = atan2(Y,X) - atan2((L2 * sin(qE)),(L1 + L2 * cos(qE)));
+qS = atan2(Y,X) - asin((L2*sin(qE))/(sqrt(X^2 + Y^2)));
+if qS<0
+    qS = qS + 2*pi;
 end
+
 qDotE    = (Xdot * (L2 * cos(qS + qE)) + Ydot * (L2 * sin(qS + qE)))/(L1 * L2 * sin(qE));
 qDotS = (Xdot * (L1 * cos(qS) - L2 * cos(qS + qE)) + Ydot * (-L1 * sin(qS) - L2 * sin(qS + qE)))/(L1 * L2 * sin(qE));
 

@@ -4,13 +4,13 @@ function F = sensorOrientation(rawForceX, rawForceY, q1, q2)
 % 
 % Created 1/24/2019
 % Script by erick nunez
+
+%% Rotation Matrix
 Rz = @(theta) [cos(theta), -sin(theta), 0;
                sin(theta),  cos(theta), 0;
                0,           0,          1];
            
+%% Finds Global forces           
 f = [rawForceX, rawForceY, 0]';
 F = Rz(q1)*Rz(q2)*Rz(pi/2)*f;
-
-% globalFx = rawForceX * (cos(q1 + q2 - pi/2)) + rawForceY * (-sin(q1 + q2 - pi/2));
-% globalFy = rawForceX * (sin(q1 + q2 - pi/2)) + rawForceY * ( cos(q1 + q2 - pi/2));
 end

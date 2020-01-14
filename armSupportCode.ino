@@ -17,9 +17,9 @@
 
 // Constants ////////////////////////////////////////////////////////////////////////////////////////
 /* OptoForce Constants */
-#define xSensitivity 16.450
-#define ySensitivity 18.420
-#define zSensitivity 1.590
+#define xSensitivity 20.180
+#define ySensitivity 20.250
+#define zSensitivity 1.610
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
@@ -57,16 +57,16 @@ float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Dynamixel Motor Limits */
 #define ELBOW_MIN_POS     1023
 #define ELBOW_MAX_POS     3055
-#define SHOULDER_MIN_POS  456
-#define SHOULDER_MAX_POS  3331
+#define SHOULDER_MIN_POS  460
+#define SHOULDER_MAX_POS  3336
 #define ELBOW_MIN_VEL     0
 #define ELBOW_MAX_VEL     3000
 #define SHOULDER_MIN_VEL  0
 #define SHOULDER_MAX_VEL  3000
 /* Admitance Control Constants */
 #define TIME_INTERVAL 10 // Milliseconds
-#define MASS          3.000
-#define DAMPING       70.000
+#define MASS          1.250
+#define DAMPING       25.000
 #define GRAVITY       9.80665
 /* Kinematic Constants */
 #define SHOULDER_ELBOW_LINK 0.510
@@ -81,7 +81,7 @@ dynamixel::PacketHandler *packetHandler;
 void setup() {
   /* Serial Monitor */
   Serial.begin(115200);
-  while (!Serial);
+  while(!Serial);
   // Adds parameters to read packet
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
@@ -100,23 +100,10 @@ void setup() {
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
 void loop() {
-  /* Optoforce Variable Declaration */
-  int16_t xRaw, yRaw, zRaw;
-  float  Fx, Fy, Fz, FxRaw, FyRaw, FzRaw;
   /* Data Structures Declaration */
-  //  motorCountStruct  prevMC;         motorCountStruct  goalMC;
-  //  forceStruct       rForces;        forceStruct       forces;
-  //  modelStruct       prevSI;         modelStruct       goalSI;
-  //  angularStruct     prevAng;        angularStruct     goalAng;
-  /* Dynamixel Variables Declaration */
-  int32_t prevPosShoulder, prevVelShoulder, prevPosElbow, prevVelElbow, prevPosAct, prevVelAct;
-  int32_t goalPosShoulder, goalVelShoulder, goalPosElbow, goalVelElbow, goalPosAct, goalVelAct;
-  /* Admitance Control Variable Declaration */
-  float xPrevPosSI, xPrevVelSI, yPrevPosSI, yPrevVelSI, zPrevPosSI, zPrevVelSI;
-  float xGoalPosSI, xGoalVelSI, yGoalPosSI, yGoalVelSI, zGoalPosSI, zGoalVelSI;
-  /* Kinematic Variable Declaration */
-  float prevElbowAng, prevElbowAngVel, prevShoulderAng, prevShoulderAngVel; //Radians, Rad/s
-  float goalElbowAng, goalElbowAngVel, goalShoulderAng, goalShoulderAngVel; //Radians, Rad/s
+  forceStruct   rawForces;      forceStruct   forces;
+  modelSpace    initSI;         modelSpace    goalSI;
+  jointSpace    presQ;          jointSpace    goalQ;
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
@@ -128,26 +115,19 @@ void loop() {
   dxlAbling(POSITION_CONTROL, ENABLE, dxl_error);    // Toggle torque for troubleshooting
   delay(100);
 
-  dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
+  //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
+  dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
 
   /* Initialize Model */
   previousTime = millis();
-  singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
-  readPresentPacket(syncReadPacket, prevVelElbow, prevPosElbow, prevVelShoulder, prevPosShoulder);
-  sensorOrientation(FxRaw, FyRaw, FzRaw, prevPosElbow, prevPosShoulder, Fx, Fy, Fz, prevElbowAng, prevShoulderAng);
-  forwardKine(prevVelElbow, prevVelShoulder, prevShoulderAng, prevElbowAng, prevElbowAngVel, prevShoulderAngVel, xPrevPosSI, yPrevPosSI, xPrevVelSI, yPrevVelSI);
-  admittanceControlModel(Fx, xPrevPosSI, xPrevVelSI, xGoalPosSI, xGoalVelSI, Fy, yPrevPosSI, yPrevVelSI, yGoalPosSI, yGoalVelSI);
-
-/*
-  singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, rForces);
-  readPresentPacket(syncReadPacket, prevMC);
-  sensorOrientation(rForces, prevMC, oForces, prevAng);
-  forwardKine(prevMC, prevAng, prevSI);
-  admittanceControlModel(forces, prevSI, goalSI);
-  */
+  rawForces = singleOptoForceRead(xCal, yCal, zCal);
+  presQ = readPresentPacket(syncReadPacket);
+  forces = sensorOrientation(rawForces, presQ);
+  initSI = forwardKine(presQ);
+  goalSI = admittanceControlModel(forces, initSI);
 
   /* Main Loop */
   while (Serial) {
@@ -157,56 +137,24 @@ void loop() {
       previousTime = currentTime;
 
       /* Starts the main loop */
-      singleOptoForceRead(xCal, yCal, zCal, xRaw, yRaw, zRaw, FxRaw, FyRaw, FzRaw);
-      readPresentPacket(syncReadPacket, prevVelElbow, prevPosElbow, prevVelShoulder, prevPosShoulder);
-      sensorOrientation(FxRaw, FyRaw, FzRaw, prevPosElbow, prevPosShoulder, Fx, Fy, Fz, prevElbowAng, prevShoulderAng);
-      //forwardKine(prevVelElbow, prevVelShoulder, prevShoulderAng, prevElbowAng, prevElbowAngVel, prevShoulderAngVel, xPrevPosSI, yPrevPosSI, xPrevVelSI, yPrevVelSI);
-      xPrevPosSI = xGoalPosSI;  xPrevVelSI = xGoalVelSI;
-      yPrevPosSI = yGoalPosSI;  yPrevVelSI = yGoalVelSI;
+      rawForces = singleOptoForceRead(xCal, yCal, zCal);
+      presQ = readPresentPacket(syncReadPacket);
+      forces = sensorOrientation(rawForces, presQ);
+      
+      initSI = goalSI;
 
-      admittanceControlModel(Fx, xPrevPosSI, xPrevVelSI, xGoalPosSI, xGoalVelSI, Fy, yPrevPosSI, yPrevVelSI, yGoalPosSI, yGoalVelSI);
-      inverseKine(xGoalPosSI, yGoalPosSI, xGoalVelSI, yGoalVelSI, goalElbowAng, goalShoulderAng, goalElbowAngVel, goalShoulderAngVel, goalPosElbow, goalPosShoulder, goalVelElbow, goalVelShoulder);
-      goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalVelElbow, goalPosElbow, goalVelShoulder, goalPosShoulder);
+      goalSI = admittanceControlModel(forces, initSI);
+      goalQ = inverseKine(goalSI);
+      
+      goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ, presQ);
 
       if (diagMode) {
-        Serial.print(totalTime); Serial.print("\t");
-
-        //Serial.print(xRaw); Serial.print("\t"); Serial.print(yRaw); Serial.print("\t"); Serial.print(zRaw); Serial.print("\t");
-
-        //Serial.print(FxRaw); Serial.print("\t"); Serial.print(FyRaw); Serial.print("\t"); Serial.print(FzRaw); Serial.print("\t");
-
-        Serial.print(Fx); Serial.print("\t"); Serial.print(Fy); Serial.print("\t"); //Serial.print(Fz); Serial.print("\t");
-
-        //Serial.print(prevPosElbow); Serial.print("\t"); Serial.print(prevPosShoulder); Serial.print("\t");
-
-        //Serial.print(prevVelElbow); Serial.print("\t"); Serial.print(prevVelShoulder); Serial.print("\t");
-
-        Serial.print(prevElbowAng); Serial.print("\t"); Serial.print(prevShoulderAng); Serial.print("\t");
-
-        Serial.print(prevElbowAngVel); Serial.print("\t"); Serial.print(prevShoulderAngVel); Serial.print("\t");
-
-        Serial.print(xPrevPosSI, 4); Serial.print("\t"); Serial.print(yPrevPosSI, 4); Serial.print("\t");
-
-        Serial.print(xPrevVelSI,4); Serial.print("\t"); Serial.print(yPrevVelSI,4); Serial.print("\t");
-
-        Serial.print(xGoalPosSI, 4); Serial.print("\t"); Serial.print(yGoalPosSI, 4); Serial.print("\t");
-
-        Serial.print(xGoalVelSI,4); Serial.print("\t"); Serial.print(yGoalVelSI,4); Serial.print("\t");
-
-        Serial.print(goalElbowAng); Serial.print("\t"); Serial.print(goalShoulderAng); Serial.print("\t");
-
-        Serial.print(goalElbowAngVel); Serial.print("\t"); Serial.print(goalShoulderAngVel); Serial.print("\t");
-
-        //Serial.print(goalPosElbow); Serial.print("\t"); Serial.print(goalPosShoulder); Serial.print("\t");
-
-        //Serial.print(goalVelElbow); Serial.print("\t"); Serial.print(goalVelShoulder); Serial.print("\t");
-
-        //Serial.print(currentTime-previousTime); Serial.print("\t");
-        Serial.print(goalReturn); Serial.print("\n");
+        diagnosticMode(totalTime, rawForces, forces, presQ, initSI, goalSI, goalQ, goalReturn);
       }
     }
   }
-  /* Hold Position Before disabling */
-  delay(2000);
-  dxlAbling(POSITION_CONTROL, DISABLE, dxl_error);
+  if (!Serial){
+    dxlAbling(POSITION_CONTROL, DISABLE, dxl_error);
+    while(!Serial);
+  }
 }

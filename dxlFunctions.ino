@@ -15,11 +15,14 @@ void dxlAbling(uint8_t mode, uint8_t state, uint8_t &dxl_error) {
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_OPERATING_MODE, mode, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW, ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
 }
 
 int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket, jointSpace goal, jointSpace pres) {
   int dxlCommResult;
-  uint8_t elbowParam[8], shoulderParam[8];
+  //uint8_t elbowParam[8], shoulderParam[8];
+  uint8_t elbowParam[4], shoulderParam[4];
   // Convert to Counts /////////////////////////////////////////////////////////////////////////
   int32_t presPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t presPosElbow    = ELBOW_MIN_POS + goal.q2 * (180.0 / PI) / DEGREES_PER_COUNT;
@@ -35,23 +38,31 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
     goalPosShoulder = presPosShoulder;
   }
   // Elbow Parameters Goal Packet /////////////////////////////////////////////////////////////////////////
-  elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelElbow));
-  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelElbow));
-  elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelElbow));
-  elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(goalVelElbow));
-  elbowParam[4] = DXL_LOBYTE(DXL_LOWORD(goalPosElbow));
-  elbowParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosElbow));
-  elbowParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosElbow));
-  elbowParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosElbow));
+  //elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelElbow));
+  //elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelElbow));
+  //elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelElbow));
+  //elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(goalVelElbow));
+  //elbowParam[4] = DXL_LOBYTE(DXL_LOWORD(goalPosElbow));
+  //elbowParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosElbow));
+  //elbowParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosElbow));
+  //elbowParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosElbow));
+  elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalPosElbow));
+  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goalPosElbow));
+  elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goalPosElbow));
+  elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(goalPosElbow));
   // Shoulder Parameters Goal Packet /////////////////////////////////////////////////////////////////////////
-  shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelShoulder));
-  shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelShoulder));
-  shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelShoulder));
-  shoulderParam[3] = DXL_HIBYTE(DXL_HIWORD(goalVelShoulder));
-  shoulderParam[4] = DXL_LOBYTE(DXL_LOWORD(goalPosShoulder));
-  shoulderParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosShoulder));
-  shoulderParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosShoulder));
-  shoulderParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosShoulder));
+  //shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelShoulder));
+  //shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goalVelShoulder));
+  //shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(goalVelShoulder));
+  //shoulderParam[3] = DXL_HIBYTE(DXL_HIWORD(goalVelShoulder));
+  //shoulderParam[4] = DXL_LOBYTE(DXL_LOWORD(goalPosShoulder));
+  //shoulderParam[5] = DXL_HIBYTE(DXL_LOWORD(goalPosShoulder));
+  //shoulderParam[6] = DXL_LOBYTE(DXL_HIWORD(goalPosShoulder));
+  //shoulderParam[7] = DXL_HIBYTE(DXL_HIWORD(goalPosShoulder));
+  shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goalPosShoulder));
+  shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goalPosShoulder));
+  shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(goalPosShoulder));
+  shoulderParam[3] = DXL_HIBYTE(DXL_HIWORD(goalPosShoulder));
   // Writes packet /////////////////////////////////////////////////////////////////////////
   addParamResult = syncWritePacket.addParam(ID_SHOULDER, shoulderParam);
   addParamResult = syncWritePacket.addParam(ID_ELBOW, elbowParam);

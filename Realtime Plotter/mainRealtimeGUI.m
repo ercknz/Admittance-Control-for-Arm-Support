@@ -11,7 +11,6 @@ close all; instrreset;
 fig1 = figure;
 set(fig1,'Name', 'Realtime Plotter for Arm Support',...
     'NumberTitle','off',...
-    'CloseRequestFcn',@uiCloseFigureFcn,...
     'Units', 'Normalized',...
     'OuterPosition', [0,0, 1, 1]);
 figAx = axes;
@@ -20,6 +19,22 @@ set(figAx, 'Units', 'normalized',...
     'XLim',[-1.2,1.2],...
     'YLim',[-1.2,1.2]);
 hold on; grid on;
+% Initializing graphics
+[x1, y1] = endLink1(0);
+h.presL1 = line([0, x1],[0, y1],'Color','green','LineWidth',3,'Parent',figAx);
+[x2, y2] = endLink2(0, 0);
+h.presL2 = line([x1, x2],[y1, y2],'Color','green','LineWidth',3,'Parent',figAx);
+[x, y, u, v] = armSupportFKine(0, 0, 0, 0);
+h.presMass = plot(x,y,'g*','MarkerSize',10,'Parent',figAx);
+h.presVel = quiver(figAx, x, y, u, v);
+% Goal Robot
+h.goalMass = plot(1,0,'ro','MarkerSize',10,'Parent',figAx);
+h.goalVel = quiver(figAx, 1, 0, 0, 0);
+[qs, qe, ~, ~] = armSupportIKine(1, 0, 0, 0);
+[x1, y1] = endLink1(qs);
+h.goalL1 = line([0, x1],[0, y1],'Color','red','LineWidth',3,'Parent',figAx);
+[x2, y2] = endLink2(qs, qe);
+h.goalL2 = line([x1, x2],[y1, y2],'Color','red','LineWidth',3,'Parent',figAx);
 
 %% Variables
 logLocation = 'no file';
@@ -34,28 +49,31 @@ serialCommButton = uicontrol(serialPanel,'Style','togglebutton');
 serialCommButton.String = 'Serial Communication';
 serialCommButton.Units = 'normalized';
 serialCommButton.Position = [0.1,0.725,0.8,0.225];
-serialCommButton.Callback = @openSerial;
 
 loggingButton = uicontrol(serialPanel,'Style','togglebutton');
 loggingButton.String = 'Log Data';
 loggingButton.Units = 'normalized';
 loggingButton.Position = [0.1,0.5,0.8,0.225];
-loggingButton.Callback = @loggingData;
 
 forceButton = uicontrol(serialPanel,'Style','togglebutton');
 forceButton.String = 'Force Plot';
 forceButton.Units = 'normalized';
 forceButton.Position = [0.1,0.275,0.8,0.225];
-forceButton.Callback = @forceData;
 
 fileNameLabel = uicontrol(serialPanel,'Style','text');
 fileNameLabel.String = logLocation;
 fileNameLabel.Units = 'normalized';
 fileNameLabel.Position = [0.1,0.05,0.8,0.225];
 
+%% Set callbacks
+set(fig1,'CloseRequestFcn',@uiCloseFigureFcn);
+serialCommButton.Callback = @openSerial;
+loggingButton.Callback = @loggingData;
+forceButton.Callback = @forceData;
+
 %% Callback functions
-    function armSupportCallback(src,~)
-        cla(figAx);
+    function armSupportCallback(src, ~)
+%         cla(handles.figAx);
         serialData = readline(src);
         temp = strsplit(serialData,'\t');
         time = 0.001*str2double(temp(1));
@@ -85,39 +103,39 @@ fileNameLabel.Position = [0.1,0.05,0.8,0.225];
             quiver(figAx, 0, 0, forceX, forceY, 'Color', '#77AC30', 'LineWidth', 3);
         else
             % pres Robot
-            [presL1.X, presL1.Y] = endLink1(presQS);
-            line([0, presL1.X],[0, presL1.Y],'Color','green','LineWidth',3,'Parent',figAx);
-            [presL2.X, presL2.Y] = endLink2(presQS, presQE);
-            line([presL1.X, presL2.X],[presL1.Y, presL2.Y],'Color','green','LineWidth',3,'Parent',figAx);
-            [presX, presY, presXdot, presYdot] = armSupportFKine(presQS, presQE, presQdotS, presQdotE);
-            plot(presX,presY,'g*','MarkerSize',10,'Parent',figAx);
-            quiver(figAx, presX, presY, presXdot, presYdot);
+            [X1, Y1] = endLink1(presQS);
+            set(h.presL1,'XData',[0,X1],'YData',[0,Y1]);
+            [X2, Y2] = endLink2(presQS, presQE);
+            set(h.presL2,'XData',[X1,X2],'YData',[Y1,Y2]);
+            [X, Y, U, V] = armSupportFKine(presQS, presQE, presQdotS, presQdotE);
+            set(h.presMass,'XData',X,'YData',Y);
+            set(h.presVel,'XData',X,'YData',Y,'UData',U,'VData',V);
             % Goal Robot
-            plot(goalX,goalY,'ro','MarkerSize',10,'Parent',figAx);
-            quiver(figAx, goalX, goalY, goalXdot, goalYdot);
+            set(h.goalMass,'XData',goalX,'YData',goalY);
+            set(h.goalVel,'XData',goalX,'YData',goalY,'UData',goalXdot,'VData',goalYdot)
             [goalQS, goalQE, ~, ~] = armSupportIKine(goalX, goalY, goalXdot, goalYdot);
-            [goalL1.X, goalL1.Y] = endLink1(goalQS);
-            line([0, goalL1.X],[0, goalL1.Y],'Color','red','LineWidth',3,'Parent',figAx);
-            [goalL2.X, goalL2.Y] = endLink2(goalQS, goalQE);
-            line([goalL1.X, goalL2.X],[goalL1.Y, goalL2.Y],'Color','red','LineWidth',3,'Parent',figAx);
+            [X1, Y1] = endLink1(goalQS);
+            set(h.goalL1,'XData',[0, X1],'YData',[0, Y1]);
+            [X2, Y2] = endLink2(goalQS, goalQE);
+            set(h.goalL2,'XData',[X1, X2],'YData',[Y1, Y2]);
         end
-        drawnow limitrate;
+%         drawnow limitrate;
     end
 
-    function openSerial(src,~)
+    function openSerial(hObject, eventdata)
         if ~isempty(armSupport)
-            configureCallback(armSupport, "off");
+            configureCallback(armSupport, 'off');
             armSupport.delete();
             armSupport = [];
         else
-            armSupport = serialport("COM24",115200);
-            configureTerminator(armSupport, "CR/LF");
+            armSupport = serialport('COM24',115200);
+            configureTerminator(armSupport, 'CR/LF');
             flush(armSupport)
-            configureCallback(armSupport, "terminator",@armSupportCallback)
+            configureCallback(armSupport, 'terminator',@armSupportCallback)
         end
     end
 
-    function loggingData(src,~)
+    function loggingData(hObject,eventdata)
         if ~isempty(logObj.getName())
             logObj.deleteLog()
             logLocation = 'No file';
@@ -131,7 +149,7 @@ fileNameLabel.Position = [0.1,0.05,0.8,0.225];
         end
     end
 
-    function forceData(src,~)
+    function forceData(hObject, eventdata)
         if forcePlot
             forcePlot = false;
         else
@@ -139,7 +157,7 @@ fileNameLabel.Position = [0.1,0.05,0.8,0.225];
         end
     end
 
-    function uiCloseFigureFcn(src,callbackdata)
+    function uiCloseFigureFcn(hObject, eventdata)
         if ~isempty(armSupport)
             configureCallback(armSupport, "off");
             armSupport.delete();
