@@ -9,8 +9,11 @@ classdef logFile < handle
 % Properties
 %--------------------------------------------------------------------------
 properties (Access = public)
-    lastFrame
+    lastFrame = (0);
     frameLength
+    
+    data
+    logHeaders
 end
 
 properties (Access = private)
@@ -67,6 +70,30 @@ methods
     
     function fullFileName = getName(obj)
         fullFileName = obj.fullFileName;
+    end
+    
+    function addFrame(obj,frame)
+        obj.lastFrame = frame;
+        obj.data(obj.lineNum,:) = frame;
+        obj.lineNum = obj.lineNum + 1;
+    end
+    
+    function tempData(obj,secs)
+        obj.data = nan(secs * 100, obj.frameLength);
+    end
+    
+    function saveLog(obj)
+        if ~isempty(obj.logHeaders)
+            writecell(obj.logHeaders,obj.fullFileName,'Range','A1');
+        end
+        if ~isempty(obj.data)
+           writematrix(obj.data,obj.fullFileName,'Range','B1'); 
+        end
+    end
+    
+    function setHeaders(obj,headers)
+        obj.logHeaders = headers;
+        obj.frameLength = length(headers);
     end
 end
 

@@ -40,7 +40,7 @@ h.goalL2 = line([x1, x2],[y1, y2],'Color','red','LineWidth',3,'Parent',figAx);
 logLocation = 'no file';
 logObj = logFile;
 armSupport = [];
-forcePlot = false;
+graphing = true;
 
 %% UI
 serialPanel = uipanel(fig1,'Units','normalized','Position',[0.75,0.75,0.1,0.25]);
@@ -55,10 +55,10 @@ loggingButton.String = 'Log Data';
 loggingButton.Units = 'normalized';
 loggingButton.Position = [0.1,0.5,0.8,0.225];
 
-forceButton = uicontrol(serialPanel,'Style','togglebutton');
-forceButton.String = 'Force Plot';
-forceButton.Units = 'normalized';
-forceButton.Position = [0.1,0.275,0.8,0.225];
+graphingButton = uicontrol(serialPanel,'Style','togglebutton');
+graphingButton.String = 'Plot Off';
+graphingButton.Units = 'normalized';
+graphingButton.Position = [0.1,0.275,0.8,0.225];
 
 fileNameLabel = uicontrol(serialPanel,'Style','text');
 fileNameLabel.String = logLocation;
@@ -69,39 +69,31 @@ fileNameLabel.Position = [0.1,0.05,0.8,0.225];
 set(fig1,'CloseRequestFcn',@uiCloseFigureFcn);
 serialCommButton.Callback = @openSerial;
 loggingButton.Callback = @loggingData;
-forceButton.Callback = @forceData;
+graphingButton.Callback = @graphData;
 
 %% Callback functions
     function armSupportCallback(src, ~)
-%         cla(handles.figAx);
         serialData = readline(src);
         temp = strsplit(serialData,'\t');
         time = 0.001*str2double(temp(1));
-        rawForceX = str2double(temp(2));    rawForceY = str2double(temp(3));    % Raw Forces
-        forceX = str2double(temp(4));       forceY = str2double(temp(5));       % Forces
-        presQS = str2double(temp(6));       presQE = str2double(temp(7));       % init Angle
-        presQdotS = str2double(temp(8));    presQdotE = str2double(temp(9));    % init Ang Vel
-        initX = str2double(temp(10));       initY = str2double(temp(11));       % init Pos
-        initXdot = str2double(temp(12));    initYdot = str2double(temp(13));    % init Vel
-        goalX = str2double(temp(14));       goalY = str2double(temp(15));       % goal Pos
-        goalXdot = str2double(temp(16));    goalYdot = str2double(temp(17));    % goal Vel
-        goalQS = str2double(temp(18));      goalQE = str2double(temp(19));      % goal Ang
-        goalQdotS = str2double(temp(20));   goalQdotE = str2double(temp(21));   % goal Ang Vel
-        mWrite = str2double(temp(22));       % Write
+        forceX = str2double(temp(2));       forceY = str2double(temp(3));       % Forces
+        presQS = str2double(temp(4));       presQE = str2double(temp(5));       % init Angle
+        presQdotS = str2double(temp(6));    presQdotE = str2double(temp(7));    % init Ang Vel
+        goalX = str2double(temp(8));        goalY = str2double(temp(9));        % goal Pos
+        goalXdot = str2double(temp(10));    goalYdot = str2double(temp(11));    % goal Vel
+        goalQS = str2double(temp(12));      goalQE = str2double(temp(13));      % goal Ang
+        goalQdotS = str2double(temp(14));   goalQdotE = str2double(temp(15));   % goal Ang Vel
+        loopTime = str2double(temp(17));    % Loop time
+        mWrite = str2double(temp(16));      % Write
         if ~isempty(logObj.getName())
-            logObj.writeFrame([time,rawForceX,rawForceY,...
+            logObj.writeFrame([time,...
                 forceX,forceY,...
                 presQS,presQE,presQdotS,presQdotE,...
-                initX,initY,initXdot,initYdot,...
                 goalX,goalY,goalXdot,goalYdot,...
                 goalQS,goalQE,goalQdotS,goalQdotE,...
-                mWrite]);
+                mWrite, loopTime]);
         end
-        if forcePlot
-            [globalFx, globalFy] = sensorOrientation(rawForceX, rawForceY, presQS, presQE);
-            quiver(figAx, 0, 0, 2*globalFx, 2*globalFy, 'Color', '#A2142F', 'LineWidth', 3);
-            quiver(figAx, 0, 0, forceX, forceY, 'Color', '#77AC30', 'LineWidth', 3);
-        else
+        if graphing
             % pres Robot
             [X1, Y1] = endLink1(presQS);
             set(h.presL1,'XData',[0,X1],'YData',[0,Y1]);
@@ -119,7 +111,6 @@ forceButton.Callback = @forceData;
             [X2, Y2] = endLink2(goalQS, goalQE);
             set(h.goalL2,'XData',[X1, X2],'YData',[Y1, Y2]);
         end
-%         drawnow limitrate;
     end
 
     function openSerial(hObject, eventdata)
@@ -142,18 +133,18 @@ forceButton.Callback = @forceData;
             fileNameLabel.String = logLocation;
         else
             logObj.createLog();
-            logObj.fileHeaders({'Time','rawForceX','rawForceY','ForceX','ForceY','presQS','presQE','presQdotS','presQdotE','initX',...
-                'initY','initXdot','initYdot','goalX','goalY','goalXdot','goalYdot','goalQS','goalQE','goalQdotS','goalQdotE','Write'});
+            logObj.fileHeaders({'Time','ForceX','ForceY','presQS','presQE','presQdotS','presQdotE',...
+                'goalX','goalY','goalXdot','goalYdot','goalQS','goalQE','goalQdotS','goalQdotE','Write','loopTime'});
             logLocation = logObj.getName();
             fileNameLabel.String = logLocation;
         end
     end
 
-    function forceData(hObject, eventdata)
-        if forcePlot
-            forcePlot = false;
+    function graphData(hObject, eventdata)
+        if graphing
+            graphing = false;
         else
-            forcePlot = true;
+            graphing = true;
         end
     end
 

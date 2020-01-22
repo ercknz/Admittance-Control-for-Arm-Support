@@ -33,18 +33,17 @@ modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
   // Boundaries for Model /////////////////////////////////////////////////////////////////////////
   static float outBoundary = SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK;
   static float inBoundary = abs(SHOULDER_ELBOW_LINK - ELBOW_SENSOR_LINK);
-  static float dT = 0.001 * TIME_INTERVAL;
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   float Cx1 = ((F.X / DAMPING) - init.xDot) * (MASS / DAMPING);
   float Cx2 = init.x - Cx1;
-  goal.x    = Cx1 * exp(-(DAMPING / MASS) * dT) + (F.X / DAMPING) * dT + Cx2;
-  goal.xDot = (F.X / DAMPING) - (DAMPING / MASS) * Cx1 * exp(-(DAMPING / MASS) * dT);
+  goal.x    = Cx1 * exp(-(DAMPING / MASS) * MODEL_DT) + (F.X / DAMPING) * MODEL_DT + Cx2;
+  goal.xDot = (F.X / DAMPING) - (DAMPING / MASS) * Cx1 * exp(-(DAMPING / MASS) * MODEL_DT);
 
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
   float Cy1 = ((F.Y / DAMPING) - init.yDot) * (MASS / DAMPING);
   float Cy2 = init.y - Cy1;
-  goal.y    = Cy1 * exp(-(DAMPING / MASS) * dT) + (F.Y / DAMPING) * dT + Cy2;
-  goal.yDot = (F.Y / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * dT);
+  goal.y    = Cy1 * exp(-(DAMPING / MASS) * MODEL_DT) + (F.Y / DAMPING) * MODEL_DT + Cy2;
+  goal.yDot = (F.Y / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * MODEL_DT);
 
   /*/ Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
     float Cz1 = ((zForce/DAMPING) - zPresVelSI)*(MASS/DAMPING);
