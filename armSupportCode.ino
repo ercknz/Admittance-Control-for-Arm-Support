@@ -14,6 +14,7 @@
 #include <DynamixelSDK.h>
 #include <PID_v1.h>
 #include "stateDataStructs.h"
+#include "filterClass.h"
 
 // Constants ////////////////////////////////////////////////////////////////////////////////////////
 /* OptoForce Constants */
@@ -21,6 +22,8 @@
 #define ySensitivity 20.250
 #define zSensitivity 1.610
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
+#define SENSOR_FILTER_WEIGHT 0.20
+forceFilter  sensorFilter(0.0,SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -57,21 +60,25 @@ float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Dynamixel Motor Limits */
 #define ELBOW_MIN_POS     1023
 #define ELBOW_MAX_POS     3055
-#define SHOULDER_MIN_POS  460
-#define SHOULDER_MAX_POS  3336
+#define SHOULDER_MIN_POS  470
+#define SHOULDER_MAX_POS  3326
 #define ELBOW_MIN_VEL     0
 #define ELBOW_MAX_VEL     3000
 #define SHOULDER_MIN_VEL  0
 #define SHOULDER_MAX_VEL  3000
 /* Admitance Control Constants */
-#define TIME_INTERVAL 10 // Milliseconds
+#define LOOP_DT       8    // Milliseconds
+#define MODEL_DT      0.008   // Seconds
 #define MASS          1.250
-#define DAMPING       25.000
+#define DAMPING       24.000
 #define GRAVITY       9.80665
 /* Kinematic Constants */
 #define SHOULDER_ELBOW_LINK 0.510
 #define ELBOW_SENSOR_LINK   0.505
-static bool diagMode = true;
+/* Shoulder elevation sensor */
+#define ELEVATION_SENSOR_PIN 1
+/* Diagnostic mode */
+static bool diagMode = false;
 
 // Port and Packet variable ///////////////////////////////////////////////////////////////////////////
 dynamixel::PortHandler *portHandler;
@@ -93,20 +100,23 @@ void setup() {
   Serial1.begin(BAUDRATE);
   delay(100);
   optoForceConfig();
-  delay(100);
-  calibrateForceSensor(xCal, yCal, zCal);
-  delay(2000);
 }
 
 // Main loop function ///////////////////////////////////////////////////////////////////////////////////
 void loop() {
+  /* Calibrate Force Sensor */
+  delay(100);
+  calibrateForceSensor(xCal, yCal, zCal);
+  delay(2000);
   /* Data Structures Declaration */
-  forceStruct   rawForces;      forceStruct   forces;
+  forceStruct   rawForces;      forceStruct   globForces;
+  forceStruct   filtForces;
   modelSpace    initSI;         modelSpace    goalSI;
   jointSpace    presQ;          jointSpace    goalQ;
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
+  unsigned long loopTime, startLoop;
   /* Sets up dynamixel read/write packet parameters */
   uint8_t dxl_error = 0;
   int     goalReturn;
@@ -125,32 +135,39 @@ void loop() {
   previousTime = millis();
   rawForces = singleOptoForceRead(xCal, yCal, zCal);
   presQ = readPresentPacket(syncReadPacket);
-  forces = sensorOrientation(rawForces, presQ);
+  float initAngle = analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023);
+  globForces = sensorOrientation(rawForces, presQ);
+  filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
-  goalSI = admittanceControlModel(forces, initSI);
+  goalSI = admittanceControlModel(filtForces, initSI);
 
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
-    if (currentTime - previousTime >= TIME_INTERVAL) {
+    if (currentTime - previousTime >= LOOP_DT) {
+      startLoop = millis();
       totalTime += (currentTime - previousTime);
       previousTime = currentTime;
 
       /* Starts the main loop */
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
       presQ = readPresentPacket(syncReadPacket);
-      forces = sensorOrientation(rawForces, presQ);
+      Serial.println(analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023)- initAngle);
+      globForces = sensorOrientation(rawForces, presQ);
+      filtForces = sensorFilter.Update(globForces);
       
       initSI = goalSI;
 
-      goalSI = admittanceControlModel(forces, initSI);
+      goalSI = admittanceControlModel(filtForces, initSI);
       goalQ = inverseKine(goalSI);
       
       goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ, presQ);
-
+      loopTime = millis() - startLoop;
+      
       if (diagMode) {
-        diagnosticMode(totalTime, rawForces, forces, presQ, initSI, goalSI, goalQ, goalReturn);
+        diagnosticMode(totalTime, globForces, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
       }
+      
     }
   }
   if (!Serial){

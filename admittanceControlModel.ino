@@ -56,6 +56,8 @@ modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
   if (goalXY > outBoundary || goalXY < inBoundary) {
     goal.x = init.x;
     goal.y = init.y;
+    goal.xDot = 0;
+    goal.yDot = 0;
   }
   return goal;
 }
