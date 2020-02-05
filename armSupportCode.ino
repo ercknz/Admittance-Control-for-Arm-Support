@@ -22,7 +22,8 @@
 #define ySensitivity 20.250
 #define zSensitivity 1.610
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
-#define SENSOR_FILTER_WEIGHT 0.20
+/* Force Sensor filter */
+#define SENSOR_FILTER_WEIGHT 0.03
 forceFilter  sensorFilter(0.0,SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
@@ -66,19 +67,22 @@ forceFilter  sensorFilter(0.0,SENSOR_FILTER_WEIGHT);
 #define ELBOW_MAX_VEL     3000
 #define SHOULDER_MIN_VEL  0
 #define SHOULDER_MAX_VEL  3000
+#define ELEVATION_ZERO    130.0
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
 #define MODEL_DT      0.008   // Seconds
-#define MASS          1.250
-#define DAMPING       24.000
+#define MASS          3.000
+#define DAMPING       10.000
 #define GRAVITY       9.80665
 /* Kinematic Constants */
-#define SHOULDER_ELBOW_LINK 0.510
-#define ELBOW_SENSOR_LINK   0.505
+//#define A1_LINK   0.05    // Shoulder to 4bar linkage
+#define L1_LINK   0.510   // length of 4bar linkage
+//#define A2_LINK   0.05    // 4bar linkage to elbow
+#define L2_LINK   0.505   // elbow to sensor
 /* Shoulder elevation sensor */
 #define ELEVATION_SENSOR_PIN 1
 /* Diagnostic mode */
-static bool diagMode = false;
+static bool diagMode = true;
 
 // Port and Packet variable ///////////////////////////////////////////////////////////////////////////
 dynamixel::PortHandler *portHandler;
@@ -122,7 +126,7 @@ void loop() {
   int     goalReturn;
   bool    addParamResult = false;
 
-  dxlAbling(POSITION_CONTROL, ENABLE, dxl_error);    // Toggle torque for troubleshooting
+  dxlAbling(POSITION_CONTROL, ~ENABLE, dxl_error);    // Toggle torque for troubleshooting
   delay(100);
 
   //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
@@ -135,7 +139,6 @@ void loop() {
   previousTime = millis();
   rawForces = singleOptoForceRead(xCal, yCal, zCal);
   presQ = readPresentPacket(syncReadPacket);
-  float initAngle = analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023);
   globForces = sensorOrientation(rawForces, presQ);
   filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
@@ -152,7 +155,7 @@ void loop() {
       /* Starts the main loop */
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
       presQ = readPresentPacket(syncReadPacket);
-      Serial.println(analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023)- initAngle);
+      //Serial.println(analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023)- initAngle);
       globForces = sensorOrientation(rawForces, presQ);
       filtForces = sensorFilter.Update(globForces);
       

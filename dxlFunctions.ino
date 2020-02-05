@@ -25,11 +25,11 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
   uint8_t elbowParam[4], shoulderParam[4];
   // Convert to Counts /////////////////////////////////////////////////////////////////////////
   int32_t presPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
-  int32_t presPosElbow    = ELBOW_MIN_POS + goal.q2 * (180.0 / PI) / DEGREES_PER_COUNT;
+  int32_t presPosElbow    = ELBOW_MIN_POS + goal.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
-  int32_t goalPosElbow    = ELBOW_MIN_POS + goal.q2 * (180.0 / PI) / DEGREES_PER_COUNT;
+  int32_t goalPosElbow    = ELBOW_MIN_POS + goal.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalVelShoulder = abs(goal.q1Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
-  int32_t goalVelElbow    = abs(goal.q2Dot    * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  int32_t goalVelElbow    = abs(goal.q4Dot    * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
   // Check limits
   if ((goalPosElbow > (ELBOW_MAX_POS)) && (goalPosElbow < (ELBOW_MIN_POS))) {
     goalPosElbow = presPosElbow;
@@ -81,9 +81,12 @@ jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   int32_t presPosShoulder = syncReadPacket.getData(ID_SHOULDER, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
   /* Convert Motor Counts */
   pres.q1      = (presPosShoulder) * DEGREES_PER_COUNT * (PI / 180.0);
-  pres.q2      = (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
+  pres.q4      = (presPosElbow - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
   pres.q1Dot   = presVelShoulder * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  pres.q2Dot   = presVelElbow    * RPM_PER_COUNT * (2.0 * PI / 60.0);
+  pres.q4Dot   = presVelElbow    * RPM_PER_COUNT * (2.0 * PI / 60.0);
+
+  /* Elevation */
+  pres.q2 = ELEVATION_ZERO - analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023);
 
   return pres;
 }

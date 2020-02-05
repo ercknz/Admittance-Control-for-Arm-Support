@@ -18,14 +18,22 @@ typedef struct{
 typedef struct{
   float x;
   float y;
+  float z;
   float xDot;
   float yDot;
+  float zDot;
 } modelSpace;
 
 typedef struct{
   float q1;       // Shoulder Angle
   float q1Dot;    // Shoulder Angular Velocity
-  float q2;       // Elbow Angle
-  float q2Dot;    // Elbow Angular Velocity
+  float q2;       // Elevation Angle
+  float q2Dot;    // Elevation Angular Velocity
+  float q4;       // Elbow Angle
+  float q4Dot;    // Elbow Angular Velocity
+  /* 
+   *  q3 is the other joint at the 4 bar linkage and is equal to -q2
+   *  q3 is a redundant joint
+   */
 } jointSpace;
 

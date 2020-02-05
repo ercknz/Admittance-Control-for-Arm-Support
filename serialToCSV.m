@@ -24,7 +24,8 @@ while(s1.BytesAvailable < 0)
 end
 %% Starts reading data
 % Adjust the data varaible to match what is being sent from the controller.
-length = secs*100; % seconds*100=frames
+dt = 0.008;
+length = secs/dt; % seconds*(1frame/secs)=frames
 data = zeros(length,17);
 for i=1:length
     serialData = fscanf(s1);
@@ -50,36 +51,37 @@ writematrix(data,csvFile)
 %% plot data
 close all
 fig1 = figure;
-set(fig1, 'Units', 'Normalized','OuterPosition', [1,0, 0.5, 1]);
-subplot(2,1,1)
+set(fig1, 'Units', 'Normalized','OuterPosition', [0 ,0, 1, 1]);
+subplot(2,2,1)
 plot(data(:,1),data(:,[4 12])); grid on;
 legend('Pres','Goal');title('Shoulder Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-subplot(2,1,2)
+subplot(2,2,3)
 plot(data(:,1),data(:,[5 13])); grid on;
 legend('Pres','Goal');title('Elbow Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-fig2 = figure;
-set(fig2, 'Units', 'Normalized','OuterPosition', [1.5,0, 0.5, 1]);
-subplot(2,1,1)
+subplot(2,2,2)
 plot(data(:,1),data(:,[6 14])); grid on;
 legend('Pres','Goal');title('Shoulder Velocity');xlabel('Time (sec)');ylabel('Angular Velocity (rad/sec)');
-subplot(2,1,2)
+subplot(2,2,4)
 plot(data(:,1),data(:,[7 15])); grid on;
 legend('Pres','Goal');title('Elbow Velocity');xlabel('Time (sec)');ylabel('Angular Velocity (rad/sec)');
-fig3 = figure;
-set(fig3,'Units','Normalized', 'OuterPosition',[0.5,0.5,0.5,0.5]);
+
+fig2 = figure;
+set(fig2, 'Units', 'Normalized','OuterPosition', [1, 0, 1, 1]);
+subplot(2,2,1)
 plot(data(:,1),data(:,17)); grid on; ylim([0,10])
 title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
-fig4 = figure;
-set(fig4,'Units','Normalized', 'OuterPosition',[0.5,0,0.5,0.5]);
+subplot(2,2,2)
 plot(data(:,1),data(:,[2 3])); grid on;
 legend('X','Y');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
-fig5 = figure;
-set(fig5,'Units','Normalized', 'OuterPosition',[0,0.5,0.5,0.5]);
+subplot(2,2,3)
 quiver(data(:,8),data(:,9),data(:,10),data(:,11)); grid on; xlim([-1.2,1.2]);ylim([-1.2, 1.2])
 title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
+subplot(2,2,4)
+plot(data(:,1),data(:,[8 9])); grid on;
+legend('X','Y');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
 
 %% saves plots
 set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
-saveas(fig1, ['./Logs/armSupport',fileTime,'Pos.pdf']);
+saveas(fig1, ['./Logs/armSupport',fileTime,'_1of2.pdf']);
 set(fig2, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
-saveas(fig2, ['./Logs/armSupport',fileTime,'Vel.pdf']);
+saveas(fig2, ['./Logs/armSupport',fileTime,'_2of2.pdf']);

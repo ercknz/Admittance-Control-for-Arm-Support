@@ -31,8 +31,8 @@
 modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
   modelSpace goal;
   // Boundaries for Model /////////////////////////////////////////////////////////////////////////
-  static float outBoundary = SHOULDER_ELBOW_LINK + ELBOW_SENSOR_LINK;
-  static float inBoundary = abs(SHOULDER_ELBOW_LINK - ELBOW_SENSOR_LINK);
+  static float outBoundary = L1_LINK + L2_LINK;
+  static float inBoundary = abs(L1_LINK - L2_LINK);
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   float Cx1 = ((F.X / DAMPING) - init.xDot) * (MASS / DAMPING);
   float Cx2 = init.x - Cx1;
