@@ -24,7 +24,7 @@
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.03
-forceFilter  sensorFilter(0.0,SENSOR_FILTER_WEIGHT);
+forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -67,22 +67,25 @@ forceFilter  sensorFilter(0.0,SENSOR_FILTER_WEIGHT);
 #define ELBOW_MAX_VEL     3000
 #define SHOULDER_MIN_VEL  0
 #define SHOULDER_MAX_VEL  3000
-#define ELEVATION_ZERO    130.0
+#define ELEVATION_ZERO    2.269
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
 #define MODEL_DT      0.008   // Seconds
-#define MASS          3.000
-#define DAMPING       10.000
+#define MASS          1.250
+#define DAMPING       25.000
 #define GRAVITY       9.80665
 /* Kinematic Constants */
-//#define A1_LINK   0.05    // Shoulder to 4bar linkage
-#define L1_LINK   0.510   // length of 4bar linkage
-//#define A2_LINK   0.05    // 4bar linkage to elbow
-#define L2_LINK   0.505   // elbow to sensor
+#define A1_LINK   0.062     // Shoulder to 4bar linkage
+#define L1_LINK   0.498     // length of 4bar linkage
+#define A2_LINK   0.048     // 4bar linkage to elbow
+#define L2_LINK   0.514     // elbow to sensor
+#define LINK_OFFSET 0.035   // elbow to sensor offset
+float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
+float PHI = atan(LINK_OFFSET / L2_LINK);
 /* Shoulder elevation sensor */
 #define ELEVATION_SENSOR_PIN 1
 /* Diagnostic mode */
-static bool diagMode = true;
+bool diagMode = true;
 
 // Port and Packet variable ///////////////////////////////////////////////////////////////////////////
 dynamixel::PortHandler *portHandler;
@@ -92,7 +95,7 @@ dynamixel::PacketHandler *packetHandler;
 void setup() {
   /* Serial Monitor */
   Serial.begin(115200);
-  while(!Serial);
+  while (!Serial);
   // Adds parameters to read packet
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
@@ -126,7 +129,7 @@ void loop() {
   int     goalReturn;
   bool    addParamResult = false;
 
-  dxlAbling(POSITION_CONTROL, ~ENABLE, dxl_error);    // Toggle torque for troubleshooting
+  dxlAbling(POSITION_CONTROL, ENABLE, dxl_error);    // Toggle torque for troubleshooting
   delay(100);
 
   //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
@@ -143,6 +146,9 @@ void loop() {
   filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
+  if (diagMode) {
+    diagnosticMode(totalTime, globForces, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+  }
 
   /* Main Loop */
   while (Serial) {
@@ -155,26 +161,26 @@ void loop() {
       /* Starts the main loop */
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
       presQ = readPresentPacket(syncReadPacket);
-      //Serial.println(analogRead(ELEVATION_SENSOR_PIN)*(360.0/1023)- initAngle);
       globForces = sensorOrientation(rawForces, presQ);
       filtForces = sensorFilter.Update(globForces);
-      
+
       initSI = goalSI;
+      initSI.z = L1_LINK * sin(presQ.q2);
 
       goalSI = admittanceControlModel(filtForces, initSI);
-      goalQ = inverseKine(goalSI);
-      
+      goalQ = inverseKine(presQ, goalSI);
+
       goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ, presQ);
       loopTime = millis() - startLoop;
-      
+
       if (diagMode) {
         diagnosticMode(totalTime, globForces, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
       }
-      
+
     }
   }
-  if (!Serial){
+  if (!Serial) {
     dxlAbling(POSITION_CONTROL, DISABLE, dxl_error);
-    while(!Serial);
+    while (!Serial);
   }
 }

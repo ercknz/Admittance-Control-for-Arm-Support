@@ -34,10 +34,9 @@ forceStruct singleOptoForceRead(float xCal, float yCal, float zCal){
             int16_t yRaw = bytesToCounts(goodPacket[10], goodPacket[11]);
             int16_t zRaw = bytesToCounts(goodPacket[12], goodPacket[13]); 
 
-            //Sensor flipped about the y-axis 180 degrees
-            force.X = -(xRaw/xSensitivity - xCal);
+            force.X = xRaw/xSensitivity - xCal;
             force.Y = yRaw/ySensitivity - yCal;
-            force.Z = -(zRaw/zSensitivity - zCal);
+            force.Z = zRaw/zSensitivity - zCal;
           }
         }
       }

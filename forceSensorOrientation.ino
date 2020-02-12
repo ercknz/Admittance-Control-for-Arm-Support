@@ -7,9 +7,11 @@
 
 forceStruct sensorOrientation(forceStruct rawF, jointSpace pres){
   forceStruct globalF;
-  globalF.X = rawF.X * (-sin(pres.q1 + pres.q4)) + rawF.Y * (-cos(pres.q1 + pres.q4));
+
+  // GlobalForce = [R_z](q1) * [R_z](q4) * [R_y](pi) * rawForce
+  globalF.X = -(rawF.X * (-sin(pres.q1 + pres.q4)) + rawF.Y * (-cos(pres.q1 + pres.q4)));
   globalF.Y = rawF.X * ( cos(pres.q1 + pres.q4)) + rawF.Y * (-sin(pres.q1 + pres.q4));
-  globalF.Z = rawF.Z;
+  globalF.Z = -rawF.Z;
 
   return globalF;
 }

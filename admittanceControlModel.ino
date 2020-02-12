@@ -30,9 +30,6 @@
 
 modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
   modelSpace goal;
-  // Boundaries for Model /////////////////////////////////////////////////////////////////////////
-  static float outBoundary = L1_LINK + L2_LINK;
-  static float inBoundary = abs(L1_LINK - L2_LINK);
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   float Cx1 = ((F.X / DAMPING) - init.xDot) * (MASS / DAMPING);
   float Cx2 = init.x - Cx1;
@@ -45,19 +42,15 @@ modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
   goal.y    = Cy1 * exp(-(DAMPING / MASS) * MODEL_DT) + (F.Y / DAMPING) * MODEL_DT + Cy2;
   goal.yDot = (F.Y / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * MODEL_DT);
 
-  /*/ Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
+  /*// Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
     float Cz1 = ((zForce/DAMPING) - zPresVelSI)*(MASS/DAMPING);
     float Cz2 = zPresPosSI - Cz1;
     zGoalPosSI = Cz1*exp(-(DAMPING/MASS)*TIME) + (zForce/DAMPING)*TIME + Cz2;
     zGoalVelSI = -(DAMPING/MASS)*Cz1*exp(-(DAMPING/MASS)*TIME) + (zForce/DAMPING); */
 
-  // Check Model Limits ////////////////////////////////////////////////////////////////////////////
-  float goalXY = sqrt(pow(goal.x, 2) + pow(goal.y, 2));
-  if (goalXY > outBoundary || goalXY < inBoundary) {
-    goal.x = init.x;
-    goal.y = init.y;
-    goal.xDot = 0;
-    goal.yDot = 0;
-  }
+  //z pass through
+  goal.z = init.z;
+  goal.zDot = 0;
+  
   return goal;
 }
