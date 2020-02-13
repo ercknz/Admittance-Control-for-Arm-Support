@@ -26,7 +26,7 @@ end
 % Adjust the data varaible to match what is being sent from the controller.
 dt = 0.008;
 length = secs/dt; % seconds*(1frame/secs)=frames
-data = zeros(length,24);
+data = nan(length,24);
 for i=1:length
     serialData = fscanf(s1);
     temp = strsplit(serialData,'\t');
@@ -71,14 +71,15 @@ subplot(2,2,1)
 plot(data(:,1),data(:,24)); grid on; ylim([0,10])
 title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
 subplot(2,2,2)
-plot(data(:,1),data(:,[2 3])); grid on;
-legend('X','Y');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
+plot(data(:,1),data(:,[2 3 4])); grid on;
+legend('X','Y','Z');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
 subplot(2,2,3)
-quiver(data(:,11),data(:,12),data(:,14),data(:,15)); grid on; xlim([-1.2,1.2]);ylim([-1.2, 1.2])
+quiver3(data(:,11),data(:,12),data(:,13),data(:,14),data(:,15),data(:,16)); grid on; 
+xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); view(3);
 title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
 subplot(2,2,4)
-plot(data(:,1),data(:,[11 12])); grid on;
-legend('X','Y');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
+plot(data(:,1),data(:,[11 12 13])); grid on;
+legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
 
 %% saves plots
 set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);

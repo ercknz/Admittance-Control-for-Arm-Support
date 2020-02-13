@@ -9,17 +9,25 @@
 
 void dxlAbling(uint8_t mode, uint8_t state, uint8_t &dxl_error) {
   int dxlCommResult;
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_LED, state, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_LED, state, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_LED, state, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_LED, state, &dxl_error);
   
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_OPERATING_MODE, mode, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_OPERATING_MODE, mode, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_OPERATING_MODE, mode, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER_SLV, ADDRESS_OPERATING_MODE, mode, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_OPERATING_MODE, mode, &dxl_error);
   
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW, ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_VELOCITY_LIMIT, VELOCITY_LIMIT,   &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_VELOCITY_LIMIT, VELOCITY_LIMIT,   &dxl_error);
+//  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MIN_POSITION,   SHOULDER_MIN_POS, &dxl_error);
+//  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MAX_POSITION,   SHOULDER_MAX_POS, &dxl_error);
+//  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_MIN_POSITION,   ELBOW_MIN_POS,    &dxl_error);
+//  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_MAX_POSITION,   ELBOW_MAX_POS,    &dxl_error);
   
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW, ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
 }
 
 int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket, jointSpace goal, jointSpace pres) {
@@ -28,7 +36,7 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
   uint8_t elbowParam[4], shoulderParam[4];
   
   // Convert to Counts /////////////////////////////////////////////////////////////////////////
-  int32_t presPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
+  int32_t presPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT; 
   int32_t presPosElbow    = ELBOW_MIN_POS + goal.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalPosElbow    = ELBOW_MIN_POS + goal.q4 * (180.0 / PI) / DEGREES_PER_COUNT;

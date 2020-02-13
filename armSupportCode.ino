@@ -35,6 +35,7 @@ forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
 #define ID_ELBOW          7
 /* Dynamixel Control Table Addresses */
 #define ADDRESS_OPERATING_MODE   11
+#define ADDRESS_VELOCITY_LIMIT   44
 #define ADDRESS_MAX_POSITION     48
 #define ADDRESS_MIN_POSITION     52
 #define ADDRESS_TORQUE_ENABLE    64
@@ -59,14 +60,11 @@ forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Dynamixel Motor Limits */
-#define ELBOW_MIN_POS     1023
-#define ELBOW_MAX_POS     3055
-#define SHOULDER_MIN_POS  470
-#define SHOULDER_MAX_POS  3326
-#define ELBOW_MIN_VEL     0
-#define ELBOW_MAX_VEL     3000
-#define SHOULDER_MIN_VEL  0
-#define SHOULDER_MAX_VEL  3000
+#define ELBOW_MIN_POS     1024
+#define ELBOW_MAX_POS     3050
+#define SHOULDER_MIN_POS  490
+#define SHOULDER_MAX_POS  3260
+#define VELOCITY_LIMIT    100
 #define ELEVATION_ZERO    2.269
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
@@ -174,7 +172,7 @@ void loop() {
       loopTime = millis() - startLoop;
 
       if (diagMode) {
-        diagnosticMode(totalTime, globForces, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+        diagnosticMode(totalTime, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
       }
 
     }
