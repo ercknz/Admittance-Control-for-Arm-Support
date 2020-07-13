@@ -80,11 +80,14 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   
   /* Finds and checks Elbow Angle */
   float gamma = acos((pow((A1_LINK + L1_XY + A2_LINK),2) + pow(H_OF_L2,2) - pow(M.x,2) - pow(M.y,2))/(2 * H_OF_L2 * (A1_LINK + L1_XY + A2_LINK)));
+  
+  // CHECK THIS!!!!
+
   Q.q4 = PI - gamma + PHI;
-  if (Q.q4 + Q4_MIN < Q4_MIN) {
-    Q.q4 = PHI;
-  } else if (Q.q4 + Q4_MIN > Q4_MAX) {
-    Q.q4 = PI;
+  if (Q.q4 < Q4_MIN - Q4_MIN) {
+    Q.q4 = Q4_MIN - Q4_MIN;
+  } else if (Q.q4 > Q4_MAX - Q4_MIN) {
+    Q.q4 = Q4_MAX - Q4_MIN;
   }
   
   /* Finds and checks shoulder angle */
@@ -95,20 +98,26 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   } else if (Q.q1 > Q1_MAX) {
     Q.q1 = Q1_MAX;
   }
+
+  // Check for nans
+  if (isnan(Q.q1)) {
+    Q.q1 = pres.q1;
+  }
+  if (isnan(Q.q4)) {
+    Q.q4 = Q.q4;
+  }
   
   /* Checks XYZ */
   modelSpace checkM = forwardKine(Q);
   if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)){
     M = checkM;
   }
-  
-  return Q;
 
   /* Solve for joint angular velocities (psuedo inverse Jacobian) */
   float detJ = (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4)) * (L2_LINK * cos(Q.q1 + Q.q4)) - (-L2_LINK * sin(Q.q1 + Q.q4)) * (L1_LINK * cos(Q.q1) + L2_LINK * cos(Q.q1 + Q.q4));
   Q.q1Dot = (M.xDot * (L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
   Q.q2Dot = 0;
-  Q.q4Dot = (M.xDot * (-L1_LINK * cos(Q.q1) - L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
+  Q.q4Dot = -(M.xDot * (-L1_LINK * cos(Q.q1) - L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
 
   return Q;
 }

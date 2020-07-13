@@ -23,8 +23,10 @@
 #define zSensitivity 1.610
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Force Sensor filter */
-#define SENSOR_FILTER_WEIGHT 0.03
+#define SENSOR_FILTER_WEIGHT 0.05
+#define ELEVATION_FILTER_WEIGHT 0.05
 forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
+singleFilter elevationFilter(0.0, ELEVATION_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -60,11 +62,11 @@ forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Dynamixel Motor Limits */
-#define ELBOW_MIN_POS     1024
+#define ELBOW_MIN_POS     1068
 #define ELBOW_MAX_POS     3050
 #define SHOULDER_MIN_POS  490
 #define SHOULDER_MAX_POS  3260
-#define VELOCITY_LIMIT    100
+#define VELOCITY_LIMIT    75
 #define ELEVATION_ZERO    2.269
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
@@ -140,12 +142,13 @@ void loop() {
   previousTime = millis();
   rawForces = singleOptoForceRead(xCal, yCal, zCal);
   presQ = readPresentPacket(syncReadPacket);
+  elevationFilter.SetCurrent(presQ.q2);
   globForces = sensorOrientation(rawForces, presQ);
   filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
   if (diagMode) {
-    diagnosticMode(totalTime, globForces, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+    diagnosticMode(totalTime, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
   }
 
   /* Main Loop */
@@ -159,6 +162,7 @@ void loop() {
       /* Starts the main loop */
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
       presQ = readPresentPacket(syncReadPacket);
+      presQ.q2 = elevationFilter.Update(presQ.q2);
       globForces = sensorOrientation(rawForces, presQ);
       filtForces = sensorFilter.Update(globForces);
 
@@ -168,7 +172,7 @@ void loop() {
       goalSI = admittanceControlModel(filtForces, initSI);
       goalQ = inverseKine(presQ, goalSI);
 
-      goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ, presQ);
+      goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ);
       loopTime = millis() - startLoop;
 
       if (diagMode) {

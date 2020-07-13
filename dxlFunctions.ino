@@ -30,26 +30,16 @@ void dxlAbling(uint8_t mode, uint8_t state, uint8_t &dxl_error) {
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_PROFILE_VELOCITY, ~state, &dxl_error);
 }
 
-int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket, jointSpace goal, jointSpace pres) {
+int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket, jointSpace goal) {
   int dxlCommResult;
   //uint8_t elbowParam[8], shoulderParam[8];
   uint8_t elbowParam[4], shoulderParam[4];
   
   // Convert to Counts /////////////////////////////////////////////////////////////////////////
-  int32_t presPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT; 
-  int32_t presPosElbow    = ELBOW_MIN_POS + goal.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalPosShoulder = goal.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalPosElbow    = ELBOW_MIN_POS + goal.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
   int32_t goalVelShoulder = abs(goal.q1Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
   int32_t goalVelElbow    = abs(goal.q4Dot    * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
-  
-  // Check limits
-  if ((goalPosElbow > (ELBOW_MAX_POS)) && (goalPosElbow < (ELBOW_MIN_POS))) {
-    goalPosElbow = presPosElbow;
-  }
-  if ((goalPosShoulder > SHOULDER_MAX_POS) || (goalPosShoulder < SHOULDER_MIN_POS)) {
-    goalPosShoulder = presPosShoulder;
-  }
   
   // Elbow Parameters Goal Packet /////////////////////////////////////////////////////////////////////////
   //elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goalVelElbow));

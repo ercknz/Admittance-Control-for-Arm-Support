@@ -34,3 +34,24 @@ class forceFilter {
   }
 };
 
+class singleFilter {
+  float weight;
+  float currentValue;
+  
+  public:
+  singleFilter(float initialValue, float filterWeight){
+    currentValue = initialValue;
+    weight = filterWeight;
+  }
+  float Update(float inputValue){
+    float outputValue = weight*inputValue + (1 - weight)*currentValue;
+    currentValue = outputValue;
+    return outputValue;
+  }
+  float GetCurrent(){
+    return currentValue;
+  }
+  void SetCurrent(float newCurrent){
+    currentValue = newCurrent;
+  }
+};
