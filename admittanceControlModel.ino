@@ -12,17 +12,17 @@
    general solution:    xg(t) = Cy1*exp(-(B/M)*t) + Cy2
    particular solution: xp(t) = (Fy/B)*t
    coefficents:         Cy1 = ((Fy/B) - yPresentVelocity)*(M/B)
-                        Cy2 = yPresentPosition - B1
+                        Cy2 = yPresentPosition - Cy1
    solutions:           x(t) = Cy1*exp(-(B/M)*t) + (Fy/B)*t + Cy2
                         x'(t) = -(B/M)*Cy1*exp(-(B/M)*t) + (Fy/B)
    Z Direction ***********************************************************************
    2nd order eqn:       M*z" = Fz - B*z' - Mg
    general solution:    xg(t) = Cz1*exp(-(B/M)*t) + Cz2
-   particular solution: xp(t) = (Fz/B)*t
-   coefficents:         Cz1 = ((Fz/B) - zPresentVelocity)*(M/B)
+   particular solution: xp(t) = (1/B)*(Fz-g*M)*t
+   coefficents:         Cz1 = ((1/B)*(Fz-g*M) - zPresentVelocity)*(M/B)
                         Cz2 = zPresentPosition - Cz1
-   solutions:           x(t) = Cz1*exp(-(B/M)*t) + (Fz/B)*t + Cz2
-                        x'(t) = -(B/M)*Cz1*exp(-(B/M)*t) + (Fz/B)
+   solutions:           z(t) = Cz1*exp(-(B/M)*t) + (1/B)*(Fz-g*M)*t + Cz2
+                        z'(t) = -(B/M)*Cz1*exp(-(B/M)*t) + (1/B)*(Fz-g*M)
 
    Created 1/24/2019
    Script by erick nunez
@@ -42,15 +42,11 @@ modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
   goal.y    = Cy1 * exp(-(DAMPING / MASS) * MODEL_DT) + (F.Y / DAMPING) * MODEL_DT + Cy2;
   goal.yDot = (F.Y / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * MODEL_DT);
 
-  /*// Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
-    float Cz1 = ((zForce/DAMPING) - zPresVelSI)*(MASS/DAMPING);
-    float Cz2 = zPresPosSI - Cz1;
-    zGoalPosSI = Cz1*exp(-(DAMPING/MASS)*TIME) + (zForce/DAMPING)*TIME + Cz2;
-    zGoalVelSI = -(DAMPING/MASS)*Cz1*exp(-(DAMPING/MASS)*TIME) + (zForce/DAMPING); */
+  // Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
+  float Cz1 = ((1/DAMPING)*(F.Z -GRAVITY * MASS) - init.zDot) * (MASS / DAMPING);
+  float Cz2 = init.z - Cz1;
+  goal.z    = Cz1 * exp(-(DAMPING / MASS) * MODEL_DT) + (1/DAMPING)*(F.Z - GRAVITY * MASS) * MODEL_DT + Cz2;
+  goal.zDot = -(DAMPING / MASS) * Cz1 * exp(-(DAMPING / MASS) * MODEL_DT) + (1/DAMPING)*(F.Z - GRAVITY * MASS);
 
-  //z pass through
-  goal.z = init.z;
-  goal.zDot = 0;
-  
   return goal;
 }

@@ -33,7 +33,8 @@ singleFilter elevationFilter(0.0, ELEVATION_FILTER_WEIGHT);
 #define DEVICEPORT       "3"
 /* Dynamixel Motor Parameters */
 #define ID_SHOULDER       3
-#define ID_SHOULDER_SLV   13
+#define ID_SHLDR_SLAVE    13
+#define ID_SHLDR_ELEVATE  5
 #define ID_ELBOW          7
 /* Dynamixel Control Table Addresses */
 #define ADDRESS_OPERATING_MODE   11
@@ -51,12 +52,14 @@ singleFilter elevationFilter(0.0, ELEVATION_FILTER_WEIGHT);
 /* Dynamixel Packet Parameters */
 #define VELOCITY_CONTROL      1
 #define POSITION_CONTROL      3
+#define EXT_POS_CONTROL       4
 #define LEN_GOAL_POSITION     4
 #define LEN_PROFILE_VELOCITY  4
 #define LEN_PRESENT_POSITION  4
 #define LEN_PRESENT_VELOCITY  4
 #define ENABLE                1
 #define DISABLE               0
+#define VEL_BASED_PROFILE     0
 #define ESC_ASCII_VALUE       0x1b
 /* Dynamixel Parameters for calculations */
 #define DEGREES_PER_COUNT 0.088
@@ -129,7 +132,8 @@ void loop() {
   int     goalReturn;
   bool    addParamResult = false;
 
-  dxlAbling(POSITION_CONTROL, ENABLE, dxl_error);    // Toggle torque for troubleshooting
+  dxlConfig(dxl_error);    
+  dxlTorque(DISABLE, dxl_error);   // Toggle torque for troubleshooting
   delay(100);
 
   //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
@@ -182,7 +186,7 @@ void loop() {
     }
   }
   if (!Serial) {
-    dxlAbling(POSITION_CONTROL, DISABLE, dxl_error);
+    dxlTorque(DISABLE, dxl_error);
     while (!Serial);
   }
 }
