@@ -13,17 +13,17 @@ void diagnosticMode(unsigned long totalTime, forceStruct F, jointSpace pres, mod
 
   Serial.print(F.X); Serial.print("\t"); Serial.print(F.Y); Serial.print("\t"); Serial.print(F.Z); Serial.print("\t");
 
-  Serial.print(pres.q1); Serial.print("\t"); Serial.print(pres.q2); Serial.print("\t"); Serial.print(pres.q4); Serial.print("\t");
+  Serial.print(pres.q1Cts); Serial.print("\t"); Serial.print(pres.q2Cts); Serial.print("\t"); Serial.print(pres.q4Cts); Serial.print("\t");
 
-  Serial.print(pres.q1Dot); Serial.print("\t"); Serial.print(pres.q2Dot); Serial.print("\t"); Serial.print(pres.q4Dot); Serial.print("\t");
+  Serial.print(pres.q1DotCts); Serial.print("\t"); Serial.print(pres.q2DotCts); Serial.print("\t"); Serial.print(pres.q4DotCts); Serial.print("\t");
 
-  Serial.print(goal.x, 4); Serial.print("\t"); Serial.print(goal.y, 4); Serial.print("\t"); Serial.print(goal.z, 4); Serial.print("\t");
+  //Serial.print(goal.x, 4); Serial.print("\t"); Serial.print(goal.y, 4); Serial.print("\t"); Serial.print(goal.z, 4); Serial.print("\t");
 
-  Serial.print(goal.xDot, 4); Serial.print("\t"); Serial.print(goal.yDot, 4); Serial.print("\t"); Serial.print(goal.zDot, 4); Serial.print("\t");
+  //Serial.print(goal.xDot, 4); Serial.print("\t"); Serial.print(goal.yDot, 4); Serial.print("\t"); Serial.print(goal.zDot, 4); Serial.print("\t");
 
-  Serial.print(Q.q1); Serial.print("\t"); Serial.print(Q.q2); Serial.print("\t"); Serial.print(Q.q4); Serial.print("\t");
+  //Serial.print(Q.q1); Serial.print("\t"); Serial.print(Q.q2); Serial.print("\t"); Serial.print(Q.q4); Serial.print("\t");
 
-  Serial.print(Q.q1Dot); Serial.print("\t"); Serial.print(Q.q2Dot); Serial.print("\t"); Serial.print(Q.q4Dot); Serial.print("\t");
+  //Serial.print(Q.q1Dot); Serial.print("\t"); Serial.print(Q.q2Dot); Serial.print("\t"); Serial.print(Q.q4Dot); Serial.print("\t");
   
   Serial.print(goalReturn); Serial.print("\t"); Serial.print(loopTime);
   

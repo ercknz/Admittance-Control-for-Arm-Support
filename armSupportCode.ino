@@ -24,9 +24,7 @@
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.05
-#define ELEVATION_FILTER_WEIGHT 0.05
 forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
-singleFilter elevationFilter(0.0, ELEVATION_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -65,12 +63,13 @@ singleFilter elevationFilter(0.0, ELEVATION_FILTER_WEIGHT);
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Dynamixel Motor Limits */
-#define ELBOW_MIN_POS     1068
-#define ELBOW_MAX_POS     3050
-#define SHOULDER_MIN_POS  490
-#define SHOULDER_MAX_POS  3260
-#define VELOCITY_LIMIT    75
-#define ELEVATION_ZERO    2.269
+#define ELBOW_MIN_POS     1168
+#define ELBOW_MAX_POS     3187
+#define SHOULDER_MIN_POS  730
+#define SHOULDER_MAX_POS  3620
+#define ELEVATION_MIN_POS 456
+#define ELEVATION_MAX_POS 3297
+#define VELOCITY_LIMIT    100
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
 #define MODEL_DT      0.008   // Seconds
@@ -78,15 +77,13 @@ singleFilter elevationFilter(0.0, ELEVATION_FILTER_WEIGHT);
 #define DAMPING       25.000
 #define GRAVITY       9.80665
 /* Kinematic Constants */
-#define A1_LINK   0.062     // Shoulder to 4bar linkage
-#define L1_LINK   0.498     // length of 4bar linkage
-#define A2_LINK   0.048     // 4bar linkage to elbow
+#define A1_LINK   0.073     // Shoulder to 4bar linkage
+#define L1_LINK   0.368     // length of 4bar linkage
+#define A2_LINK   0.082     // 4bar linkage to elbow
 #define L2_LINK   0.514     // elbow to sensor
 #define LINK_OFFSET 0.035   // elbow to sensor offset
 float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
 float PHI = atan(LINK_OFFSET / L2_LINK);
-/* Shoulder elevation sensor */
-#define ELEVATION_SENSOR_PIN 1
 /* Diagnostic mode */
 bool diagMode = true;
 
@@ -141,18 +138,18 @@ void loop() {
   dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
+  addParamResult = syncReadPacket.addParam(ID_SHLDR_ELEVATE);
 
   /* Initialize Model */
   previousTime = millis();
   rawForces = singleOptoForceRead(xCal, yCal, zCal);
   presQ = readPresentPacket(syncReadPacket);
-  elevationFilter.SetCurrent(presQ.q2);
   globForces = sensorOrientation(rawForces, presQ);
   filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
   if (diagMode) {
-    diagnosticMode(totalTime, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+    diagnosticMode(totalTime, globForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
   }
 
   /* Main Loop */
@@ -166,7 +163,6 @@ void loop() {
       /* Starts the main loop */
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
       presQ = readPresentPacket(syncReadPacket);
-      presQ.q2 = elevationFilter.Update(presQ.q2);
       globForces = sensorOrientation(rawForces, presQ);
       filtForces = sensorFilter.Update(globForces);
 
@@ -180,7 +176,7 @@ void loop() {
       loopTime = millis() - startLoop;
 
       if (diagMode) {
-        diagnosticMode(totalTime, filtForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+        diagnosticMode(totalTime, rawForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
       }
 
     }

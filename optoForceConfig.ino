@@ -11,26 +11,22 @@
 void optoForceConfig(){
   byte configPacket[9];
   uint16_t packetSum = 0;
-  //Serial.println(".....configuring.....");
-  //header
+  /* Header */
   configPacket[0] = 170;   configPacket[1] = 0;   configPacket[2] = 50;   configPacket[3] = 3;
-  // speed
-  // 0:noData, 1:1000Hz, 3:333Hz, 10:100Hz, 33:30Hz, 100:10Hz
+  /* Speed -> 0:noData, 1:1000Hz, 3:333Hz, 10:100Hz, 33:30Hz, 100:10Hz */
   configPacket[4] = 1;
-  // filter
-  // 0:noFilter, 1:500Hz, 2:150Hz, 3:50Hz, 4:15Hz, 5:5Hz, 6:1.5Hz
+  /* Filter -> 0:noFilter, 1:500Hz, 2:150Hz, 3:50Hz, 4:15Hz, 5:5Hz, 6:1.5Hz */
   configPacket[5] = 6;
-  // zero
-  // 0:originalValues, 255:zeroSensor
+  /* Zero -> 0:originalValues, 255:zeroSensor */
   configPacket[6] = 255;
-  // check sum 
+  /* Check Sum */ 
   for (int i=0; i<7; i++){
     packetSum += configPacket[i];
   }
   configPacket[7] = floor(packetSum/256);     
   configPacket[8] = floor(packetSum % 256);
 
-  // write config packet
+  /* write config packet */
   for (int i = 0; i<9; i++){
     Serial1.write(configPacket[i]);
   }

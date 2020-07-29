@@ -119,5 +119,13 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   Q.q2Dot = 0;
   Q.q4Dot = -(M.xDot * (-L1_LINK * cos(Q.q1) - L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
 
+  /* Convert to Counts */
+  Q.q1Cts    = Q.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
+  Q.q2Cts    = Q.q2 * (180.0 / PI) / DEGREES_PER_COUNT;
+  Q.q4Cts    = ELBOW_MIN_POS + Q.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
+  Q.q1DotCts = abs(Q.q1Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  Q.q2DotCts = abs(Q.q2Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  Q.q4DotCts = abs(Q.q4Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+
   return Q;
 }

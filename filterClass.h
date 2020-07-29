@@ -29,7 +29,7 @@ class forceFilter {
     currentForce = outputForce;
     return outputForce;
   }
-  forceStruct Current(){
+  forceStruct GetCurrent(){
     return currentForce;
   }
 };

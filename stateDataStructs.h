@@ -25,6 +25,14 @@ typedef struct{
 } modelSpace;
 
 typedef struct{
+  // Joint Motor Position and velocity counts
+  int32_t q1Cts;
+  int32_t q1DotCts;
+  int32_t q2Cts;
+  int32_t q2DotCts;
+  int32_t q4Cts;
+  int32_t q4DotCts;
+  // Joint angles and angular velocities
   float q1;       // Shoulder Angle
   float q1Dot;    // Shoulder Angular Velocity
   float q2;       // Elevation Angle
