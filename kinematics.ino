@@ -6,6 +6,7 @@
    Script by erick nunez
 */
 
+/******************** Arm Support Forward Kinematics Function ************************************************/
 modelSpace forwardKine(jointSpace Q) {
   // motor counts/speed --> forwardKine() --> position/velocity(SI)
   modelSpace M;
@@ -29,6 +30,7 @@ modelSpace forwardKine(jointSpace Q) {
   return M;
 }
 
+/******************** Arm Support Inverse Kinematics function ************************************************/
 jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   /* position/velocity(SI) --> inverseKine() --> motor counts/speed */
   jointSpace Q;

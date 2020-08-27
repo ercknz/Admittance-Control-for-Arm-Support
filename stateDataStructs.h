@@ -2,7 +2,7 @@
    armSupportCode with will help organize the data. 
 
    Files are pushed to github:
-   https://github.com/ercknz/Lab-ArmSupport
+   https://github.com/ercknz/Admittance-Control-for-Arm-Support
 
    Script by erick nunez
    created: 11/25/2019

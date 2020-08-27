@@ -7,6 +7,7 @@
    script by erick nunez
 */
 
+/******************** Dynamixel Configuration Function ************************************************/
 void dxlConfig(uint8_t &dxl_error) {
   int dxlCommResult;
   /* Enable LED for visual indication */
@@ -34,6 +35,7 @@ void dxlConfig(uint8_t &dxl_error) {
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
 }
 
+/******************** Dynamixel Torque Enable Function ************************************************/
 void dxlTorque(bool state, uint8_t &dxl_error) {
   int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
@@ -41,6 +43,7 @@ void dxlTorque(bool state, uint8_t &dxl_error) {
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, state, &dxl_error);
 }
 
+/******************** Dynamixel Sync Write Function ************************************************/
 int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket, jointSpace goal) {
   int dxlCommResult;
   //uint8_t elbowParam[8], shoulderParam[8], elevateParam[8];
@@ -74,6 +77,7 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
   return dxlCommResult;
 }
 
+/******************** Dynamixel Sync Read Function ************************************************/
 jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   jointSpace pres;
   

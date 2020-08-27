@@ -3,7 +3,7 @@
    Functions needed are should be included in the folder.
 
    Files are pushed to github:
-   https://github.com/ercknz/Lab-ArmSupport
+   https://github.com/ercknz/Admittance-Control-for-Arm-Support
 
    Script by erick nunez
    created: 1/24/2019
@@ -14,7 +14,7 @@
 #include <DynamixelSDK.h>
 #include <PID_v1.h>
 #include "stateDataStructs.h"
-#include "filterClass.h"
+#include "forceSensorClass.h"
 
 // Constants ////////////////////////////////////////////////////////////////////////////////////////
 /* OptoForce Constants */
@@ -24,7 +24,7 @@
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.05
-forceFilter  sensorFilter(0.0, SENSOR_FILTER_WEIGHT);
+forceSensor  optoForceSensor(0.0, SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -145,7 +145,7 @@ void loop() {
   rawForces = singleOptoForceRead(xCal, yCal, zCal);
   presQ = readPresentPacket(syncReadPacket);
   globForces = sensorOrientation(rawForces, presQ);
-  filtForces = sensorFilter.Update(globForces);
+  filtForces = optoForceSensor.Update(globForces);
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
   if (diagMode) {
@@ -164,7 +164,7 @@ void loop() {
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
       presQ = readPresentPacket(syncReadPacket);
       globForces = sensorOrientation(rawForces, presQ);
-      filtForces = sensorFilter.Update(globForces);
+      filtForces = optoForceSensor.Update(globForces);
 
       initSI = goalSI;
       initSI.z = L1_LINK * sin(presQ.q2);
