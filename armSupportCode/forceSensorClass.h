@@ -11,6 +11,8 @@
    Script by erick nunez
 */
 
+//this is a test
+
 class forceSensor {
   float filterWeight;
   forceStruct currentFiltForce;
