@@ -13,25 +13,25 @@ void dxlConfig(uint8_t &dxl_error) {
   /* Enable LED for visual indication */
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_LED, ENABLE, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_LED, ENABLE, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_LED, ENABLE, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_LED, ENABLE, &dxl_error);
   /* Sets control mode */
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_OPERATING_MODE, POSITION_CONTROL, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_OPERATING_MODE, POSITION_CONTROL, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_OPERATING_MODE, POSITION_CONTROL, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_OPERATING_MODE, POSITION_CONTROL, &dxl_error);
   /* Set Velocity Limits */
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
   /* Sets Position Limits */
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MIN_POSITION,   SHOULDER_MIN_POS, &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MAX_POSITION,   SHOULDER_MAX_POS, &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_MIN_POSITION,   ELEVATION_MIN_POS,&dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_MAX_POSITION,   ELEVATION_MAX_POS,&dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_MIN_POSITION,   ELEVATION_MIN_POS,&dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_MAX_POSITION,   ELEVATION_MAX_POS,&dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_MIN_POSITION,   ELBOW_MIN_POS,    &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_MAX_POSITION,   ELBOW_MAX_POS,    &dxl_error);
   /* Sets Velocity Profiles */
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
 }
 
@@ -39,7 +39,7 @@ void dxlConfig(uint8_t &dxl_error) {
 void dxlTorque(bool state, uint8_t &dxl_error) {
   int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, state, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, state, &dxl_error);
 }
 
@@ -83,12 +83,12 @@ jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
-  pres.q4DotCts = syncReadPacket.getData(ID_ELBOW,         ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY); // Elbow Direction appears to be inversed.
-  pres.q4Cts    = syncReadPacket.getData(ID_ELBOW,         ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-  pres.q2DotCts = syncReadPacket.getData(ID_SHLDR_ELEVATE, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  pres.q2Cts    = syncReadPacket.getData(ID_SHLDR_ELEVATE, ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-  pres.q1DotCts = syncReadPacket.getData(ID_SHOULDER,      ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  pres.q1Cts    = syncReadPacket.getData(ID_SHOULDER,      ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  pres.q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY); // Elbow Direction appears to be inversed.
+  pres.q4Cts    = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  pres.q2DotCts = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+  pres.q2Cts    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  pres.q1DotCts = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+  pres.q1Cts    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
   
   /* Convert Motor Counts */
   pres.q1      = (pres.q1Cts) * DEGREES_PER_COUNT * (PI / 180.0);

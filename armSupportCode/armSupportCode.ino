@@ -32,7 +32,8 @@ forceSensor  optoForceSensor(SENSOR_FILTER_WEIGHT);
 /* Dynamixel Motor Parameters */
 #define ID_SHOULDER       3
 #define ID_SHLDR_SLAVE    13
-#define ID_SHLDR_ELEVATE  5
+#define ID_ELEVATION      5
+#define ID_ELVTN_SLAVE    15
 #define ID_ELBOW          7
 /* Dynamixel Control Table Addresses */
 #define ADDRESS_OPERATING_MODE   11
@@ -138,7 +139,7 @@ void loop() {
   dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
   addParamResult = syncReadPacket.addParam(ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
-  addParamResult = syncReadPacket.addParam(ID_SHLDR_ELEVATE);
+  addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
   /* Initialize Model */
   previousTime = millis();

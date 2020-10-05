@@ -9,12 +9,14 @@
 
 */
 
+/********** Force Sensor Data Structure **********/
 typedef struct{
   float X;
   float Y;
   float Z;
 } forceStruct;
 
+/********** Model Space Data Structure **********/
 typedef struct{
   float x;
   float y;
@@ -24,6 +26,7 @@ typedef struct{
   float zDot;
 } modelSpace;
 
+/********** Joint Space Data Structure **********/
 typedef struct{
   // Joint Motor Position and velocity counts
   int32_t q1Cts;
