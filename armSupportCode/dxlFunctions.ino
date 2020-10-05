@@ -19,9 +19,9 @@ void dxlConfig(uint8_t &dxl_error) {
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_OPERATING_MODE, POSITION_CONTROL, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_OPERATING_MODE, POSITION_CONTROL, &dxl_error);
   /* Set Velocity Limits */
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_VELOCITY_LIMIT, VELOCITY_LIMIT,   &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_VELOCITY_LIMIT, VELOCITY_LIMIT,   &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_VELOCITY_LIMIT, VELOCITY_LIMIT,   &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHLDR_ELEVATE,ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_VELOCITY_LIMIT, VEL_MAX_LIMIT,   &dxl_error);
   /* Sets Position Limits */
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MIN_POSITION,   SHOULDER_MIN_POS, &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MAX_POSITION,   SHOULDER_MAX_POS, &dxl_error);

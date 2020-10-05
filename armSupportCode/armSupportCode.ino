@@ -24,7 +24,7 @@
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.05
-forceSensor  optoForceSensor(0.0, SENSOR_FILTER_WEIGHT);
+forceSensor  optoForceSensor(SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -69,7 +69,7 @@ forceSensor  optoForceSensor(0.0, SENSOR_FILTER_WEIGHT);
 #define SHOULDER_MAX_POS  3620
 #define ELEVATION_MIN_POS 456
 #define ELEVATION_MAX_POS 3297
-#define VELOCITY_LIMIT    100
+#define VEL_MAX_LIMIT     100
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
 #define MODEL_DT      0.008   // Seconds

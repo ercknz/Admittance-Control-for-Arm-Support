@@ -12,17 +12,17 @@
 */
 
 class forceSensor {
-  float weight;
+  float filterWeight;
   forceStruct currentFiltForce;
   forceStruct currentRawForce;
   forceStruct currentGlobalForce;
   
   public:
-  forceSensor(float initialValue, float filterWeight){
+  forceSensor(float weight, float initialValue = 0.0){
     lastFiltForce.X = initialValue;
     lastFiltForce.Y = initialValue;
     lastFiltForce.Z = initialValue;
-    weight = filterWeight;
+    filterWeight = weight;
   }
   
   forceStruct Orientation(forceStruct rawF, jointSpace pres){
