@@ -21,10 +21,9 @@
 #define xSensitivity 20.180
 #define ySensitivity 20.250
 #define zSensitivity 1.610
-float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.05
-forceSensor  optoForceSensor(SENSOR_FILTER_WEIGHT);
+//forceSensor  optoForceSensor(SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000

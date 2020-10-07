@@ -20,6 +20,7 @@ class forceSensor {
     forceStruct currentRawForce;
     forceStruct currentGlobalForce;
     float threshold = 20.0;
+    float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 
   public:
     forceSensor(float weight, float initialValue = 0.1) {
@@ -37,11 +38,11 @@ class forceSensor {
       /* Read force sensor */
       currentRawForce = singleOptoForceRead(xCal, yCal, zCal);
       /* check force sensor readings */
-      if ((currentRawForce.X != 0.0) && (abs(currentRawForce.X / lastRawForce.X) > threshold)) currentRawForce.X = lastRawForce.X;
-      if ((currentRawForce.Y != 0.0) && (abs(currentRawForce.Y / lastRawForce.Y) > threshold)) currentRawForce.Y = lastRawForce.Y;
-      if ((currentRawForce.Z != 0.0) && (abs(currentRawForce.Z / lastRawForce.Z) > threshold)) currentRawForce.Z = lastRawForce.Z;
+      if ((lastRawForce.X ~= 0.0) && (abs(currentRawForce.X / lastRawForce.X) > threshold)) currentRawForce.X = lastRawForce.X;
+      if ((lastRawForce.Y ~= 0.0) && (abs(currentRawForce.Y / lastRawForce.Y) > threshold)) currentRawForce.Y = lastRawForce.Y;
+      if ((lastRawForce.Z ~= 0.0) && (abs(currentRawForce.Z / lastRawForce.Z) > threshold)) currentRawForce.Z = lastRawForce.Z;
       /* reorient force sensor readings */
-      currentGlobalForce = sensorOrientation(currentRawForce, presentQ);
+      currentGlobalForce = Orientation(currentRawForce, presentQ);
       /* filter force sensor readings*/
       currentFiltForce.X = filterWeight * currentGlobalForce.X + (1 - filterWeight) * lastFiltForce.X;
       currentFiltForce.Y = filterWeight * currentGlobalForce.Y + (1 - filterWeight) * lastFiltForce.Y;
