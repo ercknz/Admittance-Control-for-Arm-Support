@@ -83,7 +83,7 @@ jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
-  pres.q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY); // Elbow Direction appears to be inversed.
+  pres.q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
   pres.q4Cts    = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
   pres.q2DotCts = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
   pres.q2Cts    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
@@ -92,8 +92,8 @@ jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   
   /* Convert Motor Counts */
   pres.q1      = (pres.q1Cts) * DEGREES_PER_COUNT * (PI / 180.0);
-  pres.q2      = (pres.q2Cts) * DEGREES_PER_COUNT * (PI / 180.0);
-  pres.q4      = (pres.q4Cts) * DEGREES_PER_COUNT * (PI / 180.0); // - ELBOW_MIN_POS
+  pres.q2      = -(pres.q2Cts - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1/ELEVATION_RATIO);
+  pres.q4      = (pres.q4Cts - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
   pres.q1Dot   = pres.q1DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
   pres.q2Dot   = pres.q2DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
   pres.q4Dot   = pres.q4DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);

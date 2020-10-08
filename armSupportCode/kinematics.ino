@@ -38,9 +38,9 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   /* Limits */
   static float Q1_MIN = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180); 
   static float Q1_MAX = SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180); 
-  static float Q4_MIN = ELBOW_MIN_POS * DEGREES_PER_COUNT * (PI / 180); 
-  static float Q4_MAX = ELBOW_MAX_POS * DEGREES_PER_COUNT * (PI / 180); 
-  static float Z_LIMIT = 0.400; 
+  static float Q4_MIN = 0.0; 
+  static float Q4_MAX = (ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180); 
+  static float Z_LIMIT = (ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1/ELEVATION_RATIO); 
   static float INNER_DIA = A1_LINK + L1_LINK + A2_LINK - L2_LINK; 
   
   /* Check Z limits */

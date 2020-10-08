@@ -10,20 +10,21 @@
 
 */
 
-// Libraries to add /////////////////////////////////////////////////////////////////////////////////
+/* Libraries to add ///////////////////////////////////////////////////////////////////////////////*/
 #include <DynamixelSDK.h>
 #include <PID_v1.h>
 #include "stateDataStructs.h"
-#include "forceSensorClass.h"
+#include "forceSensorFunctions.h"
 
-// Constants ////////////////////////////////////////////////////////////////////////////////////////
+/* Constants //////////////////////////////////////////////////////////////////////////////////////*/
 /* OptoForce Constants */
 #define xSensitivity 20.180
 #define ySensitivity 20.250
 #define zSensitivity 1.610
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.05
-//forceSensor  optoForceSensor(SENSOR_FILTER_WEIGHT);
+float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
+forceFilter  sensorFilter(SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -63,12 +64,14 @@
 #define DEGREES_PER_COUNT 0.088
 #define RPM_PER_COUNT     0.229
 /* Dynamixel Motor Limits */
-#define ELBOW_MIN_POS     1168
-#define ELBOW_MAX_POS     3187
-#define SHOULDER_MIN_POS  730
-#define SHOULDER_MAX_POS  3620
-#define ELEVATION_MIN_POS 456
-#define ELEVATION_MAX_POS 3297
+#define ELBOW_MIN_POS     1207
+#define ELBOW_MAX_POS     3129
+#define SHOULDER_MIN_POS  705
+#define SHOULDER_MAX_POS  3564
+#define ELEVATION_MIN_POS 643
+#define ELEVATION_MAX_POS 3020
+float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS)/2;
+#define ELEVATION_RATIO   2.305
 #define VEL_MAX_LIMIT     100
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
@@ -78,25 +81,25 @@
 #define GRAVITY       9.80665
 /* Kinematic Constants */
 #define A1_LINK   0.073     // Shoulder to 4bar linkage
-#define L1_LINK   0.368     // length of 4bar linkage
+#define L1_LINK   0.419     // length of 4bar linkage
 #define A2_LINK   0.082     // 4bar linkage to elbow
-#define L2_LINK   0.514     // elbow to sensor
+#define L2_LINK   0.520     // elbow to sensor
 #define LINK_OFFSET 0.035   // elbow to sensor offset
 float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
 float PHI = atan(LINK_OFFSET / L2_LINK);
 /* Diagnostic mode */
-bool diagMode = true;
+bool logging = true;
 
-// Port and Packet variable ///////////////////////////////////////////////////////////////////////////
+/* Port and Packet variable /////////////////////////////////////////////////////////////////////////*/
 dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
-// Setup function ///////////////////////////////////////////////////////////////////////////////////
+/* Setup function /////////////////////////////////////////////////////////////////////////////////*/
 void setup() {
   /* Serial Monitor */
   Serial.begin(115200);
   while (!Serial);
-  // Adds parameters to read packet
+  /* Adds parameters to read packet */
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
   delay(100);
@@ -109,16 +112,17 @@ void setup() {
   optoForceConfig();
 }
 
-// Main loop function ///////////////////////////////////////////////////////////////////////////////////
+/* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
 void loop() {
   /* Calibrate Force Sensor */
   delay(100);
   calibrateForceSensor(xCal, yCal, zCal);
   delay(2000);
   /* Data Structures Declaration */
-  forceStruct   rawForces;      forceStruct   globForces;
-  forceStruct   filtForces;
+  forceStruct   rawForces;      forceStruct   lastRaw;
+  forceStruct   globForces;     forceStruct   filtForces;
   modelSpace    initSI;         modelSpace    goalSI;
+  modelSpace    presSI;
   jointSpace    presQ;          jointSpace    goalQ;
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
@@ -129,7 +133,7 @@ void loop() {
   int     goalReturn;
   bool    addParamResult = false;
 
-  dxlConfig(dxl_error);    
+  dxlConfig(dxl_error);
   dxlTorque(DISABLE, dxl_error);   // Toggle torque for troubleshooting
   delay(100);
 
@@ -143,31 +147,34 @@ void loop() {
   /* Initialize Model */
   previousTime = millis();
   rawForces = singleOptoForceRead(xCal, yCal, zCal);
+  lastRaw = rawForces;
   presQ = readPresentPacket(syncReadPacket);
   globForces = sensorOrientation(rawForces, presQ);
-  filtForces = optoForceSensor.Update(globForces);
+  filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
-  if (diagMode) {
-    diagnosticMode(totalTime, globForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+  if (logging) {
+    loggingFunc(totalTime, rawForces, lastRaw, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
   }
 
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
     if (currentTime - previousTime >= LOOP_DT) {
+      /* Starts the main loop */
       startLoop = millis();
       totalTime += (currentTime - previousTime);
       previousTime = currentTime;
 
-      /* Starts the main loop */
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
+      rawForces = forceCheck(rawForces, lastRaw);
+      lastRaw = rawForces;
       presQ = readPresentPacket(syncReadPacket);
       globForces = sensorOrientation(rawForces, presQ);
-      filtForces = optoForceSensor.Update(globForces);
+      filtForces = sensorFilter.Update(globForces);
 
       initSI = goalSI;
-      initSI.z = L1_LINK * sin(presQ.q2);
+      presSI = forwardKine(presQ);
 
       goalSI = admittanceControlModel(filtForces, initSI);
       goalQ = inverseKine(presQ, goalSI);
@@ -175,8 +182,8 @@ void loop() {
       goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ);
       loopTime = millis() - startLoop;
 
-      if (diagMode) {
-        diagnosticMode(totalTime, rawForces, presQ, initSI, goalSI, goalQ, goalReturn, loopTime);
+      if (logging) {
+        loggingFunc(totalTime, rawForces, lastRaw, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
       }
 
     }
