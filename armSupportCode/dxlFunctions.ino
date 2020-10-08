@@ -68,9 +68,9 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
   elevateParam[3] = DXL_HIBYTE(DXL_HIWORD(goal.q2Cts));
   
   /* Writes packet */
-  addParamResult = syncWritePacket.addParam(ID_SHOULDER,      shoulderParam);
-  addParamResult = syncWritePacket.addParam(ID_SHLDR_ELEVATE, elevateParam);
-  addParamResult = syncWritePacket.addParam(ID_ELBOW,         elbowParam);
+  addParamResult = syncWritePacket.addParam(ID_SHOULDER,  shoulderParam);
+  addParamResult = syncWritePacket.addParam(ID_ELEVATION, elevateParam);
+  addParamResult = syncWritePacket.addParam(ID_ELBOW,     elbowParam);
   dxlCommResult = syncWritePacket.txPacket();
   syncWritePacket.clearParam();
   
