@@ -25,8 +25,8 @@ void dxlConfig(uint8_t &dxl_error) {
   /* Sets Position Limits */
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MIN_POSITION,   SHOULDER_MIN_POS, &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_MAX_POSITION,   SHOULDER_MAX_POS, &dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_MIN_POSITION,   ELEVATION_MIN_POS,&dxl_error);
-  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_MAX_POSITION,   ELEVATION_MAX_POS,&dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_MIN_POSITION,   ELEVATION_MIN_POS, &dxl_error);
+  dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_MAX_POSITION,   ELEVATION_MAX_POS, &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_MIN_POSITION,   ELBOW_MIN_POS,    &dxl_error);
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_MAX_POSITION,   ELBOW_MAX_POS,    &dxl_error);
   /* Sets Velocity Profiles */
@@ -48,13 +48,13 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
   int dxlCommResult;
   //uint8_t elbowParam[8], shoulderParam[8], elevateParam[8];
   uint8_t elbowParam[4], shoulderParam[4], elevateParam[4];
-  
+
   /* Elbow Parameters Goal Packet */
   elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goal.q4Cts));
   elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goal.q4Cts));
   elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goal.q4Cts));
   elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(goal.q4Cts));
-  
+
   /* Shoulder Parameters Goal Packet */
   shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goal.q1Cts));
   shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goal.q1Cts));
@@ -66,14 +66,14 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
   elevateParam[1] = DXL_HIBYTE(DXL_LOWORD(goal.q2Cts));
   elevateParam[2] = DXL_LOBYTE(DXL_HIWORD(goal.q2Cts));
   elevateParam[3] = DXL_HIBYTE(DXL_HIWORD(goal.q2Cts));
-  
+
   /* Writes packet */
   addParamResult = syncWritePacket.addParam(ID_SHOULDER,  shoulderParam);
   addParamResult = syncWritePacket.addParam(ID_ELEVATION, elevateParam);
   addParamResult = syncWritePacket.addParam(ID_ELBOW,     elbowParam);
   dxlCommResult = syncWritePacket.txPacket();
   syncWritePacket.clearParam();
-  
+
   return dxlCommResult;
 }
 
@@ -88,10 +88,10 @@ jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   pres.q2Cts    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
   pres.q1DotCts = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
   pres.q1Cts    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-  
+
   /* Convert Motor Counts */
   pres.q1      = (pres.q1Cts) * DEGREES_PER_COUNT * (PI / 180.0);
-  pres.q2      = -(pres.q2Cts - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1/ELEVATION_RATIO);
+  pres.q2      = -(pres.q2Cts - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
   pres.q4      = (pres.q4Cts - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
   pres.q1Dot   = pres.q1DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
   pres.q2Dot   = pres.q2DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);

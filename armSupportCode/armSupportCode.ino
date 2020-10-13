@@ -70,7 +70,7 @@ forceFilter  sensorFilter(SENSOR_FILTER_WEIGHT);
 #define SHOULDER_MAX_POS  3564
 #define ELEVATION_MIN_POS 643
 #define ELEVATION_MAX_POS 3020
-float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
+static float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 #define ELEVATION_RATIO   2.305
 #define VEL_MAX_LIMIT     100
 /* Admitance Control Constants */
@@ -79,14 +79,16 @@ float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 #define MASS          1.250
 #define DAMPING       25.000
 #define GRAVITY       9.80665
+#define ACC_LIMIT     20.0
+static float F_LIMIT = (MASS * ACC_LIMIT) / MODEL_DT;
 /* Kinematic Constants */
 #define A1_LINK   0.073     // Shoulder to 4bar linkage
 #define L1_LINK   0.419     // length of 4bar linkage
 #define A2_LINK   0.082     // 4bar linkage to elbow
 #define L2_LINK   0.520     // elbow to sensor
 #define LINK_OFFSET 0.035   // elbow to sensor offset
-float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
-float PHI = atan(LINK_OFFSET / L2_LINK);
+static float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
+static float PHI = atan(LINK_OFFSET / L2_LINK);
 /* Diagnostic mode */
 bool logging = true;
 
@@ -154,7 +156,7 @@ void loop() {
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
   if (logging) {
-    loggingFunc(totalTime, rawForces, lastRaw, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
+    loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
   }
 
   /* Main Loop */
@@ -167,7 +169,7 @@ void loop() {
       previousTime = currentTime;
 
       rawForces = singleOptoForceRead(xCal, yCal, zCal);
-      rawForces = forceCheck(rawForces, lastRaw);
+      rawForces = forceCheck(rawForces, lastRaw, F_LIMIT, MODEL_DT);
       lastRaw = rawForces;
       presQ = readPresentPacket(syncReadPacket);
       globForces = sensorOrientation(rawForces, presQ);
@@ -183,7 +185,7 @@ void loop() {
       loopTime = millis() - startLoop;
 
       if (logging) {
-        loggingFunc(totalTime, rawForces, lastRaw, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
+        loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
       }
 
     }

@@ -37,7 +37,7 @@ class forceFilter {
 };
 
 /******************** Force Sensor Global Orientation Function ************************************************/
-forceStruct sensorOrientation(forceStruct &rawF, jointSpace &pres) {
+forceStruct sensorOrientation(forceStruct rawF, jointSpace pres) {
   forceStruct globalF;
   /* [GlobalForce] = Rz(q1+q4) * Rz(pi/2) * Ry(pi) * [rawForce] */
   globalF.X = rawF.X * ( sin(pres.q1 + pres.q4)) + rawF.Y * (-cos(pres.q1 + pres.q4));
@@ -47,11 +47,11 @@ forceStruct sensorOrientation(forceStruct &rawF, jointSpace &pres) {
 }
 
 /******************** Force Sensor readings Check Function ************************************************/
-forceStruct forceCheck(forceStruct newForces, forceStruct lastForces, float threshold = 20.0) {
-  forceStruct checkedForces;
-  if ((abs(lastForces.X) > 0.001) && (abs(newForces.X / lastForces.X) > threshold)) checkedForces.X = lastForces.X;
-  if ((abs(lastForces.Y) > 0.001) && (abs(newForces.Y / lastForces.Y) > threshold)) checkedForces.Y = lastForces.Y;
-  if ((abs(lastForces.Z) > 0.001) && (abs(newForces.Z / lastForces.Z) > threshold)) checkedForces.Z = lastForces.Z;
+forceStruct forceCheck(forceStruct newForces, forceStruct lastForces, float threshold, float deltaT) {
+  forceStruct checkedForces = newForces;
+  if (abs((newForces.X - lastForces.X) / deltaT) > threshold) checkedForces.X = lastForces.X;
+  if (abs((newForces.Y - lastForces.Y) / deltaT) > threshold) checkedForces.Y = lastForces.Y;
+  if (abs((newForces.Z - lastForces.Z) / deltaT) > threshold) checkedForces.Z = lastForces.Z;
   return checkedForces;
 }
 
