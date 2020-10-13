@@ -37,7 +37,7 @@ class forceFilter {
 };
 
 /******************** Force Sensor Global Orientation Function ************************************************/
-forceStruct sensorOrientation(forceStruct rawF, jointSpace pres) {
+forceStruct sensorOrientation(forceStruct &rawF, jointSpace &pres) {
   forceStruct globalF;
   /* [GlobalForce] = Rz(q1+q4) * Rz(pi/2) * Ry(pi) * [rawForce] */
   globalF.X = rawF.X * ( sin(pres.q1 + pres.q4)) + rawF.Y * (-cos(pres.q1 + pres.q4));

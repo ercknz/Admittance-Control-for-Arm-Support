@@ -8,8 +8,9 @@
 
 /******************** Arm Support Forward Kinematics Function ************************************************/
 modelSpace forwardKine(jointSpace Q) {
-  // motor counts/speed --> forwardKine() --> position/velocity(SI)
+  /* motor counts/speed --> forwardKine() --> position/velocity(SI) */
   modelSpace M;
+  
   // Compute the XY positions from angles
   M.x = (A1_LINK + A2_LINK) * cos(Q.q1) + L1_LINK * cos(Q.q1) * cos(Q.q2) + LINK_OFFSET * sin(Q.q1 + Q.q4) + L2_LINK * cos(Q.q1 + Q.q4);
   M.y = (A1_LINK + A2_LINK) * sin(Q.q1) + L1_LINK * sin(Q.q1) * cos(Q.q2) - LINK_OFFSET * cos(Q.q1 + Q.q4) + L2_LINK * sin(Q.q1 + Q.q4);

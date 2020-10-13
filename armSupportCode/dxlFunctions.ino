@@ -80,7 +80,6 @@ int writeGoalPacket(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePa
 /******************** Dynamixel Sync Read Function ************************************************/
 jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   jointSpace pres;
-  
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
   pres.q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);

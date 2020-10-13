@@ -8,7 +8,7 @@
    [time, Fx, Fy, Fz, q1, q2, q4, q1Dot, q2Dot, q4Dot, x, y, z, u, v, w, Q1, Q2, Q4, Q1Dot, Q2Dot, Q4Dot, return, dT]
 */
 
-void loggingFunc(unsigned long totalTime, forceStruct rawF, forceStruct F, jointSpace pres, modelSpace curr, modelSpace init, modelSpace goal, jointSpace Q, unsigned long goalReturn, unsigned long loopTime) {
+void loggingFunc(unsigned long &totalTime, forceStruct &rawF, forceStruct &F, jointSpace &pres, modelSpace &curr, modelSpace &init, modelSpace &goal, jointSpace &Q, unsigned long &goalReturn, unsigned long &loopTime) {
   Serial.print(totalTime); Serial.print("\t");
 
   Serial.print(rawF.X); Serial.print("\t"); Serial.print(rawF.Y); Serial.print("\t"); Serial.print(rawF.Z); Serial.print("\t");
