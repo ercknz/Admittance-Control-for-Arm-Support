@@ -9,8 +9,9 @@
 /******************** Arm Support Forward Kinematics Function ************************************************/
 modelSpace forwardKine(jointSpace Q) {
   /* motor counts/speed --> forwardKine() --> position/velocity(SI) */
+  Serial.println("fKine");
   modelSpace M;
-  
+
   // Compute the XY positions from angles
   M.x = (A1_LINK + A2_LINK) * cos(Q.q1) + L1_LINK * cos(Q.q1) * cos(Q.q2) + LINK_OFFSET * sin(Q.q1 + Q.q4) + L2_LINK * cos(Q.q1 + Q.q4);
   M.y = (A1_LINK + A2_LINK) * sin(Q.q1) + L1_LINK * sin(Q.q1) * cos(Q.q2) - LINK_OFFSET * cos(Q.q1 + Q.q4) + L2_LINK * sin(Q.q1 + Q.q4);
@@ -33,101 +34,87 @@ modelSpace forwardKine(jointSpace Q) {
 
 /******************** Arm Support Inverse Kinematics function ************************************************/
 jointSpace inverseKine(jointSpace pres, modelSpace &M) {
+  Serial.println("iKine");
   /* position/velocity(SI) --> inverseKine() --> motor counts/speed */
   jointSpace Q;
-  
-  /* Limits */
-  static float Q1_MIN = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180); 
-  static float Q1_MAX = SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180); 
-  static float Q4_MIN = 0.0; 
-  static float Q4_MAX = (ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180); 
-  static float Z_LIMIT = (ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1/ELEVATION_RATIO); 
-  static float INNER_DIA = A1_LINK + L1_LINK + A2_LINK - L2_LINK; 
-  
-  /* Check Z limits */
-  if (M.z > Z_LIMIT) {
-    M.z = Z_LIMIT;
-  } else if (M.z < -Z_LIMIT) {
-    M.z = -Z_LIMIT;
-  }
-  
-  /* Find variables based on Z */
-  Q.q2 = asin(M.z/L1_LINK);
-  float L1_XY = sqrt(pow(L1_LINK,2) - pow(M.z,2)); 
-  
+
+  /* JointSpace Limits */
+  static float Q1_MIN    = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180);
+  static float Q1_MAX    = SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180);
+  static float Q4_MIN    = 0.0;
+  static float Q4_MAX    = (ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180);
+  static float Q2_LIMIT  = (ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
+  static float INNER_DIA = A1_LINK + L1_LINK + A2_LINK - L2_LINK;
+
+  //  Serial.println(Q1_MIN); Serial.println(Q1_MAX);
+
   /* Checks if X and Y are both 0 */
-  if ((abs(M.x) == 0.0) && (abs(M.y) == 0.0)) {
+  if ((abs(M.x) < 0.001) && (abs(M.y) < 0.001)) {
     Q.q1 = pres.q1;
-    Q.q4 = PI;
+    Q.q4 = Q4_MAX;
     M = forwardKine(Q);
-    return Q;
-  } 
-  
-  /* Checks walls */
-  float R = sqrt(pow(M.x,2) + pow(M.y,2));
-  float alpha = atan2(M.y, M.x);
-  if (alpha < 0) {
-    alpha += 2*PI;
   }
-  if (R < INNER_DIA){
+
+  /* Check Z limits */
+  static float Z_LIMIT = L1_LINK * sin(Q2_LIMIT);
+  if (M.z >  Z_LIMIT) M.z =  Z_LIMIT;
+  if (M.z < -Z_LIMIT) M.z = -Z_LIMIT;
+
+  /* Find variables based on Z */
+  Q.q2 = asin(M.z / L1_LINK);
+  float L1_XY = sqrt(pow(L1_LINK, 2) - pow(M.z, 2));
+
+  /* Checks walls */
+  float OUTER_DIA = A1_LINK + L1_XY + A2_LINK + H_OF_L2;
+  float R = sqrt(pow(M.x, 2) + pow(M.y, 2));
+  float alpha = atan2(M.y, M.x);
+  if (alpha < 0) alpha += 2 * PI;
+  if (R < INNER_DIA) {
     M.x = INNER_DIA * cos(alpha);
     M.y = INNER_DIA * sin(alpha);
     R = INNER_DIA;
   }
-  float OUTER_DIA = A1_LINK + L1_XY + A2_LINK + H_OF_L2;
   if (R > OUTER_DIA) {
     M.x = OUTER_DIA * cos(alpha);
     M.y = OUTER_DIA * sin(alpha);
     R = OUTER_DIA;
   }
-  
+
   /* Finds and checks Elbow Angle */
-  float gamma = acos((pow((A1_LINK + L1_XY + A2_LINK),2) + pow(H_OF_L2,2) - pow(M.x,2) - pow(M.y,2))/(2 * H_OF_L2 * (A1_LINK + L1_XY + A2_LINK)));
-  
-  // CHECK THIS!!!!
+  float gamma = acos((pow((A1_LINK + L1_XY + A2_LINK), 2) + pow(H_OF_L2, 2) - pow(M.x, 2) - pow(M.y, 2)) / (2 * H_OF_L2 * (A1_LINK + L1_XY + A2_LINK)));
 
-  Q.q4 = PI - gamma + PHI;
-  if (Q.q4 < Q4_MIN - Q4_MIN) {
-    Q.q4 = Q4_MIN - Q4_MIN;
-  } else if (Q.q4 > Q4_MAX - Q4_MIN) {
-    Q.q4 = Q4_MAX - Q4_MIN;
-  }
-  
+  Q.q4 = PI - gamma;
+  if (Q.q4 < Q4_MIN) Q.q4 = Q4_MIN;
+  if (Q.q4 > Q4_MAX) Q.q4 = Q4_MAX;
+
   /* Finds and checks shoulder angle */
-  float beta = asin((H_OF_L2 * sin(gamma))/(sqrt(pow(M.x,2) + pow(M.y,2))));
+  float beta = asin((H_OF_L2 * sin(gamma)) / R);
   Q.q1 = alpha - beta;
-  if (Q.q1 < Q1_MIN) {
-    Q.q1 = Q1_MIN;
-  } else if (Q.q1 > Q1_MAX) {
-    Q.q1 = Q1_MAX;
-  }
+  if (Q.q1 < Q1_MIN) Q.q1 = Q1_MIN;
+  if (Q.q1 > Q1_MAX) Q.q1 = Q1_MAX;
 
-  // Check for nans
-  if (isnan(Q.q1)) {
-    Q.q1 = pres.q1;
-  }
-  if (isnan(Q.q4)) {
-    Q.q4 = Q.q4;
-  }
-  
+  /* Check for nans */
+  if (isnan(Q.q1)) Q.q1 = pres.q1;
+  if (isnan(Q.q4)) Q.q4 = pres.q4;
+
   /* Checks XYZ */
   modelSpace checkM = forwardKine(Q);
-  if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)){
+  if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)) {
     M = checkM;
   }
 
   /* Solve for joint angular velocities (psuedo inverse Jacobian) */
   float detJ = (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4)) * (L2_LINK * cos(Q.q1 + Q.q4)) - (-L2_LINK * sin(Q.q1 + Q.q4)) * (L1_LINK * cos(Q.q1) + L2_LINK * cos(Q.q1 + Q.q4));
   Q.q1Dot = (M.xDot * (L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
-  Q.q2Dot = 0;
+  Q.q2Dot = M.zDot / (L1_LINK * sqrt(1 - pow((M.z / L1_LINK), 2)));
   Q.q4Dot = -(M.xDot * (-L1_LINK * cos(Q.q1) - L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
 
   /* Convert to Counts */
   Q.q1Cts    = Q.q1 * (180.0 / PI) / DEGREES_PER_COUNT;
-  Q.q2Cts    = Q.q2 * (180.0 / PI) / DEGREES_PER_COUNT;
+  Q.q2Cts    = ELEVATION_CENTER - (Q.q2 * ELEVATION_RATIO * (180.0 / PI) / DEGREES_PER_COUNT);
   Q.q4Cts    = ELBOW_MIN_POS + Q.q4 * (180.0 / PI) / DEGREES_PER_COUNT;
   Q.q1DotCts = abs(Q.q1Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
-  Q.q2DotCts = abs(Q.q2Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  Q.q2DotCts = abs(Q.q2Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT) * ELEVATION_RATIO;
   Q.q4DotCts = abs(Q.q4Dot * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
 
   return Q;

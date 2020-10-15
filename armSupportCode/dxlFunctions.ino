@@ -94,7 +94,7 @@ jointSpace readPresentPacket(dynamixel::GroupSyncRead  &syncReadPacket) {
   pres.q2      = -(pres.q2Cts - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
   pres.q4      = (pres.q4Cts - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
   pres.q1Dot   = pres.q1DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  pres.q2Dot   = pres.q2DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
+  pres.q2Dot   = pres.q2DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0) * (1 / ELEVATION_RATIO);
   pres.q4Dot   = pres.q4DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
 
   return pres;

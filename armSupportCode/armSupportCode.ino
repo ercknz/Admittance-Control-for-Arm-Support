@@ -72,7 +72,7 @@ forceFilter  sensorFilter(SENSOR_FILTER_WEIGHT);
 #define ELEVATION_MAX_POS 3020
 static float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 #define ELEVATION_RATIO   2.305
-#define VEL_MAX_LIMIT     100
+#define VEL_MAX_LIMIT     20
 /* Admitance Control Constants */
 #define LOOP_DT       8    // Milliseconds
 #define MODEL_DT      0.008   // Seconds
@@ -136,7 +136,7 @@ void loop() {
   bool    addParamResult = false;
 
   dxlConfig(dxl_error);
-  dxlTorque(DISABLE, dxl_error);   // Toggle torque for troubleshooting
+  dxlTorque(ENABLE, dxl_error);   // Toggle torque for troubleshooting
   delay(100);
 
   //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
