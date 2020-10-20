@@ -35,8 +35,12 @@ modelSpace forwardKine(jointSpace Q) {
 /******************** Arm Support Inverse Kinematics function ************************************************/
 jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   Serial.println("iKine");
+  Serial.print("X: "); Serial.println(M.x);
+  Serial.print("Y: "); Serial.println(M.y);
   /* position/velocity(SI) --> inverseKine() --> motor counts/speed */
   jointSpace Q;
+  Serial.print("Q1: "); Serial.println(Q.q1);
+  Serial.print("Q4: "); Serial.println(Q.q4);
 
   /* JointSpace Limits */
   static float Q1_MIN    = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180);
@@ -63,6 +67,8 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   /* Find variables based on Z */
   Q.q2 = asin(M.z / L1_LINK);
   float L1_XY = sqrt(pow(L1_LINK, 2) - pow(M.z, 2));
+  Serial.print("Q2: "); Serial.println(Q.q2);
+  Serial.print("L1: "); Serial.println(L1_XY);
 
   /* Checks walls */
   float OUTER_DIA = A1_LINK + L1_XY + A2_LINK + H_OF_L2;
@@ -79,9 +85,11 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
     M.y = OUTER_DIA * sin(alpha);
     R = OUTER_DIA;
   }
+  Serial.print("alpha: "); Serial.println(alpha);
 
   /* Finds and checks Elbow Angle */
   float gamma = acos((pow((A1_LINK + L1_XY + A2_LINK), 2) + pow(H_OF_L2, 2) - pow(M.x, 2) - pow(M.y, 2)) / (2 * H_OF_L2 * (A1_LINK + L1_XY + A2_LINK)));
+  Serial.print("gamma: "); Serial.println(gamma);
 
   Q.q4 = PI - gamma;
   if (Q.q4 < Q4_MIN) Q.q4 = Q4_MIN;
@@ -92,16 +100,23 @@ jointSpace inverseKine(jointSpace pres, modelSpace &M) {
   Q.q1 = alpha - beta;
   if (Q.q1 < Q1_MIN) Q.q1 = Q1_MIN;
   if (Q.q1 > Q1_MAX) Q.q1 = Q1_MAX;
+  Serial.print("beta: "); Serial.println(beta);
 
   /* Check for nans */
   if (isnan(Q.q1)) Q.q1 = pres.q1;
   if (isnan(Q.q4)) Q.q4 = pres.q4;
+
+  Serial.print("Q1: "); Serial.println(Q.q1);
+  Serial.print("Q4: "); Serial.println(Q.q4);
 
   /* Checks XYZ */
   modelSpace checkM = forwardKine(Q);
   if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)) {
     M = checkM;
   }
+
+  Serial.print("aftercCheckQ1: "); Serial.println(Q.q1);
+  Serial.print("afterCheckQ4: "); Serial.println(Q.q4);
 
   /* Solve for joint angular velocities (psuedo inverse Jacobian) */
   float detJ = (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4)) * (L2_LINK * cos(Q.q1 + Q.q4)) - (-L2_LINK * sin(Q.q1 + Q.q4)) * (L1_LINK * cos(Q.q1) + L2_LINK * cos(Q.q1 + Q.q4));

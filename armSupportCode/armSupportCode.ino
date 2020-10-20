@@ -74,9 +74,9 @@ static float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 #define ELEVATION_RATIO   2.305
 #define VEL_MAX_LIMIT     20
 /* Admitance Control Constants */
-#define LOOP_DT       8    // Milliseconds
-#define MODEL_DT      0.008   // Seconds
-#define MASS          1.250
+#define LOOP_DT       10    // Milliseconds
+#define MODEL_DT      0.01   // Seconds
+#define MASS          5.0
 #define DAMPING       25.000
 #define GRAVITY       9.80665
 #define ACC_LIMIT     20.0
