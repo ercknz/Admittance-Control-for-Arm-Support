@@ -12,6 +12,9 @@
 */
 
 /******************** Force Sensor Exponential Filter Class ************************************************/
+#ifndef FORCESENSOR
+#define FORCESENSOR
+
 class forceFilter {
     float weight;
     forceStruct currentForce;
@@ -55,4 +58,4 @@ forceStruct forceCheck(forceStruct newForces, forceStruct lastForces, float thre
   return checkedForces;
 }
 
-
+#endif // FORCESENSOR

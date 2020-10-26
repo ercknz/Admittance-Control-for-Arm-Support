@@ -18,9 +18,9 @@
 
 /* Constants //////////////////////////////////////////////////////////////////////////////////////*/
 /* OptoForce Constants */
-#define xSensitivity 20.180
-#define ySensitivity 20.250
-#define zSensitivity 1.610
+const float xSensitivity = 20.180;
+const float ySensitivity = 20.250;
+const float zSensitivity = 1.610;
 /* Force Sensor filter */
 #define SENSOR_FILTER_WEIGHT 0.05
 float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
@@ -61,34 +61,34 @@ forceFilter  sensorFilter(SENSOR_FILTER_WEIGHT);
 #define VEL_BASED_PROFILE     0
 #define ESC_ASCII_VALUE       0x1b
 /* Dynamixel Parameters for calculations */
-#define DEGREES_PER_COUNT 0.088
-#define RPM_PER_COUNT     0.229
+const float DEGREES_PER_COUNT = 0.088;
+const float RPM_PER_COUNT     = 0.229;
 /* Dynamixel Motor Limits */
-#define ELBOW_MIN_POS     1207
-#define ELBOW_MAX_POS     3129
-#define SHOULDER_MIN_POS  705
-#define SHOULDER_MAX_POS  3564
-#define ELEVATION_MIN_POS 643
-#define ELEVATION_MAX_POS 3020
-static float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
-#define ELEVATION_RATIO   2.305
-#define VEL_MAX_LIMIT     20
+const float ELBOW_MIN_POS     = 1207;
+const float ELBOW_MAX_POS     = 3129;
+const float SHOULDER_MIN_POS  = 705;
+const float SHOULDER_MAX_POS  = 3564;
+const float ELEVATION_MIN_POS = 643;
+const float ELEVATION_MAX_POS = 3020;
+const float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
+const float ELEVATION_RATIO   = 2.305;
+const float VEL_MAX_LIMIT     = 20;
 /* Admitance Control Constants */
-#define LOOP_DT       10    // Milliseconds
-#define MODEL_DT      0.01   // Seconds
-#define MASS          5.0
-#define DAMPING       25.000
-#define GRAVITY       9.80665
-#define ACC_LIMIT     20.0
-static float F_LIMIT = (MASS * ACC_LIMIT) / MODEL_DT;
+const float LOOP_DT       = 10;    // Milliseconds
+const float MODEL_DT      = 0.01;   // Seconds
+const float MASS          = 5.0;
+const float DAMPING       = 25.000;
+const float GRAVITY       = 9.80665;
+const float ACC_LIMIT     = 20.0;
+const float F_LIMIT = (MASS * ACC_LIMIT) / MODEL_DT;
 /* Kinematic Constants */
-#define A1_LINK   0.073     // Shoulder to 4bar linkage
-#define L1_LINK   0.419     // length of 4bar linkage
-#define A2_LINK   0.082     // 4bar linkage to elbow
-#define L2_LINK   0.520     // elbow to sensor
-#define LINK_OFFSET 0.035   // elbow to sensor offset
-static float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
-static float PHI = atan(LINK_OFFSET / L2_LINK);
+const float A1_LINK     = 0.073;     // Shoulder to 4bar linkage
+const float L1_LINK     = 0.419;     // length of 4bar linkage
+const float A2_LINK     = 0.082;     // 4bar linkage to elbow
+const float L2_LINK     = 0.520;     // elbow to sensor
+const float LINK_OFFSET = 0.035;   // elbow to sensor offset
+const float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
+const float PHI = atan(LINK_OFFSET / L2_LINK);
 /* Diagnostic mode */
 bool logging = true;
 

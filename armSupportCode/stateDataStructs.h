@@ -10,6 +10,9 @@
 */
 
 /********** Force Sensor Data Structure **********/
+#ifndef DATASTRUCTS
+#define DATASTRUCTS
+
 typedef struct{
   float X;
   float Y;
@@ -47,4 +50,6 @@ typedef struct{
    *  q3 is a redundant joint
    */
 } jointSpace;
+
+#endif // DATASTRUCTS
 
