@@ -1,4 +1,6 @@
-/* This function is the admittance control function. it takes a XYZ force input and output XYZ position and velocity.
+/* This class is the admittance control model.
+   It takes a XYZ force input and output XYZ position and velocity based on initial conditions.
+
    X Direction ********************************************************************
    2nd order eqn:       M*x" = Fx - B*x'
    general solution:    xg(t) = Cx1*exp(-(B/M)*t) + Cx2
@@ -24,29 +26,52 @@
    solutions:           z(t) = Cz1*exp(-(B/M)*t) + (1/B)*(Fz-g*M)*t + Cz2
                         z'(t) = -(B/M)*Cz1*exp(-(B/M)*t) + (1/B)*(Fz-g*M)
 
-   Created 1/24/2019
-   Script by erick nunez
+   Created 10/27/2020
+   by erick nunez
 */
 
-modelSpace admittanceControlModel (forceStruct F, modelSpace init) {
-  modelSpace goal;
+#include "AdmittanceModel.h"
+
+AdmittanceModel::AdmittanceModel(float M, float B, float G, float T) {
+  _mass       = M;
+  _damping    = B;
+  _gravity    = G;
+  _deltaT     = T;
+}
+
+void AdmittanceModel::InitializeModel(float X, float Y, float Z) {
+  xNew = X;
+  yNew = Y;
+  zNew = Z;
+  xDotNew = 0.0;
+  yDotNew = 0.0;
+  zDotNew = 0.0;
+}
+
+void AdmittanceModel::UpdateModel(float Fx, float Fy, float Fz) {
+  xInit = xNew;
+  yInit = yNew;
+  zInit = zNew;
+  xDotInit = xDotNew;
+  tDotInit = yDotNew;
+  zDotInit = zDotNew;
+  
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  float Cx1 = ((F.X / DAMPING) - init.xDot) * (MASS / DAMPING);
-  float Cx2 = init.x - Cx1;
-  goal.x    = Cx1 * exp(-(DAMPING / MASS) * MODEL_DT) + (F.X / DAMPING) * MODEL_DT + Cx2;
-  goal.xDot = (F.X / DAMPING) - (DAMPING / MASS) * Cx1 * exp(-(DAMPING / MASS) * MODEL_DT);
+  float Cx1 = ((Fx / DAMPING) - xDotInit) * (_mass / _damping);
+  float Cx2 = xInit - Cx1;
+  xNew      = Cx1 * exp(-(_damping / _mass) * _deltaT) + (Fx / _damping) * _deltaT + Cx2;
+  xDotNew   = (Fx / _damping) - (_damping / _mass) * Cx1 * exp(-(_damping / _mass) * _deltaT);
 
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  float Cy1 = ((F.Y / DAMPING) - init.yDot) * (MASS / DAMPING);
-  float Cy2 = init.y - Cy1;
-  goal.y    = Cy1 * exp(-(DAMPING / MASS) * MODEL_DT) + (F.Y / DAMPING) * MODEL_DT + Cy2;
-  goal.yDot = (F.Y / DAMPING) - (DAMPING / MASS) * Cy1 * exp(-(DAMPING / MASS) * MODEL_DT);
+  float Cy1 = ((Fy / _damping) - yDotInit) * (_mass / _damping);
+  float Cy2 = yInit - Cy1;
+  yNew      = Cy1 * exp(-(_damping / _mass) * _deltaT) + (Fy / _damping) * _deltaT + Cy2;
+  yDotNew   = (Fy / _damping) - (_damping / _mass) * Cy1 * exp(-(_damping / _mass) * _deltaT);
 
   // Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
-  float Cz1 = ((1/DAMPING)*(F.Z -GRAVITY * MASS) - init.zDot) * (MASS / DAMPING);
-  float Cz2 = init.z - Cz1;
-  goal.z    = Cz1 * exp(-(DAMPING / MASS) * MODEL_DT) + (1/DAMPING)*(F.Z - GRAVITY * MASS) * MODEL_DT + Cz2;
-  goal.zDot = -(DAMPING / MASS) * Cz1 * exp(-(DAMPING / MASS) * MODEL_DT) + (1/DAMPING)*(F.Z - GRAVITY * MASS);
-
-  return goal;
+  float Cz1 = ((1 / _damping) * (Fz - _gravity * _mass) - zDotInit) * (_mass / _damping);
+  float Cz2 = zInit - Cz1;
+  zNew      = Cz1 * exp(-(_damping / _mass) * _deltaT) + (1 / _damping) * (Fz - _gravity * _mass) * _deltaT + Cz2;
+  zDotNew   = -(_damping / _mass) * Cz1 * exp(-(_damping / _mass) * _deltaT) + (1 / _damping) * (Fz - _gravity * _mass);
 }
+

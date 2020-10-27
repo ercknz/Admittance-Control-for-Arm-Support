@@ -14,7 +14,6 @@
 #include <DynamixelSDK.h>
 #include <PID_v1.h>
 #include "stateDataStructs.h"
-#include "forceSensorFunctions.h"
 
 /* Constants //////////////////////////////////////////////////////////////////////////////////////*/
 /* OptoForce Constants */
