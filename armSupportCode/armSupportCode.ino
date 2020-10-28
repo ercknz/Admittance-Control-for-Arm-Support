@@ -16,14 +16,6 @@
 #include "stateDataStructs.h"
 
 /* Constants //////////////////////////////////////////////////////////////////////////////////////*/
-/* OptoForce Constants */
-const float xSensitivity = 20.180;
-const float ySensitivity = 20.250;
-const float zSensitivity = 1.610;
-/* Force Sensor filter */
-#define SENSOR_FILTER_WEIGHT 0.05
-float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
-forceFilter  sensorFilter(SENSOR_FILTER_WEIGHT);
 /* Dynamixel Communication Parameters */
 #define PROTOCOL_VERSION 2.0
 #define BAUDRATE         1000000
@@ -59,6 +51,13 @@ forceFilter  sensorFilter(SENSOR_FILTER_WEIGHT);
 #define DISABLE               0
 #define VEL_BASED_PROFILE     0
 #define ESC_ASCII_VALUE       0x1b
+/* OptoForce Constants */
+const float xSensitivity = 20.180;
+const float ySensitivity = 20.250;
+const float zSensitivity = 1.610;
+/* Force Sensor filter */
+const float SENSOR_FILTER_WEIGHT 0.05
+float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Dynamixel Parameters for calculations */
 const float DEGREES_PER_COUNT = 0.088;
 const float RPM_PER_COUNT     = 0.229;
@@ -75,10 +74,10 @@ const float VEL_MAX_LIMIT     = 20;
 /* Admitance Control Constants */
 const float LOOP_DT       = 10;    // Milliseconds
 const float MODEL_DT      = 0.01;   // Seconds
-const float MASS          = 5.0;
-const float DAMPING       = 25.000;
+float       MASS          = 5.0f;
+float       DAMPING       = 25.0f;
 const float GRAVITY       = 9.80665;
-const float ACC_LIMIT     = 20.0;
+const float ACC_LIMIT     = 20.0f;
 const float F_LIMIT = (MASS * ACC_LIMIT) / MODEL_DT;
 /* Kinematic Constants */
 const float A1_LINK     = 0.073;     // Shoulder to 4bar linkage

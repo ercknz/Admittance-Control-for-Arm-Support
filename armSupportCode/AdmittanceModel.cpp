@@ -32,7 +32,7 @@
 
 #include "AdmittanceModel.h"
 
-AdmittanceModel::AdmittanceModel(float M, float B, float G, float T) {
+AdmittanceModel::AdmittanceModel(float M, float B, const float G, const float T) {
   _mass       = M;
   _damping    = B;
   _gravity    = G;
@@ -43,9 +43,9 @@ void AdmittanceModel::InitializeModel(float X, float Y, float Z) {
   xNew = X;
   yNew = Y;
   zNew = Z;
-  xDotNew = 0.0;
-  yDotNew = 0.0;
-  zDotNew = 0.0;
+  xDotNew = 0.0f;
+  yDotNew = 0.0f;
+  zDotNew = 0.0f; 
 }
 
 void AdmittanceModel::UpdateModel(float Fx, float Fy, float Fz) {

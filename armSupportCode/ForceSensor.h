@@ -9,20 +9,15 @@
 
 class ForceSensor {
   public:
-    float xRaw,     yRaw,     zRaw      = 0.0;
-    float xLastRaw, yLastRaw, zLastRaw  = 0.0
-    float xFilt,    yFilt,    zFilt     = 0.0;
-    float xLastFilt,yLastFilt,zLastFilt = 0.0;
-    float xGlobal,  yGlobal,  zGlobal   = 0.0;
-    ForceSensor(const float xSens, const float ySens, const float zSens, const float weight, const float threshold, const float T);
-    void SensorConfig();
-    void CalibrateSensor();
-    void ReadForceSensor();
-    void CheckForces();
-    void FilterForces();
-    void GetGlobal(float q1, float q4);
+          ForceSensor(const float xyzSens[3], const float weight, const float threshold, const float T);
+    void  SensorConfig();
+    void  CalibrateSensor();
+    void  ReadForceSensor();
+    void  CheckForces();
+    void  FilterForces();
+    void  GetGlobal(float q1, float q4);
   private:
-    float _xCal, _yCal, _zCal = 0.0;
+    float _xCal, _yCal, _zCal = 0.0f;
     int16_t _sensorStatus;
     const float _xSensitivity;
     const float _ySensitivity;
@@ -30,6 +25,11 @@ class ForceSensor {
     const float _filterWeight;
     const float _forceThreshold;
     const float _deltaT;
-}
+    float xRaw,     yRaw,     zRaw      = 0.0f;
+    float xLastRaw, yLastRaw, zLastRaw  = 0.0f;
+    float xFilt,    yFilt,    zFilt     = 0.0f;
+    float xLastFilt,yLastFilt,zLastFilt = 0.0f;
+    float xGlobal,  yGlobal,  zGlobal   = 0.0f;
+};
 
 #endif // FORCE_SENSOR_H

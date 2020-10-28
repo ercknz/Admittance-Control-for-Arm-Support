@@ -20,10 +20,10 @@
 
 #include "ForceSensor.h"
 
-ForceSensor::ForceSensor(const float xSens, const float ySens, const float zSens, const float weight, const float threshold, const float T) {
-  _xSensitivity   = xSens;
-  _ySensitivity   = ySens;
-  _zSensitivity   = zSens;
+ForceSensor::ForceSensor(const float xyzSens[3], const float weight, const float threshold, const float T) {
+  _xSensitivity   = xyzSens[0];
+  _ySensitivity   = xyzSens[1];
+  _zSensitivity   = xyzSens[2];
   _filterWeight   = weight;
   _forceThreshold = threshold;
   _deltaT         = T;
@@ -54,9 +54,9 @@ void ForceSensor::SensorConfig() {
 }
 
 void ForceSensor::CalibrateSensor() {
-  _xCal = 0.0;
-  _yCal = 0.0;
-  _zCal = 0.0;
+  _xCal = 0.0f;
+  _yCal = 0.0f;
+  _zCal = 0.0f;
   static float samples = 2000.0;
   for (int i = 0; i < samples; i++) {
     ReadForceSensor();
@@ -86,7 +86,7 @@ void ForceSensor::ReadForceSensor() {
             for (int j = 0; j < 16; j++) {
               goodPacket[j] = rawPacket[i + j];
             }
-            _sensorStatus = bytesToCounts(goodPacket[6], goodPacket[7]);
+            _sensorStatus = bytesToCounts(goodPacket[6], goodPacket[7]); 
 
             int16_t xCts = bytesToCounts(goodPacket[8], goodPacket[9]);
             int16_t yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
