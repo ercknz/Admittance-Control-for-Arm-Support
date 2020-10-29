@@ -16,41 +16,6 @@
 #include "stateDataStructs.h"
 
 /* Constants //////////////////////////////////////////////////////////////////////////////////////*/
-/* Dynamixel Communication Parameters */
-#define PROTOCOL_VERSION 2.0
-#define BAUDRATE         1000000
-#define DEVICEPORT       "3"
-/* Dynamixel Motor Parameters */
-#define ID_SHOULDER       3
-#define ID_SHLDR_SLAVE    13
-#define ID_ELEVATION      5
-#define ID_ELVTN_SLAVE    15
-#define ID_ELBOW          7
-/* Dynamixel Control Table Addresses */
-#define ADDRESS_OPERATING_MODE   11
-#define ADDRESS_VELOCITY_LIMIT   44
-#define ADDRESS_MAX_POSITION     48
-#define ADDRESS_MIN_POSITION     52
-#define ADDRESS_TORQUE_ENABLE    64
-#define ADDRESS_LED              65
-#define ADDRESS_GOAL_VELOCITY    104
-#define ADDRESS_PROFILE_VELOCITY 112
-#define ADDRESS_GOAL_POSITION    116
-#define ADDRESS_MOVING           122
-#define ADDRESS_PRESENT_VELOCITY 128
-#define ADDRESS_PRESENT_POSITION 132
-/* Dynamixel Packet Parameters */
-#define VELOCITY_CONTROL      1
-#define POSITION_CONTROL      3
-#define EXT_POS_CONTROL       4
-#define LEN_GOAL_POSITION     4
-#define LEN_PROFILE_VELOCITY  4
-#define LEN_PRESENT_POSITION  4
-#define LEN_PRESENT_VELOCITY  4
-#define ENABLE                1
-#define DISABLE               0
-#define VEL_BASED_PROFILE     0
-#define ESC_ASCII_VALUE       0x1b
 /* Force Sensor Constants */
 const float xyzSensitivity[3] = {20.180, 20.250, 1.610};
 const float SENSOR_FILTER_WEIGHT 0.05
@@ -99,7 +64,7 @@ void setup() {
   delay(100);
   /* Dynamixel Setup */
   portHandler -> openPort();
-  portHandler->setBaudRate(BAUDRATE);
+  portHandler -> setBaudRate(BAUDRATE);
   /* Optoforce Serial Connection */
   Serial1.begin(BAUDRATE);
   delay(100);

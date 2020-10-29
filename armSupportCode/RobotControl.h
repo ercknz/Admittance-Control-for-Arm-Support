@@ -19,19 +19,19 @@ class RobotControl {
     void  ReadMotors();
     void  WriteMotors();
     
-    const float _A1;
-    const float _L1;
-    const float _A2;
-    const float _L2;
-    const float _Offset;
-    const float _PHI;
-    const float _H_OF_L2;
-    float qCts[3];
-    float qDotCts[3];
-    float q[3];
-    float qDot[3];
-    float xyz[3];
-    float xyzDot[3];
+    const float _A1A2,      _L1,        _L2;
+    const float _OFFSET,    _PHI,       _H_OF_L2;
+    const float _Q1_MIN,    _Q1_MAX;
+    const float _Q2_LIMIT;
+    const float _Q4_MIN,    _Q4_MAX;
+    const float _INNER_DIA;
+    float J_M[3][3] = 0.0f;
+    float qCts_M[3];
+    float qDotCts_M[3];
+    float q_M[3];
+    float qDot_M[3];
+    float xyz_M[3];
+    float xyzDot_M[3];
 };
 
 #endif // ROBOT_CONTROL_H
