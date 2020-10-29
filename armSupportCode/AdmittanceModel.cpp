@@ -32,46 +32,54 @@
 
 #include "AdmittanceModel.h"
 
-AdmittanceModel::AdmittanceModel(float M, float B, const float G, const float T) {
-  _mass       = M;
-  _damping    = B;
-  _gravity    = G;
-  _deltaT     = T;
+AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, const float T) {
+  _MASS       = M;
+  _DAMPING    = B;
+  _GRAVITY    = G;
+  _DELTAT     = T;
 }
 
-void AdmittanceModel::InitializeModel(float X, float Y, float Z) {
-  xNew = X;
-  yNew = Y;
-  zNew = Z;
-  xDotNew = 0.0f;
-  yDotNew = 0.0f;
-  zDotNew = 0.0f; 
+void AdmittanceModel::InitializeModel(float XYZ[3]) {
+  xyzNew_M[0] = XYZ[0];
+  xyzNew_M[1] = XYZ[1];
+  xyzNew_M[2] = XYZ[2];
+  xyzDotNew_M[0] = 0.0f;
+  xyzDotNew_M[1] = 0.0f;
+  xyzDotNew_M[2] = 0.0f; 
 }
 
-void AdmittanceModel::UpdateModel(float Fx, float Fy, float Fz) {
-  xInit = xNew;
-  yInit = yNew;
-  zInit = zNew;
-  xDotInit = xDotNew;
-  tDotInit = yDotNew;
-  zDotInit = zDotNew;
+void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
+  xyzInit_M[0]    = xyzNew_M[0];
+  xyzInit_M[1]    = xyzNew_M[1];
+  xyzInit_M[2]    = xyzNew_M[2];
+  xyzDotInit_M[0] = xyzDotNew_M[0];
+  xyzDotInit_M[1] = xyzDotNew_M[1];
+  xyzDotInit_M[2] = xyzDotNew_M[2];
   
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  float Cx1 = ((Fx / DAMPING) - xDotInit) * (_mass / _damping);
-  float Cx2 = xInit - Cx1;
-  xNew      = Cx1 * exp(-(_damping / _mass) * _deltaT) + (Fx / _damping) * _deltaT + Cx2;
-  xDotNew   = (Fx / _damping) - (_damping / _mass) * Cx1 * exp(-(_damping / _mass) * _deltaT);
+  float Cx1 = ((Fx / _DAMPING) - xyzDotInit_M[0]) * (_MASS / _DAMPING);
+  float Cx2 = xyzInit_M[0] - Cx1;
+  xyzNew_M[0]      = Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (Fx / _DAMPING) * _DELTAT + Cx2;
+  xyzDotNew_M[0]   = (Fx / _DAMPING) - (_DAMPING / _MASS) * Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT);
 
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  float Cy1 = ((Fy / _damping) - yDotInit) * (_mass / _damping);
-  float Cy2 = yInit - Cy1;
-  yNew      = Cy1 * exp(-(_damping / _mass) * _deltaT) + (Fy / _damping) * _deltaT + Cy2;
-  yDotNew   = (Fy / _damping) - (_damping / _mass) * Cy1 * exp(-(_damping / _mass) * _deltaT);
+  float Cy1 = ((Fy / _DAMPING) - xyzDotInit_M[1]) * (_MASS / _DAMPING);
+  float Cy2 = xyzInit_M[1] - Cy1;
+  xyzNew_M[1]      = Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (Fy / _DAMPING) * _DELTAT + Cy2;
+  xyzDotNew_M[1]   = (Fy / _DAMPING) - (_DAMPING / _MASS) * Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT);
 
   // Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
-  float Cz1 = ((1 / _damping) * (Fz - _gravity * _mass) - zDotInit) * (_mass / _damping);
-  float Cz2 = zInit - Cz1;
-  zNew      = Cz1 * exp(-(_damping / _mass) * _deltaT) + (1 / _damping) * (Fz - _gravity * _mass) * _deltaT + Cz2;
-  zDotNew   = -(_damping / _mass) * Cz1 * exp(-(_damping / _mass) * _deltaT) + (1 / _damping) * (Fz - _gravity * _mass);
+  float Cz1 = ((1 / _DAMPING) * (Fz - _GRAVITY * _MASS) - xyzDotInit_M[2]) * (_MASS / _DAMPING);
+  float Cz2 = xyzInit_M[2] - Cz1;
+  xyzNew_M[2]      = Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS) * _DELTAT + Cz2;
+  xyzDotNew_M[2]   = -(_DAMPING / _MASS) * Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS);
+}
+
+float Admittance::GetNewPos(){
+  return xyzNew_M[3];
+}
+
+float Admittance::GetNewVel(){
+  return xyzDotNew_M[3];
 }
 

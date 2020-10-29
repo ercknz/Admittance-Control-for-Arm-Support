@@ -12,24 +12,24 @@ class ForceSensor {
           ForceSensor(const float xyzSens[3], const float weight, const float forceLimit, const float T);
     void  SensorConfig();
     void  CalibrateSensor();
+    float GetGlobalForces(float q1, float q4);
+    
+  private:
     void  ReadForceSensor();
     void  CheckForces();
     void  FilterForces();
-    void  GetGlobal(float q1, float q4);
-  private:
-    float _xCal, _yCal, _zCal = 0.0f;
-    int16_t _sensorStatus;
-    const float _xSensitivity;
-    const float _ySensitivity;
-    const float _zSensitivity;
-    const float _filterWeight;
-    const float _forceLimit;
-    const float _deltaT;
-    float xRaw,     yRaw,     zRaw      = 0.0f;
-    float xLastRaw, yLastRaw, zLastRaw  = 0.0f;
-    float xFilt,    yFilt,    zFilt     = 0.0f;
-    float xLastFilt,yLastFilt,zLastFilt = 0.0f;
-    float xGlobal,  yGlobal,  zGlobal   = 0.0f;
+    
+    float       _xyzCALIBRATION[3] = 0.0f;
+    int16_t     _SENSORSTATUS;
+    const float _xyzSENSITIVITY{[3]
+    const float _WEIGHT;
+    const float _FORCELIMIT;
+    const float _DELTAT;
+    float xyzRaw_M[3]     = 0.0f;
+    float xyzLastRaw_M[3] = 0.0f;
+    float xyzFilt_M[3]    = 0.0f;
+    float xyzLastFilt_M[3]= 0.0f;
+    float xyzGlobal_M[3]  = 0.0f;
 };
 
 #endif // FORCE_SENSOR_H

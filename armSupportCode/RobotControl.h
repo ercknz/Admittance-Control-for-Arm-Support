@@ -14,7 +14,11 @@ class RobotControl {
     void  fKine();
     void  EnableTorque(bool state);
     void  MotorConfig();
+    
   private:
+    void  ReadMotors();
+    void  WriteMotors();
+    
     const float _A1;
     const float _L1;
     const float _A2;
@@ -22,15 +26,12 @@ class RobotControl {
     const float _Offset;
     const float _PHI;
     const float _H_OF_L2;
-    float q1Cts,    q2Cts,    q4Cts;
-    float q1DotCts, q2DotCts, q4DotCts;
-    float q1,       q2,       q4;
-    float q1Dot,    q2Dot,    q4Dot;
-    float _x,       _y,       _z;
-    float _xDot,    _yDot,    _zDot;
-
-    void  ReadMotors();
-    void  WriteMotors();
+    float qCts[3];
+    float qDotCts[3];
+    float q[3];
+    float qDot[3];
+    float xyz[3];
+    float xyzDot[3];
 };
 
 #endif // ROBOT_CONTROL_H

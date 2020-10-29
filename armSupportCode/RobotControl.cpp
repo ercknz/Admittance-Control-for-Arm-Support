@@ -3,6 +3,10 @@
    functions needed to write and read to the motors
    Refer to github-Dynamixel for more information on dynamixel library.
 
+   q[0] = q1(shoulder)
+   q[1] = q2(elevation)
+   q[2] = q4(elbow)
+
    Created 10/28/2020
    Script by Erick Nunez
 */

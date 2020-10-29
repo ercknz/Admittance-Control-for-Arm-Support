@@ -51,13 +51,9 @@
 #define DISABLE               0
 #define VEL_BASED_PROFILE     0
 #define ESC_ASCII_VALUE       0x1b
-/* OptoForce Constants */
-const float xSensitivity = 20.180;
-const float ySensitivity = 20.250;
-const float zSensitivity = 1.610;
-/* Force Sensor filter */
+/* Force Sensor Constants */
+const float xyzSensitivity[3] = {20.180, 20.250, 1.610};
 const float SENSOR_FILTER_WEIGHT 0.05
-float  xCal = 0.000, yCal = 0.000, zCal = 0.000;
 /* Dynamixel Parameters for calculations */
 const float DEGREES_PER_COUNT = 0.088;
 const float RPM_PER_COUNT     = 0.229;
@@ -74,8 +70,8 @@ const float VEL_MAX_LIMIT     = 20;
 /* Admitance Control Constants */
 const float LOOP_DT       = 10;    // Milliseconds
 const float MODEL_DT      = 0.01;   // Seconds
-float       MASS          = 5.0f;
-float       DAMPING       = 25.0f;
+const float MASS          = 5.0f;
+const float DAMPING       = 25.0f;
 const float GRAVITY       = 9.80665;
 const float ACC_LIMIT     = 20.0f;
 const float F_LIMIT = (MASS * ACC_LIMIT) / MODEL_DT;
@@ -85,8 +81,6 @@ const float L1_LINK     = 0.419;     // length of 4bar linkage
 const float A2_LINK     = 0.082;     // 4bar linkage to elbow
 const float L2_LINK     = 0.520;     // elbow to sensor
 const float LINK_OFFSET = 0.035;   // elbow to sensor offset
-//const float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
-//const float PHI = atan(LINK_OFFSET / L2_LINK);
 /* Diagnostic mode */
 bool logging = true;
 
