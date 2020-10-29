@@ -9,7 +9,7 @@
 
 class ForceSensor {
   public:
-          ForceSensor(const float xyzSens[3], const float weight, const float threshold, const float T);
+          ForceSensor(const float xyzSens[3], const float weight, const float forceLimit, const float T);
     void  SensorConfig();
     void  CalibrateSensor();
     void  ReadForceSensor();
@@ -23,7 +23,7 @@ class ForceSensor {
     const float _ySensitivity;
     const float _zSensitivity;
     const float _filterWeight;
-    const float _forceThreshold;
+    const float _forceLimit;
     const float _deltaT;
     float xRaw,     yRaw,     zRaw      = 0.0f;
     float xLastRaw, yLastRaw, zLastRaw  = 0.0f;

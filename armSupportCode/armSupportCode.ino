@@ -85,8 +85,8 @@ const float L1_LINK     = 0.419;     // length of 4bar linkage
 const float A2_LINK     = 0.082;     // 4bar linkage to elbow
 const float L2_LINK     = 0.520;     // elbow to sensor
 const float LINK_OFFSET = 0.035;   // elbow to sensor offset
-const float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
-const float PHI = atan(LINK_OFFSET / L2_LINK);
+//const float H_OF_L2 = sqrt(pow(LINK_OFFSET, 2) + pow(L2_LINK, 2));
+//const float PHI = atan(LINK_OFFSET / L2_LINK);
 /* Diagnostic mode */
 bool logging = true;
 

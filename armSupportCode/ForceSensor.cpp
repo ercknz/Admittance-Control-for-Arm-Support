@@ -20,12 +20,12 @@
 
 #include "ForceSensor.h"
 
-ForceSensor::ForceSensor(const float xyzSens[3], const float weight, const float threshold, const float T) {
+ForceSensor::ForceSensor(const float xyzSens[3], const float weight, const float forceLimit, const float T) {
   _xSensitivity   = xyzSens[0];
   _ySensitivity   = xyzSens[1];
   _zSensitivity   = xyzSens[2];
   _filterWeight   = weight;
-  _forceThreshold = threshold;
+  _forceLimit     = forceLimit;
   _deltaT         = T;
 }
 
@@ -119,4 +119,3 @@ void ForceSensor::CheckForces() {
   if (abs((newForces.Y - lastForces.Y) / _deltaT) > _forceThreshold) checkedForces.Y = lastForces.Y;
   if (abs((newForces.Z - lastForces.Z) / _deltaT) > _forceThreshold) checkedForces.Z = lastForces.Z;
 }
-
