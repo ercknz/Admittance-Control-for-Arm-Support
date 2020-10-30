@@ -10,44 +10,14 @@
 
 */
 
-/* Libraries to add ///////////////////////////////////////////////////////////////////////////////*/
+/* Libraries and Headers ///////////////////////////////////////////////////////////////////////////////*/
 #include <DynamixelSDK.h>
 #include <PID_v1.h>
-#include "stateDataStructs.h"
-
-/* Constants //////////////////////////////////////////////////////////////////////////////////////*/
-/* Force Sensor Constants */
-const float xyzSensitivity[3] = {20.180, 20.250, 1.610};
-const float SENSOR_FILTER_WEIGHT 0.05
-/* Dynamixel Parameters for calculations */
-const float DEGREES_PER_COUNT = 0.088;
-const float RPM_PER_COUNT     = 0.229;
-/* Dynamixel Motor Limits */
-const float ELBOW_MIN_POS     = 1207;
-const float ELBOW_MAX_POS     = 3129;
-const float SHOULDER_MIN_POS  = 705;
-const float SHOULDER_MAX_POS  = 3564;
-const float ELEVATION_MIN_POS = 643;
-const float ELEVATION_MAX_POS = 3020;
-const float ELEVATION_CENTER = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
-const float ELEVATION_RATIO   = 2.305;
-const float VEL_MAX_LIMIT     = 20;
-/* Admitance Control Constants */
-const float LOOP_DT       = 10;    // Milliseconds
-const float MODEL_DT      = 0.01;   // Seconds
-const float MASS          = 5.0f;
-const float DAMPING       = 25.0f;
-const float GRAVITY       = 9.80665;
-const float ACC_LIMIT     = 20.0f;
-const float F_LIMIT = (MASS * ACC_LIMIT) / MODEL_DT;
-/* Kinematic Constants */
-const float A1_LINK     = 0.073;     // Shoulder to 4bar linkage
-const float L1_LINK     = 0.419;     // length of 4bar linkage
-const float A2_LINK     = 0.082;     // 4bar linkage to elbow
-const float L2_LINK     = 0.520;     // elbow to sensor
-const float LINK_OFFSET = 0.035;   // elbow to sensor offset
-/* Diagnostic mode */
-bool logging = true;
+#include "armSupportNamespace.h"
+#include "AdmittanceModel.h"
+#include "ForceSensor.h"
+#include "RobotControl.h"
+#include "UtilityFunctions.h"
 
 /* Port and Packet variable /////////////////////////////////////////////////////////////////////////*/
 dynamixel::PortHandler *portHandler;
@@ -112,9 +82,7 @@ void loop() {
   filtForces = sensorFilter.Update(globForces);
   initSI = forwardKine(presQ);
   goalSI = admittanceControlModel(filtForces, initSI);
-  if (logging) {
-    loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
-  }
+  loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
 
   /* Main Loop */
   while (Serial) {
@@ -141,10 +109,7 @@ void loop() {
       goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ);
       loopTime = millis() - startLoop;
 
-      if (logging) {
-        loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
-      }
-
+      loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
     }
   }
   if (!Serial) {

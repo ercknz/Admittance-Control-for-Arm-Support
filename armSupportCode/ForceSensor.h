@@ -19,17 +19,17 @@ class ForceSensor {
     void  CheckForces();
     void  FilterForces();
     
-    float       _xyzCALIBRATION[3] = 0.0f;
+    float       _xyzCALIBRATION[3] = {0.0f};
     int16_t     _SENSORSTATUS;
-    const float _xyzSENSITIVITY{[3]
+    const float _xyzSENSITIVITY{[3];
     const float _WEIGHT;
     const float _FORCELIMIT;
     const float _DELTAT;
-    float xyzRaw_M[3]     = 0.0f;
-    float xyzLastRaw_M[3] = 0.0f;
-    float xyzFilt_M[3]    = 0.0f;
-    float xyzLastFilt_M[3]= 0.0f;
-    float xyzGlobal_M[3]  = 0.0f;
+    float xyzRaw_M[3]     = {0.0f};
+    float xyzLastRaw_M[3] = {0.0f};
+    float xyzFilt_M[3]    = {0.0f};
+    float xyzLastFilt_M[3]= {0.0f};
+    float xyzGlobal_M[3]  = {0.0f};
 };
 
 #endif // FORCE_SENSOR_H

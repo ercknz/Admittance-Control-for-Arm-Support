@@ -9,6 +9,6 @@
 
 int16_t bytesToCounts(byte hByte, byte lByte);
 
-void loggingFunc(unsigned long &totalTime, forceStruct &rawF, forceStruct &F, jointSpace &pres, modelSpace &curr, modelSpace &init, modelSpace &goal, jointSpace &Q, unsigned long &goalReturn, unsigned long &loopTime);
+void loggingFunc();
 
 #endif // UTILITY_FUNCTIONS_H

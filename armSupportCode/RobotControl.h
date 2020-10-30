@@ -25,7 +25,7 @@ class RobotControl {
     const float _Q2_LIMIT;
     const float _Q4_MIN,    _Q4_MAX;
     const float _INNER_DIA;
-    float J_M[3][3] = 0.0f;
+    float J_M[3][3] = {0.0f};
     float qCts_M[3];
     float qDotCts_M[3];
     float q_M[3];

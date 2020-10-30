@@ -15,7 +15,7 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
   return decimal;
 }
 
-void loggingFunc(unsigned long &totalTime, forceStruct &rawF, forceStruct &F, jointSpace &pres, modelSpace &curr, modelSpace &init, modelSpace &goal, jointSpace &Q, unsigned long &goalReturn, unsigned long &loopTime) {
+void loggingFunc() {
   Serial.print(totalTime); Serial.print("\t");
 
   //Serial.print(rawF.X); Serial.print("\t"); Serial.print(rawF.Y); Serial.print("\t"); Serial.print(rawF.Z); Serial.print("\t");

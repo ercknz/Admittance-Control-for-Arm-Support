@@ -21,9 +21,9 @@
 #include "ForceSensor.h"
 
 ForceSensor::ForceSensor(const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {
-  _xyzSENSITIVITY[0]   = xyzSens[0];
-  _xyzSENSITIVITY[1]   = xyzSens[1];
-  _xyzSENSITIVITY[2]   = xyzSens[2];
+  for(int i=0; i<3; i++){
+    _xyzSENSITIVITY[i]   = xyzSens[i];
+  }
   _WEIGHT     = weight;
   _FORCELIMIT = (mass * accLimit) / dT;
   _DELTAT     = dT;
@@ -54,22 +54,22 @@ void ForceSensor::SensorConfig() {
 }
 
 void ForceSensor::CalibrateSensor() {
-  _xyzCALIBRATION[0] = 0.0f;
-  _xyzCALIBRATION[1] = 0.0f;
-  _xyzCALIBRATION[2] = 0.0f;
+  for(int i=0; i<3; i++){
+    _xyzCALIBRATION[i] = 0.0f;
+  }
   static float samples = 2000.0;
   for (int i = 0; i < samples; i++) {
     ReadForceSensor();
-    _xyzCALIBRATION[0] += xyzRaw_M[0] / samples;
-    _xyzCALIBRATION[1] += xyzRaw_M[1] / samples;
-    _xyzCALIBRATION[2] += xyzRaw_M[2] / samples;
+    for(int i=0; i<3; i++){
+      _xyzCALIBRATION[i] += xyzRaw_M[i] / samples;
+    }
   }
 }
 
 void ForceSensor::ReadForceSensor() {
-  xyzLastRaw_M[0] = xyzRaw_M[0]; 
-  xyzLastRaw_M[1] = xyzRaw_M[1];
-  xyzLastRaw_M[2] = xyzRaw_M[2];
+  for(int i=0; i<3; i++){
+    xyzLastRaw_M[i] = xyzRaw_M[i];
+  }
   byte rawPacket[32];
   byte goodPacket[16];
   static byte header[4] = {170, 7, 8, 10};
@@ -108,18 +108,18 @@ void ForceSensor::ReadForceSensor() {
 }
 
 void ForceSensor::CheckForces() {
-  if (abs((xyzRaw_M[0] - xyzLastRaw_M[0]) / _DELTAT) > _FORCELIMIT) xyzRaw_M[0] = xyzLastRaw_M[0];
-  if (abs((xyzRaw_M[1] - xyzLastRaw_M[1]) / _DELTAT) > _FORCELIMIT) xyzRaw_M[1] = xyzLastRaw_M[1];
-  if (abs((xyzRaw_M[2] - xyzLastRaw_M[2]) / _DELTAT) > _FORCELIMIT) xyzRaw_M[2] = xyzLastRaw_M[2];
+  for(int i=0; i<3; i++){
+    if (abs((xyzRaw_M[i] - xyzLastRaw_M[i]) / _DELTAT) > _FORCELIMIT) xyzRaw_M[i] = xyzLastRaw_M[i];
+  }
 }
 
 void ForceSensor::FilterForces() {
-  xyzLastFilt_M[0] = xyzFilt_M[0];
-  xyzLastFilt_M[1] = xyzFilt_M[1];
-  xyzLastFilt_M[2] = xyzFilt_M[2];
-  xyzFilt_M[0] = _WEIGHT * xyzRaw_M[0] + (1 - _WEIGHT) * xyzLastFilt_M[0];
-  xyzFilt_M[1] = _WEIGHT * xyzRaw_M[1] + (1 - _WEIGHT) * xyzLastFilt_M[1];
-  xyzFilt_M[2] = _WEIGHT * xyzRaw_M[2] + (1 - _WEIGHT) * xyzLastFilt_M[2];
+  for(int i=0; i<3; i++){
+    xyzLastFilt_M[i] = xyzFilt_M[i];
+  }
+  for(int i=0; i<3; i++){
+    xyzFilt_M[i] = _WEIGHT * xyzRaw_M[i] + (1 - _WEIGHT) * xyzLastFilt_M[i];
+  }
 }
 
 float ForceSensor::GetGlobalForces(float q1, float q4) {
@@ -129,4 +129,3 @@ float ForceSensor::GetGlobalForces(float q1, float q4) {
   xyzGlobal_M[0] = -xyzFilt_M[2];
   return xyzGlobalM[3];
 }
-

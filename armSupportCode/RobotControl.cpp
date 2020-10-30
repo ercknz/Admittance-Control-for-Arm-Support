@@ -12,6 +12,7 @@
 */
 
 #include "RobotControl.h"
+#include "armSupportNamespace.h"
 
 RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset) {
   /* Robot Dimiensions */
@@ -115,6 +116,7 @@ void  RobotControl::fKine() {
 }
 
 void  RobotControl::EnableTorque(uint8_t state) {
+  using namespace ArmSupport
   int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, state, &dxl_error);
@@ -122,6 +124,7 @@ void  RobotControl::EnableTorque(uint8_t state) {
 }
 
 void  RobotControl::MotorConfig() {
+  using namespace ArmSupport
   int dxlCommResult;
   /* Enable LED for visual indication */
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_LED, ENABLE, &dxl_error);
@@ -149,6 +152,7 @@ void  RobotControl::MotorConfig() {
 }
 
 void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
+  using namespace ArmSupport
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
   q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
@@ -168,6 +172,7 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
 }
 
 int  RobotControl::WriteMotors() {
+  using namespace ArmSupport
   int dxlCommResult;
   //uint8_t elbowParam[8], shoulderParam[8], elevateParam[8];
   uint8_t elbowParam[4], shoulderParam[4], elevateParam[4];

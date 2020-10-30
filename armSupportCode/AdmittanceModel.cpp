@@ -40,21 +40,17 @@ AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, co
 }
 
 void AdmittanceModel::InitializeModel(float XYZ[3]) {
-  xyzNew_M[0] = XYZ[0];
-  xyzNew_M[1] = XYZ[1];
-  xyzNew_M[2] = XYZ[2];
-  xyzDotNew_M[0] = 0.0f;
-  xyzDotNew_M[1] = 0.0f;
-  xyzDotNew_M[2] = 0.0f; 
+  for(int i=0; i<3; i++){
+    xyzNew_M[i]     = XYZ[i];
+    xyzDotNew_M[i]  = 0.0f;
+  }
 }
 
 void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
-  xyzInit_M[0]    = xyzNew_M[0];
-  xyzInit_M[1]    = xyzNew_M[1];
-  xyzInit_M[2]    = xyzNew_M[2];
-  xyzDotInit_M[0] = xyzDotNew_M[0];
-  xyzDotInit_M[1] = xyzDotNew_M[1];
-  xyzDotInit_M[2] = xyzDotNew_M[2];
+  for(int i=0; i<3; i++){
+    xyzInit_M[i]    = xyzNew_M[i];
+    xyzDotInit_M[i] = xyzDotNew_M[i];
+  }
   
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   float Cx1 = ((Fx / _DAMPING) - xyzDotInit_M[0]) * (_MASS / _DAMPING);
@@ -82,4 +78,3 @@ float Admittance::GetNewPos(){
 float Admittance::GetNewVel(){
   return xyzDotNew_M[3];
 }
-
