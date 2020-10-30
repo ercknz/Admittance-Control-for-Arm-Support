@@ -1,6 +1,10 @@
 /* This class is the admittance control model.
    It takes a XYZ force input and output XYZ position and velocity based on initial conditions.
 
+   Class arrays use the following: 
+   xyz[3]     = {x, y, x}; 
+   xyzDot[3]  = {xDot, yDot, zDot};
+
    X Direction ********************************************************************
    2nd order eqn:       M*x" = Fx - B*x'
    general solution:    xg(t) = Cx1*exp(-(B/M)*t) + Cx2
@@ -41,40 +45,40 @@ AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, co
 
 void AdmittanceModel::InitializeModel(float XYZ[3]) {
   for(int i=0; i<3; i++){
-    xyzNew_M[i]     = XYZ[i];
-    xyzDotNew_M[i]  = 0.0f;
+    xyzGoal_M[i]     = XYZ[i];
+    xyzDotGoal_M[i]  = 0.0f;
   }
 }
 
 void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
   for(int i=0; i<3; i++){
-    xyzInit_M[i]    = xyzNew_M[i];
-    xyzDotInit_M[i] = xyzDotNew_M[i];
+    xyzInit_M[i]    = xyzGoal_M[i];
+    xyzDotInit_M[i] = xyzDotGoal_M[i];
   }
   
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
   float Cx1 = ((Fx / _DAMPING) - xyzDotInit_M[0]) * (_MASS / _DAMPING);
   float Cx2 = xyzInit_M[0] - Cx1;
-  xyzNew_M[0]      = Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (Fx / _DAMPING) * _DELTAT + Cx2;
-  xyzDotNew_M[0]   = (Fx / _DAMPING) - (_DAMPING / _MASS) * Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT);
+  xyzGoal_M[0]      = Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (Fx / _DAMPING) * _DELTAT + Cx2;
+  xyzDotGoal_M[0]   = (Fx / _DAMPING) - (_DAMPING / _MASS) * Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT);
 
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
   float Cy1 = ((Fy / _DAMPING) - xyzDotInit_M[1]) * (_MASS / _DAMPING);
   float Cy2 = xyzInit_M[1] - Cy1;
-  xyzNew_M[1]      = Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (Fy / _DAMPING) * _DELTAT + Cy2;
-  xyzDotNew_M[1]   = (Fy / _DAMPING) - (_DAMPING / _MASS) * Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT);
+  xyzGoal_M[1]      = Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (Fy / _DAMPING) * _DELTAT + Cy2;
+  xyzDotGoal_M[1]   = (Fy / _DAMPING) - (_DAMPING / _MASS) * Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT);
 
   // Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
   float Cz1 = ((1 / _DAMPING) * (Fz - _GRAVITY * _MASS) - xyzDotInit_M[2]) * (_MASS / _DAMPING);
   float Cz2 = xyzInit_M[2] - Cz1;
-  xyzNew_M[2]      = Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS) * _DELTAT + Cz2;
-  xyzDotNew_M[2]   = -(_DAMPING / _MASS) * Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS);
+  xyzGoal_M[2]      = Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS) * _DELTAT + Cz2;
+  xyzDotGoal_M[2]   = -(_DAMPING / _MASS) * Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS);
 }
 
-float Admittance::GetNewPos(){
-  return xyzNew_M[3];
+float Admittance::GetGoalPos(){
+  return xyzGoal_M[3];
 }
 
-float Admittance::GetNewVel(){
-  return xyzDotNew_M[3];
+float Admittance::GetGoalVel(){
+  return xyzDotGoal_M[3];
 }

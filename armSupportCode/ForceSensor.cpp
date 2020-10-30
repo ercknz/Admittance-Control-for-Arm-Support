@@ -7,6 +7,9 @@
    cut-off frequency (option 6 for filter), and 255 for zeroing the sensor.
    Refer to the Optoforce User Manual Force Sensor DAQ for more information.
 
+   Class arrays use the following:
+   Force[3] = {Fx, Fy, Fz};
+
    Exponential filter used:
    y(n) = w*x(n) + (1-w)*y(n-1)
    where: y(n) is the output value

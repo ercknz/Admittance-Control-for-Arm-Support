@@ -3,9 +3,9 @@
    functions needed to write and read to the motors
    Refer to github-Dynamixel for more information on dynamixel library.
 
-   q[0] = q1(shoulder)
-   q[1] = q2(elevation)
-   q[2] = q4(elbow)
+   Class arrays use the following:
+   q[3]     = {q1(shoulder), q2(elevation), q4(elbow)};
+   qDot[3]  = {q1Dot(shoulder), q2Dot(elevation), q4Dot(elbow)}
 
    Created 10/28/2020
    Script by Erick Nunez
@@ -15,6 +15,7 @@
 #include "armSupportNamespace.h"
 
 RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset) {
+  using namespace ArmSupport
   /* Robot Dimiensions */
   _A1A2     = A1 + A2;
   _L1       = L1;
@@ -24,95 +25,100 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _H_OF_L2  = sqrt(pow(Offset, 2) + pow(L2, 2));
   
   /* JointSpace Limits */
-  _Q1_MIN    = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180);
-  _Q1_MAX    = SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180);
-  _Q4_MIN    = 0.0f;
-  _Q4_MAX    = (ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180);
-  _Q2_LIMIT  = (ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
-  _INNER_DIA = A1 + L1 + A2 - L2;
+  _Q1_MIN   = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180.0);
+  _Q1_MAX   = SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180.0);
+  _Q4_MIN   = (ELBOW_MIN_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
+  _Q4_MAX   = (ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
+  _Q2_LIMIT = (ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
+  _INNER_R  = A1 + L1 + A2 - L2; //Assumes L2 < L1
+  _Z_LIMIT  = _L1 * sin(_Q2_LIMIT);
 }
 
-void  RobotControl::iKine() {
+void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
+  float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
+  for (int i=0; i<3; i++){
+    xyz_M[i]    = xyz[i];
+    xyzDot_M[i] = xyzDot[i];
+  }
    /* Checks if X and Y are both 0 */
-  if ((abs(M.x) < 0.001) && (abs(M.y) < 0.001)) {
-    Q.q1 = pres.q1;
-    Q.q4 = Q4_MAX;
-    M = forwardKine(Q);
+  if ((abs(xyz[0]) < 0.001) && (abs(xyz[1]) < 0.001)) {
+    q_M[0] = qPres_M[0];
+    q_M[2] = _Q4_MAX;
+    //M = forwardKine(Q)  !!!! new M
   }
 
   /* Check Z limits */
-  static float Z_LIMIT = L1_LINK * sin(Q2_LIMIT);
-  if (M.z >  Z_LIMIT) M.z =  Z_LIMIT;
-  if (M.z < -Z_LIMIT) M.z = -Z_LIMIT;
+  if (xyz[2] >  _Z_LIMIT) xyz_M[2] =  _Z_LIMIT;
+  if (xyz[2] < -_Z_LIMIT) xyz_M[2] = -_Z_LIMIT;
 
   /* Find variables based on Z */
-  Q.q2 = asin(M.z / L1_LINK);
-  float L1_XY = sqrt(pow(L1_LINK, 2) - pow(M.z, 2));
+  q_M[1]  = asin(xyz[2] / _L1);
+  L1_XY   = sqrt(pow(_L1, 2) - pow(xyz[2], 2));
 
   /* Checks walls */
-  float OUTER_DIA = A1_LINK + L1_XY + A2_LINK + H_OF_L2;
-  float R = sqrt(pow(M.x, 2) + pow(M.y, 2));
-  float alpha = atan2(M.y, M.x);
-  if (alpha < 0) alpha += 2 * PI;
-  if (R < INNER_DIA) {
-    M.x = INNER_DIA * cos(alpha);
-    M.y = INNER_DIA * sin(alpha);
-    R = INNER_DIA;
+  OUTER_R = _A1A2 + _H_OF_L2 + L1_XY;
+  R       = sqrt(pow(xyz_M[0], 2) + pow(xyz_M[1], 2));
+  alpha   = atan2(xyz_M[1], xyz_M[0]);
+  if (alpha < 0.0f) alpha += 2 * PI;
+  if (R < _INNER_R) {
+    xyz_M[0]  = _INNER_R * cos(alpha);
+    xyz_M[1]  = _INNER_R * sin(alpha);
+    R             = _INNER_R;
   }
-  if (R > OUTER_DIA) {
-    M.x = OUTER_DIA * cos(alpha);
-    M.y = OUTER_DIA * sin(alpha);
-    R = OUTER_DIA;
+  if (R > OUTER_R) {
+    xyz_M[0]  = OUTER_R * cos(alpha);
+    xyz_M[1]  = OUTER_R * sin(alpha);
+    R             = OUTER_R;
   }
 
   /* Finds and checks Elbow Angle */
-  float gamma = acos((pow((A1_LINK + L1_XY + A2_LINK), 2) + pow(H_OF_L2, 2) - pow(M.x, 2) - pow(M.y, 2)) / (2 * H_OF_L2 * (A1_LINK + L1_XY + A2_LINK)));
+  gamma = acos((pow((_A1A2 + L1_XY), 2) + pow(_H_OF_L2, 2) - pow(xyz_M[0], 2) - pow(xyz_M[1], 2)) / (2 * _H_OF_L2 * (_A1A2 + L1_XY)));
 
-  Q.q4 = PI - gamma;
-  if (Q.q4 < Q4_MIN) Q.q4 = Q4_MIN;
-  if (Q.q4 > Q4_MAX) Q.q4 = Q4_MAX;
+  q_M[2] = PI - gamma;
+  if (q_M[2] < _Q4_MIN) q_M[2] = _Q4_MIN;
+  if (q_M[2] > _Q4_MAX) q_M[2] = _Q4_MAX;
 
   /* Finds and checks shoulder angle */
-  float beta = asin((H_OF_L2 * sin(gamma)) / R);
-  Q.q1 = alpha - beta;
-  if (Q.q1 < Q1_MIN) Q.q1 = Q1_MIN;
-  if (Q.q1 > Q1_MAX) Q.q1 = Q1_MAX;
+  beta = asin((_H_OF_L2 * sin(gamma)) / R);
+  q_M[0] = alpha - beta;
+  if (q_M[0] < Q1_MIN) q_M[0] = Q1_MIN;
+  if (q_M[0] > Q1_MAX) q_M[0] = Q1_MAX;
 
   /* Check for nans */
-  if (Q.q1 != Q.q1) Q.q1 = pres.q1;
-  if (Q.q4 != Q.q4) Q.q4 = pres.q4;
+  if (q_M[0] != q_M[0]) q_M[0] = qPres_M[0];
+  if (q_M[2] != q_M[2]) q_M[2] = qPres_M[2];
 
   /* Checks XYZ */
-  modelSpace checkM = forwardKine(Q);
-  if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)) {
-    M = checkM;
-  }
+//  modelSpace checkM = forwardKine(Q);
+//  if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)) {
+//    M = checkM;
+//  }
 
   /* Solve for joint angular velocities (psuedo inverse Jacobian) */
-  float detJ = (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4)) * (L2_LINK * cos(Q.q1 + Q.q4)) - (-L2_LINK * sin(Q.q1 + Q.q4)) * (L1_LINK * cos(Q.q1) + L2_LINK * cos(Q.q1 + Q.q4));
-  Q.q1Dot = (M.xDot * (L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
-  Q.q2Dot = M.zDot / (L1_LINK * sqrt(1 - pow((M.z / L1_LINK), 2)));
-  Q.q4Dot = -(M.xDot * (-L1_LINK * cos(Q.q1) - L2_LINK * cos(Q.q1 + Q.q4)) + M.yDot * (-L1_LINK * sin(Q.q1) - L2_LINK * sin(Q.q1 + Q.q4))) / detJ;
+  detJ      = (-_L1 * sin(q_M[0]) - _L2 * sin(q_M[0] + q_M[2])) * (_L2 * cos(q_M[0] + q_M[2])) - (-_L2 * sin(q_M[0] + q_M[2])) * (_L1 * cos(q_M[0]) + _L2 * cos(q_M[0] + q_M[2]));
+  qDot_M[0] = (xyzDot_M[0] * (_L2 * cos(q_M[0] + q_M[2])) + xyzDot_M[1] * (_L2 * sin(q_M[0] + q_M[2]))) / detJ;
+  qDot_M[1] = xyzDot_M[2] / (_L1 * sqrt(1 - pow((xyz_M[2] / _L1), 2)));
+  qDot_M[2] = -(xyzDot_M[0] * (-_L1 * cos(q_M[0]) - _L2 * cos(q_M[0] + q_M[2])) + xyzDot_M[1] * (-_L1 * sin(q_M[0]) - _L2 * sin(q_M[0] + q_M[2]))) / detJ;
 }
 
 void  RobotControl::fKine() {
   // Compute the XY positions from angles
-  xyz_M[0] = _A1A2 * cos(q1) + _L1 * cos(q1) * cos(q2) + _OFFSET * sin(q1 + q4) + _L2 * cos(q1 + q4);
-  xyz_M[1] = _A1A2 * sin(q1) + _L1 * sin(q1) * cos(q2) - _OFFSET * cos(q1 + q4) + _L2 * sin(q1 + q4);
-  xyz_M[2] = _L1   * sin(q2);
+  xyz_M[0] = _A1A2 * cos(qPres_M[0]) + _L1 * cos(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
+  xyz_M[1] = _A1A2 * sin(qPres_M[0]) + _L1 * sin(qPres_M[0]) * cos(qPres_M[1]) - _OFFSET * cos(qPres_M[0] + qPres_M[2]) + _L2 * sin(qPres_M[0] + qPres_M[2]);
+  xyz_M[2] =   _L1 * sin(qPres_M[1]);
 
   // Multiply velocities with Jacobian Matrix to find the XY velocities
-  J_M[0][0] = - _A1A2   * sin(q1) - _L1 * sin(q1) * cos(q2) + _OFFSET * cos(q1 + q4) - _L2 * sin(q1 + q4);
-  J_M[0][1] = - _L1     * cos(q1) * sin(q2);
-  J_M[0][2] =   _OFFSET * cos(q1 + q4) - _L2 * sin(q1 + q4);
-  J_M[1][0] =   _A1A2   * cos(q1) + _L1 * cos(q1) * cos(q2) + _OFFSET * sin(q1 + q4) + _L2 * cos(q1 + q4);
-  J_M[1][1] = - _L1     * sin(q1) * sin(q2);
-  J_M[1][2] =   _OFFSET * sin(q1 + q4) + _L2 * cos(q1 + q4);
-  J_M[2][1] =   _L1     * cos(q2);  // J31 = J33 = 0.0
+  J_M[0][0] = - _A1A2   * sin(qPres_M[0]) - _L1 * sin(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * cos(qPres_M[0] + qPres_M[2]) - _L2 * sin(qPres_M[0] + qPres_M[2]);
+  J_M[0][1] = - _L1     * cos(qPres_M[0]) * sin(qPres_M[1]);
+  J_M[0][2] =   _OFFSET * cos(qPres_M[0] + qPres_M[2]) - _L2 * sin(qPres_M[0] + qPres_M[2]);
+  J_M[1][0] =   _A1A2   * cos(qPres_M[0]) + _L1 * cos(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
+  J_M[1][1] = - _L1     * sin(qPres_M[0]) * sin(qPres_M[1]);
+  J_M[1][2] =   _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
+  J_M[2][1] =   _L1     * cos(qPres_M[1]);  // J31 = J33 = 0.0
   
-  xyzDot_M[0] = q1Dot * J_M[0][0] + q2Dot * J_M[0][1] + q4Dot * J_M[0][2];
-  xyzDot_M[1] = q1Dot * J_M[1][0] + q2Dot * J_M[1][1] + q4Dot * J_M[1][2];
-  xyzDot_M[2] = q1Dot * J_M[2][0] + q2Dot * J_M[2][1] + q4Dot * J_M[2][2];
+  xyzDot_M[0] = qDotPres_M[0] * J_M[0][0] + qDotPres_M[1] * J_M[0][1] + qDotPres_M[2] * J_M[0][2];
+  xyzDot_M[1] = qDotPres_M[0] * J_M[1][0] + qDotPres_M[1] * J_M[1][1] + qDotPres_M[2] * J_M[1][2];
+  xyzDot_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
 }
 
 void  RobotControl::EnableTorque(uint8_t state) {
@@ -155,12 +161,12 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
   using namespace ArmSupport
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
-  q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  q4Cts    = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-  q2DotCts = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  q2Cts    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
   q1DotCts = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
   q1Cts    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  q2DotCts = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+  q2Cts    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+  q4Cts    = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
 
   /* Convert Motor Counts */
   q1      = (q1Cts) * DEGREES_PER_COUNT * (PI / 180.0);
@@ -171,7 +177,7 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
   q4Dot   = q4DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
 }
 
-int  RobotControl::WriteMotors() {
+int  RobotControl::WriteToMotors() {
   using namespace ArmSupport
   int dxlCommResult;
   //uint8_t elbowParam[8], shoulderParam[8], elevateParam[8];

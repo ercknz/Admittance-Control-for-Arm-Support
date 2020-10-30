@@ -13,16 +13,16 @@ class AdmittanceModel {
           AdmittanceModel(const float M, const float B, const float G, const float T);
     void  InitializeModel(float XYZ[3]);
     void  UpdateModel(float forceXYZ[3]);
-    float GetNewPos();
-    float GetNewVel();
+    float GetGoalPos();
+    float GetGoalVel();
     
   private:
     const float _MASS;
     const float _DAMPING;
     const float _GRAVITY;
     const float _DELTAT;
-    float xyzNew_M[3];
-    float xyzDotNew_M[3];
+    float xyzGoal_M[3];
+    float xyzDotGoal_M[3];
     float xyzInit_M[3];
     float xyzDotInit_M[3];
 };
