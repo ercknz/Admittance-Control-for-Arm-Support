@@ -36,6 +36,7 @@
 
 #include "AdmittanceModel.h"
 
+/******************** Admittance Model Constructor  ***********************************************************************/
 AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, const float T) {
   _MASS       = M;
   _DAMPING    = B;
@@ -43,6 +44,7 @@ AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, co
   _DELTAT     = T;
 }
 
+/******************** Admittance Model Initalizer  ***********************************************************************/
 void AdmittanceModel::InitializeModel(float XYZ[3]) {
   for(int i=0; i<3; i++){
     xyzGoal_M[i]     = XYZ[i];
@@ -50,6 +52,7 @@ void AdmittanceModel::InitializeModel(float XYZ[3]) {
   }
 }
 
+/******************** Admittance Model Updater  ***********************************************************************/
 void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
   for(int i=0; i<3; i++){
     xyzInit_M[i]    = xyzGoal_M[i];
@@ -75,10 +78,12 @@ void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
   xyzDotGoal_M[2]   = -(_DAMPING / _MASS) * Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (1 / _DAMPING) * (Fz - _GRAVITY * _MASS);
 }
 
+/******************** Admittance Model Positions   ***********************************************************************/
 float Admittance::GetGoalPos(){
   return xyzGoal_M[3];
 }
 
+/******************** Admittance Model Velocities  ***********************************************************************/
 float Admittance::GetGoalVel(){
   return xyzDotGoal_M[3];
 }

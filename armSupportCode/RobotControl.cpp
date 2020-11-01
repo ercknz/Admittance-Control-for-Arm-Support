@@ -4,8 +4,10 @@
    Refer to github-Dynamixel for more information on dynamixel library.
 
    Class arrays use the following:
-   q[3]     = {q1(shoulder), q2(elevation), q4(elbow)};
-   qDot[3]  = {q1Dot(shoulder), q2Dot(elevation), q4Dot(elbow)}
+   xyz[3]     = {x, y, x}; 
+   xyzDot[3]  = {xDot, yDot, zDot};
+   q[3]       = {q1(shoulder), q2(elevation), q4(elbow)};
+   qDot[3]    = {q1Dot(shoulder), q2Dot(elevation), q4Dot(elbow)}
 
    Created 10/28/2020
    Script by Erick Nunez
@@ -14,6 +16,7 @@
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
 
+/******************** Arm Support Constructor  ***********************************************************************/
 RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset) {
   using namespace ArmSupport
   /* Robot Dimiensions */
@@ -34,6 +37,7 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _Z_LIMIT  = _L1 * sin(_Q2_LIMIT);
 }
 
+/******************** Arm Support Inverse Kinematics Member function ************************************************/
 void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
@@ -101,6 +105,7 @@ void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   qDot_M[2] = -(xyzDot_M[0] * (-_L1 * cos(q_M[0]) - _L2 * cos(q_M[0] + q_M[2])) + xyzDot_M[1] * (-_L1 * sin(q_M[0]) - _L2 * sin(q_M[0] + q_M[2]))) / detJ;
 }
 
+/******************** Arm Support Forward Kinematics Member Function ************************************************/
 void  RobotControl::fKine() {
   // Compute the XY positions from angles
   xyz_M[0] = _A1A2 * cos(qPres_M[0]) + _L1 * cos(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
@@ -121,6 +126,7 @@ void  RobotControl::fKine() {
   xyzDot_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
 }
 
+/******************** Arm Support DXL Torque Enabling Member Function ************************************************/
 void  RobotControl::EnableTorque(uint8_t state) {
   using namespace ArmSupport
   int dxlCommResult;
@@ -129,6 +135,7 @@ void  RobotControl::EnableTorque(uint8_t state) {
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, state, &dxl_error);
 }
 
+/******************** Arm Support DXL Configuration Member Function ************************************************/
 void  RobotControl::MotorConfig() {
   using namespace ArmSupport
   int dxlCommResult;
@@ -157,49 +164,59 @@ void  RobotControl::MotorConfig() {
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
 }
 
+/******************** Arm Support DXL Read Member Function ************************************************/
 void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
   using namespace ArmSupport
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
-  q1DotCts = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  q1Cts    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-  q2DotCts = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  q2Cts    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
-  q4DotCts = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
-  q4Cts    = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  qPresCts_M[0]    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  qPresCts_M[1]    = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  qPresCts_M[2]    = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
+  qDotPresCts_M[0] = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+  qDotPresCts_M[1] = syncReadPacket.getData(ID_ELEVATION,    ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
+  qDotPresCts_M[2] = syncReadPacket.getData(ID_ELBOW,        ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY);
 
   /* Convert Motor Counts */
-  q1      = (q1Cts) * DEGREES_PER_COUNT * (PI / 180.0);
-  q2      = -(q2Cts - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
-  q4      =  (q4Cts - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
-  q1Dot   = q1DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  q2Dot   = q2DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0) * (1 / ELEVATION_RATIO);
-  q4Dot   = q4DotCts * RPM_PER_COUNT * (2.0 * PI / 60.0);
+  qPres_M[0]      =  (qPresCts_M[0]) * DEGREES_PER_COUNT * (PI / 180.0);
+  qPres_M[1]      = -(qPresCts_M[1] - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
+  qPres_M[2]      =  (qPresCts_M[2] - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
+  qDotPres_M[0]   = qDotPresCts_M[0] * RPM_PER_COUNT * (2.0 * PI / 60.0);
+  qDotPres_M[1]   = qDotPresCts_M[1] * RPM_PER_COUNT * (2.0 * PI / 60.0) * (1 / ELEVATION_RATIO);
+  qDotPres_M[2]   = qDotPresCts_M[2] * RPM_PER_COUNT * (2.0 * PI / 60.0);
 }
 
+/******************** Arm Support DXL Write Member Function ************************************************/
 int  RobotControl::WriteToMotors() {
   using namespace ArmSupport
+  /* Convert to Counts */
+  qCts_M[0]    = q_M[0] * (180.0 / PI) / DEGREES_PER_COUNT;
+  qCts_M[1]    = ELEVATION_CENTER - (q_M[1] * ELEVATION_RATIO * (180.0 / PI) / DEGREES_PER_COUNT);
+  qCts_M[2]    = ELBOW_MIN_POS + q_M[2] * (180.0 / PI) / DEGREES_PER_COUNT;
+  qDotCts_M[0] = abs(qDot_M[0] * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  qDotCts_M[1] = abs(qDot_M[1] * (60.0 / (2.0 * PI)) / RPM_PER_COUNT) * ELEVATION_RATIO;
+  qDotCts_M[2] = abs(qDot_M[2] * (60.0 / (2.0 * PI)) / RPM_PER_COUNT);
+  
   int dxlCommResult;
   //uint8_t elbowParam[8], shoulderParam[8], elevateParam[8];
   uint8_t elbowParam[4], shoulderParam[4], elevateParam[4];
 
-  /* Elbow Parameters Goal Packet */
-  elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(goal.q4Cts));
-  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(goal.q4Cts));
-  elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(goal.q4Cts));
-  elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(goal.q4Cts));
-
   /* Shoulder Parameters Goal Packet */
-  shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(goal.q1Cts));
-  shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(goal.q1Cts));
-  shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(goal.q1Cts));
-  shoulderParam[3] = DXL_HIBYTE(DXL_HIWORD(goal.q1Cts));
+  shoulderParam[0] = DXL_LOBYTE(DXL_LOWORD(qCts_M[0]));
+  shoulderParam[1] = DXL_HIBYTE(DXL_LOWORD(qCts_M[0]));
+  shoulderParam[2] = DXL_LOBYTE(DXL_HIWORD(qCts_M[0]));
+  shoulderParam[3] = DXL_HIBYTE(DXL_HIWORD(qCts_M[0]));
 
   /* Elevation Parameters Goal Packet */
-  elevateParam[0] = DXL_LOBYTE(DXL_LOWORD(goal.q2Cts));
-  elevateParam[1] = DXL_HIBYTE(DXL_LOWORD(goal.q2Cts));
-  elevateParam[2] = DXL_LOBYTE(DXL_HIWORD(goal.q2Cts));
-  elevateParam[3] = DXL_HIBYTE(DXL_HIWORD(goal.q2Cts));
+  elevateParam[0] = DXL_LOBYTE(DXL_LOWORD(qCts_M[1]));
+  elevateParam[1] = DXL_HIBYTE(DXL_LOWORD(qCts_M[1]));
+  elevateParam[2] = DXL_LOBYTE(DXL_HIWORD(qCts_M[1]));
+  elevateParam[3] = DXL_HIBYTE(DXL_HIWORD(qCts_M[1]));
+
+  /* Elbow Parameters Goal Packet */
+  elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(qCts_M[2]));
+  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(qCts_M[2]);
+  elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(qCts_M[2]));
+  elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(qCts_M[2]));
 
   /* Writes packet */
   addParamResult = syncWritePacket.addParam(ID_SHOULDER,  shoulderParam);

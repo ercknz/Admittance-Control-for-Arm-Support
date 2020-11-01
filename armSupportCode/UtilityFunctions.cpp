@@ -10,11 +10,13 @@
 
 #include "UtilityFunctions.h"
 
+/******************** Bytes to Counts Converter  ***********************************************************************/
 int16_t bytesToCounts(byte hByte, byte lByte) {
   int16_t decimal = hByte * 256 + lByte;
   return decimal;
 }
 
+/******************** Streaming Function  ***********************************************************************/
 void loggingFunc() {
   Serial.print(totalTime); Serial.print("\t");
 

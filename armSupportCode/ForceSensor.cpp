@@ -23,6 +23,7 @@
 
 #include "ForceSensor.h"
 
+/******************** Force Sensor Constructor  ***********************************************************************/
 ForceSensor::ForceSensor(const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {
   for(int i=0; i<3; i++){
     _xyzSENSITIVITY[i]   = xyzSens[i];
@@ -32,6 +33,7 @@ ForceSensor::ForceSensor(const float xyzSens[3], const float mass, const float w
   _DELTAT     = dT;
 }
 
+/******************** Force Sensor Configuration  ***********************************************************************/
 void ForceSensor::SensorConfig() {
   byte configPacket[9];
   uint16_t packetSum = 0;
@@ -56,6 +58,7 @@ void ForceSensor::SensorConfig() {
   }
 }
 
+/******************** Force Sensor Calibration  ***********************************************************************/
 void ForceSensor::CalibrateSensor() {
   for(int i=0; i<3; i++){
     _xyzCALIBRATION[i] = 0.0f;
@@ -69,6 +72,7 @@ void ForceSensor::CalibrateSensor() {
   }
 }
 
+/******************** Force Sensor Reading  ***********************************************************************/
 void ForceSensor::ReadForceSensor() {
   for(int i=0; i<3; i++){
     xyzLastRaw_M[i] = xyzRaw_M[i];
@@ -110,12 +114,14 @@ void ForceSensor::ReadForceSensor() {
   FilterForces();
 }
 
+/******************** Force Sensor Readings Check  ***********************************************************************/
 void ForceSensor::CheckForces() {
   for(int i=0; i<3; i++){
     if (abs((xyzRaw_M[i] - xyzLastRaw_M[i]) / _DELTAT) > _FORCELIMIT) xyzRaw_M[i] = xyzLastRaw_M[i];
   }
 }
 
+/******************** Force Sensor Filter  ***********************************************************************/
 void ForceSensor::FilterForces() {
   for(int i=0; i<3; i++){
     xyzLastFilt_M[i] = xyzFilt_M[i];
@@ -125,6 +131,7 @@ void ForceSensor::FilterForces() {
   }
 }
 
+/******************** Force Sensor Global Forces  ***********************************************************************/
 float ForceSensor::GetGlobalForces(float q1, float q4) {
   ReadForceSensor();
   xyzGlobal_M[0] = xyzFilt_M[0] * ( sin(q1 + q4)) + xyzFilt_M[1] * (-cos(q1 + q4));

@@ -47,12 +47,6 @@ void loop() {
   delay(100);
   calibrateForceSensor(xCal, yCal, zCal);
   delay(2000);
-  /* Data Structures Declaration */
-  forceStruct   rawForces;      forceStruct   lastRaw;
-  forceStruct   globForces;     forceStruct   filtForces;
-  modelSpace    initSI;         modelSpace    goalSI;
-  modelSpace    presSI;
-  jointSpace    presQ;          jointSpace    goalQ;
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
