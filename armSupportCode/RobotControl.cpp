@@ -37,27 +37,35 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _Z_LIMIT  = _L1 * sin(_Q2_LIMIT);
 }
 
+/******************** Arm Support Motor Reading  ***********************************************************************/
+void RobotControl::ReadRobot(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
+  ReadMotors(addParamResult, syncWritePacket);
+  fKine();
+}
+
 /******************** Arm Support Inverse Kinematics Member function ************************************************/
 void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
-    xyz_M[i]    = xyz[i];
+    xyz_M[i]    +=  xyz[i];
     xyzDot_M[i] = xyzDot[i];
   }
+
+  /* Check Z limits */
+  if (xyz_M[2] >  _Z_LIMIT) xyz_M[2] =  _Z_LIMIT;
+  if (xyz_M[2] < -_Z_LIMIT) xyz_M[2] = -_Z_LIMIT;
+
+  /* Find variables based on Z */
+  q_M[1]  = asin(xyz_M[2] / _L1);
+  L1_XY   = sqrt(pow(_L1, 2) - pow(xyz_M[2], 2));
+
    /* Checks if X and Y are both 0 */
   if ((abs(xyz[0]) < 0.001) && (abs(xyz[1]) < 0.001)) {
     q_M[0] = qPres_M[0];
     q_M[2] = _Q4_MAX;
-    //M = forwardKine(Q)  !!!! new M
+    xyz_M[0] = _A1A2 * cos(q_M[0]) + _L1 * cos(q_M[0]) * cos(q_M[1]) + _OFFSET * sin(q_M[0] + q_M[2]) + _L2 * cos(q_M[0] + q_M[2]);
+    xyz_M[1] = _A1A2 * sin(q_M[0]) + _L1 * sin(q_M[0]) * cos(q_M[1]) - _OFFSET * cos(q_M[0] + q_M[2]) + _L2 * sin(q_M[0] + q_M[2]);
   }
-
-  /* Check Z limits */
-  if (xyz[2] >  _Z_LIMIT) xyz_M[2] =  _Z_LIMIT;
-  if (xyz[2] < -_Z_LIMIT) xyz_M[2] = -_Z_LIMIT;
-
-  /* Find variables based on Z */
-  q_M[1]  = asin(xyz[2] / _L1);
-  L1_XY   = sqrt(pow(_L1, 2) - pow(xyz[2], 2));
 
   /* Checks walls */
   OUTER_R = _A1A2 + _H_OF_L2 + L1_XY;
@@ -67,12 +75,12 @@ void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   if (R < _INNER_R) {
     xyz_M[0]  = _INNER_R * cos(alpha);
     xyz_M[1]  = _INNER_R * sin(alpha);
-    R             = _INNER_R;
+    R         = _INNER_R;
   }
   if (R > OUTER_R) {
     xyz_M[0]  = OUTER_R * cos(alpha);
     xyz_M[1]  = OUTER_R * sin(alpha);
-    R             = OUTER_R;
+    R         = OUTER_R;
   }
 
   /* Finds and checks Elbow Angle */
@@ -93,7 +101,10 @@ void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   if (q_M[2] != q_M[2]) q_M[2] = qPres_M[2];
 
   /* Checks XYZ */
-//  modelSpace checkM = forwardKine(Q);
+  float xyzCheck[3];
+  xyzCheck[0] = _A1A2 * cos(q_M[0]) + _L1 * cos(q_M[0]) * cos(q_M[1]) + _OFFSET * sin(q_M[0] + q_M[2]) + _L2 * cos(q_M[0] + q_M[2]);
+  xyzCheck[1] = _A1A2 * sin(q_M[0]) + _L1 * sin(q_M[0]) * cos(q_M[1]) - _OFFSET * cos(q_M[0] + q_M[2]) + _L2 * sin(q_M[0] + q_M[2]);
+  xyzCheck[2] =   _L1 * sin(q_M[1]);
 //  if ((abs(M.x - checkM.x) > 0.001) || (abs(M.y - checkM.y) > 0.001) || (abs(M.y - checkM.y) > 0.001)) {
 //    M = checkM;
 //  }
@@ -108,9 +119,9 @@ void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
 /******************** Arm Support Forward Kinematics Member Function ************************************************/
 void  RobotControl::fKine() {
   // Compute the XY positions from angles
-  xyz_M[0] = _A1A2 * cos(qPres_M[0]) + _L1 * cos(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
-  xyz_M[1] = _A1A2 * sin(qPres_M[0]) + _L1 * sin(qPres_M[0]) * cos(qPres_M[1]) - _OFFSET * cos(qPres_M[0] + qPres_M[2]) + _L2 * sin(qPres_M[0] + qPres_M[2]);
-  xyz_M[2] =   _L1 * sin(qPres_M[1]);
+  xyzPres_M[0] = _A1A2 * cos(qPres_M[0]) + _L1 * cos(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
+  xyzPres_M[1] = _A1A2 * sin(qPres_M[0]) + _L1 * sin(qPres_M[0]) * cos(qPres_M[1]) - _OFFSET * cos(qPres_M[0] + qPres_M[2]) + _L2 * sin(qPres_M[0] + qPres_M[2]);
+  xyzPres_M[2] =   _L1 * sin(qPres_M[1]);
 
   // Multiply velocities with Jacobian Matrix to find the XY velocities
   J_M[0][0] = - _A1A2   * sin(qPres_M[0]) - _L1 * sin(qPres_M[0]) * cos(qPres_M[1]) + _OFFSET * cos(qPres_M[0] + qPres_M[2]) - _L2 * sin(qPres_M[0] + qPres_M[2]);
@@ -121,13 +132,13 @@ void  RobotControl::fKine() {
   J_M[1][2] =   _OFFSET * sin(qPres_M[0] + qPres_M[2]) + _L2 * cos(qPres_M[0] + qPres_M[2]);
   J_M[2][1] =   _L1     * cos(qPres_M[1]);  // J31 = J33 = 0.0
   
-  xyzDot_M[0] = qDotPres_M[0] * J_M[0][0] + qDotPres_M[1] * J_M[0][1] + qDotPres_M[2] * J_M[0][2];
-  xyzDot_M[1] = qDotPres_M[0] * J_M[1][0] + qDotPres_M[1] * J_M[1][1] + qDotPres_M[2] * J_M[1][2];
-  xyzDot_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
+  xyzDotPres_M[0] = qDotPres_M[0] * J_M[0][0] + qDotPres_M[1] * J_M[0][1] + qDotPres_M[2] * J_M[0][2];
+  xyzDotPres_M[1] = qDotPres_M[0] * J_M[1][0] + qDotPres_M[1] * J_M[1][1] + qDotPres_M[2] * J_M[1][2];
+  xyzDotPres_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
 }
 
 /******************** Arm Support DXL Torque Enabling Member Function ************************************************/
-void  RobotControl::EnableTorque(uint8_t state) {
+void  RobotControl::EnableTorque(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler, uint8_t state) {
   using namespace ArmSupport
   int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
@@ -136,7 +147,7 @@ void  RobotControl::EnableTorque(uint8_t state) {
 }
 
 /******************** Arm Support DXL Configuration Member Function ************************************************/
-void  RobotControl::MotorConfig() {
+void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler) {
   using namespace ArmSupport
   int dxlCommResult;
   /* Enable LED for visual indication */
@@ -186,7 +197,7 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
 }
 
 /******************** Arm Support DXL Write Member Function ************************************************/
-int  RobotControl::WriteToMotors() {
+int  RobotControl::WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket) {
   using namespace ArmSupport
   /* Convert to Counts */
   qCts_M[0]    = q_M[0] * (180.0 / PI) / DEGREES_PER_COUNT;

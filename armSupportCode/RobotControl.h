@@ -11,14 +11,15 @@ class RobotControl {
   public:
           RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset);
     void  iKine(float XYZ[3]);
-    void  fKine();
+    void  ReadRobot();
     void  EnableTorque(bool state);
     void  MotorConfig();
+    int   WriteToMotors();
     
   private:
+    void  fKine();
     void  ReadMotors();
-    void  WriteToMotors();
-    
+
     const float _A1A2,      _L1,        _L2;
     const float _OFFSET,    _PHI,       _H_OF_L2;
     const float _Q1_MIN,    _Q1_MAX;

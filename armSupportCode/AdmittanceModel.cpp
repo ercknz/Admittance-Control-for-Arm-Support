@@ -45,17 +45,17 @@ AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, co
 }
 
 /******************** Admittance Model Initalizer  ***********************************************************************/
-void AdmittanceModel::InitializeModel(float XYZ[3]) {
-  for(int i=0; i<3; i++){
-    xyzGoal_M[i]     = XYZ[i];
-    xyzDotGoal_M[i]  = 0.0f;
-  }
-}
+//void AdmittanceModel::InitializeModel(float XYZ[3]) {
+//  for(int i=0; i<3; i++){
+//    xyzGoal_M[i]     = XYZ[i];
+//    xyzDotGoal_M[i]  = 0.0f;
+//  }
+//}
 
 /******************** Admittance Model Updater  ***********************************************************************/
 void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
   for(int i=0; i<3; i++){
-    xyzInit_M[i]    = xyzGoal_M[i];
+    xyzInit_M[i]    = 0.0f;
     xyzDotInit_M[i] = xyzDotGoal_M[i];
   }
   

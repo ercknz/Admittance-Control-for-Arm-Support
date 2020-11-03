@@ -9,7 +9,7 @@
 
 class ForceSensor {
   public:
-          ForceSensor(const float xyzSens[3], const float weight, const float forceLimit, const float T);
+          ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float weight, const float forceLimit, const float T);
     void  SensorConfig();
     void  CalibrateSensor();
     float GetGlobalForces(float q1, float q4);
@@ -18,7 +18,9 @@ class ForceSensor {
     void  ReadForceSensor();
     void  CheckForces();
     void  FilterForces();
-    
+
+    const int   _BAUDRATE;  
+    HardwareSerial *SensorPort_M;
     float       _xyzCALIBRATION[3] = {0.0f};
     int16_t     _SENSORSTATUS;
     const float _xyzSENSITIVITY{[3];

@@ -24,17 +24,20 @@
 #include "ForceSensor.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
-ForceSensor::ForceSensor(const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {
+ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {
   for(int i=0; i<3; i++){
     _xyzSENSITIVITY[i]   = xyzSens[i];
   }
   _WEIGHT     = weight;
   _FORCELIMIT = (mass * accLimit) / dT;
   _DELTAT     = dT;
+  SensorPort_M = ptrSer;
 }
 
 /******************** Force Sensor Configuration  ***********************************************************************/
-void ForceSensor::SensorConfig() {
+void ForceSensor::SensorConfig(const int BaudRate) {
+  _BAUDRATE = baudrate;
+  SensorPort_M->begin(_BAUDRATE);
   byte configPacket[9];
   uint16_t packetSum = 0;
   /* Header */
@@ -54,7 +57,7 @@ void ForceSensor::SensorConfig() {
 
   /* write config packet */
   for (int i = 0; i < 9; i++) {
-    Serial1.write(configPacket[i]);
+    SensorPort_M->write(configPacket[i]);
   }
 }
 
@@ -80,12 +83,12 @@ void ForceSensor::ReadForceSensor() {
   byte rawPacket[32];
   byte goodPacket[16];
   static byte header[4] = {170, 7, 8, 10};
-  while (Serial1.available()) {
-    Serial1.read();
+  while (SensorPort_M->available()) {
+    SensorPort_M->read();
   }
-  while (Serial1.available() < 32) {} // Reads 2xpacket length incase of a packet shift
+  while (SensorPort_M->available() < 32) {} // Reads 2xpacket length incase of a packet shift
   for (int i = 0; i < 32; i++) {
-    rawPacket[i] = Serial1.read();
+    rawPacket[i] = SensorPort_M->read();
   }
   // Searches for good packet
   for (int i = 0; i < 32 - 12; i++) {

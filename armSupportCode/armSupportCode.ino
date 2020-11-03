@@ -19,19 +19,24 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 
-/* Port and Packet variable /////////////////////////////////////////////////////////////////////////*/
-dynamixel::PortHandler *portHandler;
-dynamixel::PacketHandler *packetHandler;
+using namespace ArmSupport
+
+/* DXL port and packets /////////////////////////////////////////////////////////////////////////*/
+dynamixel::PortHandler *portHandler     = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
+dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+//dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
+dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
+dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
+bool addParamResult = false;
+addParamResult = syncReadPacket.addParam(ID_SHOULDER);
+addParamResult = syncReadPacket.addParam(ID_ELBOW);
+addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
 /* Setup function /////////////////////////////////////////////////////////////////////////////////*/
 void setup() {
   /* Serial Monitor */
   Serial.begin(115200);
   while (!Serial);
-  /* Adds parameters to read packet */
-  portHandler = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
-  packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
-  delay(100);
   /* Dynamixel Setup */
   portHandler -> openPort();
   portHandler -> setBaudRate(BAUDRATE);
@@ -54,18 +59,10 @@ void loop() {
   /* Sets up dynamixel read/write packet parameters */
   uint8_t dxl_error = 0;
   int     goalReturn;
-  bool    addParamResult = false;
 
   dxlConfig(dxl_error);
   dxlTorque(ENABLE, dxl_error);   // Toggle torque for troubleshooting
   delay(100);
-
-  //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
-  dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
-  dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
-  addParamResult = syncReadPacket.addParam(ID_SHOULDER);
-  addParamResult = syncReadPacket.addParam(ID_ELBOW);
-  addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
   /* Initialize Model */
   previousTime = millis();
