@@ -37,10 +37,32 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _Z_LIMIT  = _L1 * sin(_Q2_LIMIT);
 }
 
-/******************** Arm Support Motor Reading  ***********************************************************************/
-void RobotControl::ReadRobot(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
-  ReadMotors(addParamResult, syncWritePacket);
+/******************** Arm Support Get Member functions  ***********************************************************************/
+float RobotControl::GetPresPos(){
+  return xyzPres_M[3];
+}
+
+float RobotControl::GetPresVel(){
+  return xyzDotPres[3];
+}
+
+float RobotControl::GetPresQ(){
+  return qPres_M[3];
+}
+
+float RobotControl::GetPresQDot(){
+  return qDotPres_M[3];
+}
+
+/******************** Arm Support Motors Reading/Writing  ***********************************************************************/
+void RobotControl::ReadRobot(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket){
+  ReadMotors(addParamResult, syncReadPacket);
   fKine();
+}
+
+void RobotControl::WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket){
+  iKine(xyz[3], xyzDot[3]);
+  int returnInt = WriteToMotors(addParamResult, syncWritePacket);
 }
 
 /******************** Arm Support Inverse Kinematics Member function ************************************************/

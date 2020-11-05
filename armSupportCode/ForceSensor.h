@@ -12,7 +12,9 @@ class ForceSensor {
           ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float weight, const float forceLimit, const float T);
     void  SensorConfig();
     void  CalibrateSensor();
-    float GetGlobalForces(float q1, float q4);
+    void  CalculateGlobalForces(float q1, float q4);
+    float GetRawF();
+    float GetGlobalF();
     
   private:
     void  ReadForceSensor();

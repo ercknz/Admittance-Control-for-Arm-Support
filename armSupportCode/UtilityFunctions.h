@@ -9,6 +9,6 @@
 
 int16_t bytesToCounts(byte hByte, byte lByte);
 
-void loggingFunc();
+void loggingFunc(unsigned long totalTime, ForceSensor &OptoSensor,AdmittanceModel &Model, RobotControl &Robot, unsigned long loopTime);
 
 #endif // UTILITY_FUNCTIONS_H

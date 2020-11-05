@@ -22,35 +22,41 @@
 using namespace ArmSupport
 
 /* DXL port and packets /////////////////////////////////////////////////////////////////////////*/
-dynamixel::PortHandler *portHandler     = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
-dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
-//dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
-dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
-dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
-bool addParamResult = false;
-addParamResult = syncReadPacket.addParam(ID_SHOULDER);
-addParamResult = syncReadPacket.addParam(ID_ELBOW);
-addParamResult = syncReadPacket.addParam(ID_ELEVATION);
+dynamixel::PortHandler *portHandler;
+dynamixel::PacketHandler *packetHandler;
+
+/* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
+AdmittanceModel::AdmittanceModel *AdmitModel;
+ForceSensor::ForceSensor *OptoForceSensor;
+RobotControl::RobotControl *ArmSupportRobot;
 
 /* Setup function /////////////////////////////////////////////////////////////////////////////////*/
 void setup() {
   /* Serial Monitor */
   Serial.begin(115200);
   while (!Serial);
+  /* Setup port and packet handlers */
+  portHandler   = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
+  packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+  delay(100);
   /* Dynamixel Setup */
   portHandler -> openPort();
   portHandler -> setBaudRate(BAUDRATE);
-  /* Optoforce Serial Connection */
-  Serial1.begin(BAUDRATE);
+  /* Robot Control Objects Initialization */
   delay(100);
-  optoForceConfig();
+  AdmitModel      = AdmittanceModel::AdmittanceModel(MASS, DAMPING, GRAVITY, MODEL_DT);
+  OptoForceSensor = ForceSensor::ForceSensor(&Serial1, xyzSensitivity[3], MASS, SENSOR_FILTER_WEIGHT, ACC_LIMIT, MODEL_DT);
+  ArmSupportRobot = RobotControl::RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
 }
 
 /* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
 void loop() {
   /* Calibrate Force Sensor */
   delay(100);
-  calibrateForceSensor(xCal, yCal, zCal);
+  OptoForceSensor -> SensorConfig();
+  ArmSupportRobot -> MotorConfig();
+  delay(100);
+  OptoForceSensor -> CalibrateSensor();
   delay(2000);
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
@@ -59,52 +65,51 @@ void loop() {
   /* Sets up dynamixel read/write packet parameters */
   uint8_t dxl_error = 0;
   int     goalReturn;
+  bool addParamResult = false;
+  //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
+  dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
+  dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
+  addParamResult = syncReadPacket.addParam(ID_SHOULDER);
+  addParamResult = syncReadPacket.addParam(ID_ELBOW);
+  addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
-  dxlConfig(dxl_error);
-  dxlTorque(ENABLE, dxl_error);   // Toggle torque for troubleshooting
+  ArmSupportRobot -> EnableTorque(DISABLE);   // Toggle torque for troubleshooting
   delay(100);
 
   /* Initialize Model */
+  float PresQ[3], GlobalF[3], xyzGoal[3], xyzDotGoal[3],
   previousTime = millis();
-  rawForces = singleOptoForceRead(xCal, yCal, zCal);
-  lastRaw = rawForces;
-  presQ = readPresentPacket(syncReadPacket);
-  globForces = sensorOrientation(rawForces, presQ);
-  filtForces = sensorFilter.Update(globForces);
-  initSI = forwardKine(presQ);
-  goalSI = admittanceControlModel(filtForces, initSI);
-  loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
+  ArmSupportRobot -> ReadRobot(addParamResult, syncReadPacket);
+  presQ[3] = ArmSupportRobot -> GetPresQ();
+  OptoForceSensor -> CalculateGlobalForces(presQ[0], presQ[2]);
+  loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
 
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
     if (currentTime - previousTime >= LOOP_DT) {
-      /* Starts the main loop */
+      /* Loop Timing */
       startLoop = millis();
       totalTime += (currentTime - previousTime);
       previousTime = currentTime;
 
-      rawForces = singleOptoForceRead(xCal, yCal, zCal);
-      rawForces = forceCheck(rawForces, lastRaw, F_LIMIT, MODEL_DT);
-      lastRaw = rawForces;
-      presQ = readPresentPacket(syncReadPacket);
-      globForces = sensorOrientation(rawForces, presQ);
-      filtForces = sensorFilter.Update(globForces);
+      /* Control */
+      ArmSupportRobot -> ReadRobot(addParamResult, syncReadPacket);
+      presQ[3] = ArmSupportRobot -> GetPresQ();
+      OptoForceSensor -> CalculateGlobalForces(presQ[0], presQ[2]);
+      GlobalF[3] = OptoForceSensor -> GetGlobalF();
+      AdmitModel -> Update(GlobalF[3]);
+      xyzGoal[3] = AdmitModel -> GetGoalPos();
+      xyzDotGoal[3] = AdmitModel -> GetGoalVel();
+      ArmSupportRobot -> WriteToRobot(xyzGoal[3], xyzDotGoal[3], addParamResult, syncReadPacket);
 
-      initSI = goalSI;
-      presSI = forwardKine(presQ);
-
-      goalSI = admittanceControlModel(filtForces, initSI);
-      goalQ = inverseKine(presQ, goalSI);
-
-      goalReturn = writeGoalPacket(addParamResult, syncWritePacket, goalQ);
+      /* Logging */
       loopTime = millis() - startLoop;
-
-      loggingFunc(totalTime, rawForces, filtForces, presQ, presSI, initSI, goalSI, goalQ, goalReturn, loopTime);
+      loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
     }
   }
   if (!Serial) {
-    dxlTorque(DISABLE, dxl_error);
+    ArmSupportRobot -> EnableTorque(DISABLE);
     while (!Serial);
   }
 }

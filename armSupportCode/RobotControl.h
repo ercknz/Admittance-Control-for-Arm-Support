@@ -10,15 +10,24 @@
 class RobotControl {
   public:
           RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset);
-    void  iKine(float XYZ[3]);
-    void  ReadRobot();
     void  EnableTorque(bool state);
     void  MotorConfig();
-    int   WriteToMotors();
+    void  ReadRobot(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
+    void  WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
+    float GetPresPos();
+    float GetPresVel();
+    float GetPresQ();
+    float GetPresQDot();
+    float GetGoalQCts();
+    float GetGoalQDotCts();
+    float GetGoalQ();
+    float GetGoalQDot();
     
   private:
     void  fKine();
-    void  ReadMotors();
+    void  iKine(float xyz[3], float xyzDot[3]);
+    void  ReadMotors(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
+    int   WriteToMotors(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
 
     const float _A1A2,      _L1,        _L2;
     const float _OFFSET,    _PHI,       _H_OF_L2;

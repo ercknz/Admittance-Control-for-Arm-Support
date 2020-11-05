@@ -22,6 +22,7 @@
 */
 
 #include "ForceSensor.h"
+#include "UtilityFunctions.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
 ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {
@@ -32,6 +33,15 @@ ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const f
   _FORCELIMIT = (mass * accLimit) / dT;
   _DELTAT     = dT;
   SensorPort_M = ptrSer;
+}
+
+/******************** Force Sensor Memeber Get Functions ****************************************************************/
+float ForceSensor::GetRawF(){
+  return xyzRaw_M[3];
+}
+
+float ForceSensor::GetGlobalF(){
+  return xyzGlobal_M[3];
 }
 
 /******************** Force Sensor Configuration  ***********************************************************************/
@@ -135,10 +145,9 @@ void ForceSensor::FilterForces() {
 }
 
 /******************** Force Sensor Global Forces  ***********************************************************************/
-float ForceSensor::GetGlobalForces(float q1, float q4) {
+void ForceSensor::CalculateGlobalForces(float q1, float q4) {
   ReadForceSensor();
   xyzGlobal_M[0] = xyzFilt_M[0] * ( sin(q1 + q4)) + xyzFilt_M[1] * (-cos(q1 + q4));
   xyzGlobal_M[0] = xyzFilt_M[0] * (-cos(q1 + q4)) + xyzFilt_M[1] * (-sin(q1 + q4));
   xyzGlobal_M[0] = -xyzFilt_M[2];
-  return xyzGlobalM[3];
 }
