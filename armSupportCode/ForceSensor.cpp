@@ -21,17 +21,17 @@
    by erick nunez
 */
 
+#include <Arduino.h>
 #include "UtilityFunctions.h"
 #include "ForceSensor.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
-ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {
-  for(int i=0; i<3; i++){
-    _xyzSENSITIVITY[i]   = xyzSens[i];
-  }
-  _WEIGHT     = weight;
-  _FORCELIMIT = (mass * accLimit) / dT;
-  _DELTAT     = dT;
+ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) 
+  :_xyzSENSITIVITY[3]{xyzSens[3]},
+  _WEIGHT{weight},
+  _FORCELIMIT{(mass * accLimit) / dT},
+  _DELTAT{dT}
+{
   SensorPort_M = ptrSer;
 }
 

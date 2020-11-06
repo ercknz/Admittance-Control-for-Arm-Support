@@ -13,28 +13,26 @@
    Script by Erick Nunez
 */
 
+#include <math.h>
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
 
 /******************** Arm Support Constructor  ***********************************************************************/
 RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset) {
-  using namespace ArmSupport
-  /* Robot Dimiensions */
-  _A1A2     = A1 + A2;
-  _L1       = L1;
-  _L2       = L2;
-  _OFFSET   = Offset;
-  _PHI      = atan(Offset / L2);
-  _H_OF_L2  = sqrt(pow(Offset, 2) + pow(L2, 2));
-  
-  /* JointSpace Limits */
-  _Q1_MIN   = SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180.0);
-  _Q1_MAX   = SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180.0);
-  _Q4_MIN   = (ELBOW_MIN_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
-  _Q4_MAX   = (ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
-  _Q2_LIMIT = (ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
-  _INNER_R  = A1 + L1 + A2 - L2; //Assumes L2 < L1
-  _Z_LIMIT  = _L1 * sin(_Q2_LIMIT);
+  :_A1A2{A1 + A2},
+  _L1{L1},
+  _L2{L2},
+  _OFFSET{Offset},
+  _PHI{atan(Offset / L2)},
+  _H_OF_L2{sqrt(pow(Offset, 2) + pow(L2, 2))},
+  _Q1_MIN{SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q1_MAX{SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q4_MIN{(ELBOW_MIN_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q4_MAX{(ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q2_LIMIT{(ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO)},
+  _INNER_R{A1 + L1 + A2 - L2},
+  _Z_LIMIT{L1 * sin((ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO))}
+{
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
