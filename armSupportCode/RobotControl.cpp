@@ -38,12 +38,12 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
-float RobotControl::GetPresPos(){
-  return xyzPres_M[3];
+float RobotControl::GetPresQCts(){ 
+  return qPresCts_M[3];
 }
 
-float RobotControl::GetPresVel(){
-  return xyzDotPres[3];
+float RobotControl::GetPresQDotCts(){
+  return qDotPresCts[3];
 }
 
 float RobotControl::GetPresQ(){
@@ -52,6 +52,30 @@ float RobotControl::GetPresQ(){
 
 float RobotControl::GetPresQDot(){
   return qDotPres_M[3];
+}
+
+float RobotControl::GetPresPos(){ 
+  return xyzPres_M[3];
+}
+
+float RobotControl::GetPresVel(){
+  return xyzDotPres[3];
+}
+
+float RobotControl::GetGoalQCts(){ 
+  return qCts_M[3];
+}
+
+float RobotControl::GetGoalQDotCts(){
+  return qDotCts[3];
+}
+
+float RobotControl::GetGoalQ(){
+  return q_M[3];
+}
+
+float RobotControl::GetGoalQDot(){
+  return qDot_M[3];
 }
 
 /******************** Arm Support Motors Reading/Writing  ***********************************************************************/

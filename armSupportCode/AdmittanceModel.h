@@ -23,7 +23,7 @@ class AdmittanceModel {
     const float _DELTAT;
     float xyzGoal_M[3]    = {0.0f};
     float xyzDotGoal_M[3] = {0.0f};
-    float xyzInit_M[3]    = {0.0f}
+    float xyzInit_M[3]    = {0.0f};
     float xyzDotInit_M[3] = {0.0f};
 };
 

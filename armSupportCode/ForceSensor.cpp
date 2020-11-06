@@ -21,8 +21,8 @@
    by erick nunez
 */
 
-#include "ForceSensor.h"
 #include "UtilityFunctions.h"
+#include "ForceSensor.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
 ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) {

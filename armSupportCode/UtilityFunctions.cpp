@@ -8,10 +8,10 @@
    by Erick Nunez
 */
 
-#include "UtilityFunctions.h"
 #include "AdmittanceModel.h"
 #include "ForceSensor.h"
 #include "RobotControl.h"
+#include "UtilityFunctions.h"
 
 /******************** Bytes to Counts Converter  ***********************************************************************/
 int16_t bytesToCounts(byte hByte, byte lByte) {
@@ -21,19 +21,30 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 
 /******************** Streaming Function  ***********************************************************************/
 void loggingFunc(unsigned long &totalTime, ForceSensor *Sensor, AdmittanceModel *Model, RobotControl *Robot, unsigned long &loopTime) {
-  float F[3] = ForceSensor.Get
+  float RawF[3]       = Sensor -> GetRawF();
+  float GlobalF[3]    = Sensor -> GetGlobalF();
+  float xyzGoal[3]    = Model -> GetGoalPos();
+  float xyzDotGoal[3] = Model -> GetGoalVel();
+  float PresQCts[3]   = Robot -> GetPresQCts();
+  float PresQDotCts[3]= Robot -> GetPresQDotCts();
+  float PresQ[3]      = Robot -> GetPresQ();
+  float PresQDot[3]   = Robot -> GetPresQDot();
+  float PresPos[3]    = Robot -> GetPresPos();
+  float PresVel[3]    = Robot -> GetPresVel();
+  float GoalQCts[3]   = Robot -> GetGoalQCts();
+  float GoalQDotCts[3]= Robot -> GetGoalQDotCts();
+  float GoalQ[3]      = Robot -> GetGoalQ();
+  float GoalQDot[3]   = Robot -> GetGoalQDot();
   
   Serial.print(totalTime); Serial.print("\t");
 
-  Serial.print(F.X); Serial.print("\t"); Serial.print(F.Y); Serial.print("\t"); Serial.print(F.Z); Serial.print("\t");
+  Serial.print(RawF[0]); Serial.print("\t"); Serial.print(RawF[1]); Serial.print("\t"); Serial.print(RawF[2]); Serial.print("\t");
 
-  Serial.print(pres.q1); Serial.print("\t"); Serial.print(pres.q2); Serial.print("\t"); Serial.print(pres.q4); Serial.print("\t");
+  Serial.print(PresQCts[0]); Serial.print("\t"); Serial.print(PresQCts[1]); Serial.print("\t"); Serial.print(PresQCts[2]); Serial.print("\t");
 
-  Serial.print(init.x); Serial.print("\t"); Serial.print(init.y); Serial.print("\t"); Serial.print(init.z); Serial.print("\t");
+  Serial.print(PresQ[0]); Serial.print("\t"); Serial.print(PresQ[1]); Serial.print("\t"); Serial.print(PresQ[2]); Serial.print("\t");
 
-  Serial.print(goal.x); Serial.print("\t"); Serial.print(goal.y); Serial.print("\t"); Serial.print(goal.z); Serial.print("\t");
-
-  Serial.print(Q.q1); Serial.print("\t"); Serial.print(Q.q2); Serial.print("\t"); Serial.print(Q.q4); Serial.print("\t");
+  Serial.print(PresPos[0]); Serial.print("\t"); Serial.print(PresPos[1]); Serial.print("\t"); Serial.print(PresPos[2]); Serial.print("\t");
   
   Serial.print(loopTime);
   

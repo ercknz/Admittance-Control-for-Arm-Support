@@ -14,10 +14,12 @@ class RobotControl {
     void  MotorConfig();
     void  ReadRobot(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
     void  WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
-    float GetPresPos();
-    float GetPresVel();
     float GetPresQ();
     float GetPresQDot();
+    float GetPresQCts();
+    float GetPresQDotCts();
+    float GetPresPos();
+    float GetPresVel();
     float GetGoalQCts();
     float GetGoalQDotCts();
     float GetGoalQ();
