@@ -13,12 +13,15 @@
    Script by Erick Nunez
 */
 
+#include <DynamixelSDK.h>
 #include <math.h>
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
 
+using namespace ArmSupport;
+
 /******************** Arm Support Constructor  ***********************************************************************/
-RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset) {
+RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset)
   :_A1A2{A1 + A2},
   _L1{L1},
   _L2{L2},
@@ -27,9 +30,9 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _H_OF_L2{sqrt(pow(Offset, 2) + pow(L2, 2))},
   _Q1_MIN{SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180.0)},
   _Q1_MAX{SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q2_LIMIT{(ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO)},
   _Q4_MIN{(ELBOW_MIN_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0)},
   _Q4_MAX{(ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0)},
-  _Q2_LIMIT{(ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO)},
   _INNER_R{A1 + L1 + A2 - L2},
   _Z_LIMIT{L1 * sin((ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO))}
 {
@@ -41,7 +44,7 @@ float RobotControl::GetPresQCts(){
 }
 
 float RobotControl::GetPresQDotCts(){
-  return qDotPresCts[3];
+  return qDotPresCts_M[3];
 }
 
 float RobotControl::GetPresQ(){
@@ -57,7 +60,7 @@ float RobotControl::GetPresPos(){
 }
 
 float RobotControl::GetPresVel(){
-  return xyzDotPres[3];
+  return xyzDotPres_M[3];
 }
 
 float RobotControl::GetGoalQCts(){ 
@@ -65,7 +68,7 @@ float RobotControl::GetGoalQCts(){
 }
 
 float RobotControl::GetGoalQDotCts(){
-  return qDotCts[3];
+  return qDotCts_M[3];
 }
 
 float RobotControl::GetGoalQ(){
@@ -82,13 +85,13 @@ void RobotControl::ReadRobot(bool &addParamResult, dynamixel::GroupSyncRead &syn
   fKine();
 }
 
-void RobotControl::WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket){
-  iKine(xyz[3], xyzDot[3]);
+void RobotControl::WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
+  iKine(xyz, xyzDot);
   int returnInt = WriteToMotors(addParamResult, syncWritePacket);
 }
 
 /******************** Arm Support Inverse Kinematics Member function ************************************************/
-void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
+void RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
     xyz_M[i]    +=  xyz[i];
@@ -137,8 +140,8 @@ void  RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   /* Finds and checks shoulder angle */
   beta = asin((_H_OF_L2 * sin(gamma)) / R);
   q_M[0] = alpha - beta;
-  if (q_M[0] < Q1_MIN) q_M[0] = Q1_MIN;
-  if (q_M[0] > Q1_MAX) q_M[0] = Q1_MAX;
+  if (q_M[0] < _Q1_MIN) q_M[0] = _Q1_MIN;
+  if (q_M[0] > _Q1_MAX) q_M[0] = _Q1_MAX;
 
   /* Check for nans */
   if (q_M[0] != q_M[0]) q_M[0] = qPres_M[0];
@@ -183,7 +186,6 @@ void  RobotControl::fKine() {
 
 /******************** Arm Support DXL Torque Enabling Member Function ************************************************/
 void  RobotControl::EnableTorque(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler, uint8_t state) {
-  using namespace ArmSupport
   int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, state, &dxl_error);
@@ -192,7 +194,6 @@ void  RobotControl::EnableTorque(dynamixel::PortHandler *portHandler, dynamixel:
 
 /******************** Arm Support DXL Configuration Member Function ************************************************/
 void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler) {
-  using namespace ArmSupport
   int dxlCommResult;
   /* Enable LED for visual indication */
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_LED, ENABLE, &dxl_error);
@@ -221,7 +222,6 @@ void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::
 
 /******************** Arm Support DXL Read Member Function ************************************************/
 void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
-  using namespace ArmSupport
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
   qPresCts_M[0]    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
@@ -242,7 +242,6 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
 
 /******************** Arm Support DXL Write Member Function ************************************************/
 int  RobotControl::WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket) {
-  using namespace ArmSupport
   /* Convert to Counts */
   qCts_M[0]    = q_M[0] * (180.0 / PI) / DEGREES_PER_COUNT;
   qCts_M[1]    = ELEVATION_CENTER - (q_M[1] * ELEVATION_RATIO * (180.0 / PI) / DEGREES_PER_COUNT);
@@ -269,7 +268,7 @@ int  RobotControl::WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite
 
   /* Elbow Parameters Goal Packet */
   elbowParam[0] = DXL_LOBYTE(DXL_LOWORD(qCts_M[2]));
-  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(qCts_M[2]);
+  elbowParam[1] = DXL_HIBYTE(DXL_LOWORD(qCts_M[2]));
   elbowParam[2] = DXL_LOBYTE(DXL_HIWORD(qCts_M[2]));
   elbowParam[3] = DXL_HIBYTE(DXL_HIWORD(qCts_M[2]));
 

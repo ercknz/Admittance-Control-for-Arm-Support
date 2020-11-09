@@ -19,7 +19,7 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 
-using namespace ArmSupport
+using namespace ArmSupport;
 
 /* DXL port and packets /////////////////////////////////////////////////////////////////////////*/
 dynamixel::PortHandler *portHandler;
@@ -45,7 +45,7 @@ void setup() {
   /* Robot Control Objects Initialization */
   delay(100);
   AdmitModel      = AdmittanceModel::AdmittanceModel(MASS, DAMPING, GRAVITY, MODEL_DT);
-  OptoForceSensor = ForceSensor::ForceSensor(&Serial1, xyzSensitivity[3], MASS, SENSOR_FILTER_WEIGHT, ACC_LIMIT, MODEL_DT);
+  OptoForceSensor = ForceSensor::ForceSensor(&Serial1, BAUDRATE, xyzSensitivity[3], MASS, SENSOR_FILTER_WEIGHT, ACC_LIMIT, MODEL_DT);
   ArmSupportRobot = RobotControl::RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
 }
 
@@ -54,7 +54,7 @@ void loop() {
   /* Calibrate Force Sensor */
   delay(100);
   OptoForceSensor -> SensorConfig();
-  ArmSupportRobot -> MotorConfig();
+  ArmSupportRobot -> MotorConfig(portHandler, packetHandler);
   delay(100);
   OptoForceSensor -> CalibrateSensor();
   delay(2000);
@@ -63,7 +63,6 @@ void loop() {
   unsigned long totalTime = 0;
   unsigned long loopTime, startLoop;
   /* Sets up dynamixel read/write packet parameters */
-  uint8_t dxl_error = 0;
   int     goalReturn;
   bool addParamResult = false;
   //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
@@ -73,7 +72,7 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
   addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
-  ArmSupportRobot -> EnableTorque(DISABLE);   // Toggle torque for troubleshooting
+  ArmSupportRobot -> EnableTorque(portHandler, packetHandler, DISABLE);   // Toggle torque for troubleshooting
   delay(100);
 
   /* Initialize Model */
@@ -109,7 +108,7 @@ void loop() {
     }
   }
   if (!Serial) {
-    ArmSupportRobot -> EnableTorque(DISABLE);
+    ArmSupportRobot -> EnableTorque(portHandler, packetHandler, DISABLE);
     while (!Serial);
   }
 }

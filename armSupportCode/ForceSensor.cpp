@@ -26,8 +26,9 @@
 #include "ForceSensor.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
-ForceSensor::ForceSensor(HardwareSerial *ptrSer, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) 
-  :_xyzSENSITIVITY[3]{xyzSens[3]},
+ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) 
+  :_BAUDRATE{baudrate},
+  _xyzSENSITIVITY{xyzSens[3]},
   _WEIGHT{weight},
   _FORCELIMIT{(mass * accLimit) / dT},
   _DELTAT{dT}
@@ -45,8 +46,7 @@ float ForceSensor::GetGlobalF(){
 }
 
 /******************** Force Sensor Configuration  ***********************************************************************/
-void ForceSensor::SensorConfig(const int BaudRate) {
-  _BAUDRATE = baudrate;
+void ForceSensor::SensorConfig() {
   SensorPort_M->begin(_BAUDRATE);
   byte configPacket[9];
   uint16_t packetSum = 0;
