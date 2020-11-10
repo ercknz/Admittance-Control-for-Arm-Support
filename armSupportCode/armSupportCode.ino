@@ -19,16 +19,16 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 
-using namespace ArmSupport;
+using namespace ASR;
 
 /* DXL port and packets /////////////////////////////////////////////////////////////////////////*/
 dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
 /* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
-AdmittanceModel::AdmittanceModel *AdmitModel;
-ForceSensor::ForceSensor *OptoForceSensor;
-RobotControl::RobotControl *ArmSupportRobot;
+AdmittanceModel AdmitModel = AdmittanceModel(MASS, DAMPING, GRAVITY, MODEL_DT);
+ForceSensor OptoForceSensor = ForceSensor(&Serial1, BAUDRATE, xyzSensitivity, MASS, SENSOR_FILTER_WEIGHT, ACC_LIMIT, MODEL_DT);
+RobotControl ArmSupportRobot = RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
 
 /* Setup function /////////////////////////////////////////////////////////////////////////////////*/
 void setup() {
@@ -42,21 +42,16 @@ void setup() {
   /* Dynamixel Setup */
   portHandler -> openPort();
   portHandler -> setBaudRate(BAUDRATE);
-  /* Robot Control Objects Initialization */
-  delay(100);
-  AdmitModel      = AdmittanceModel::AdmittanceModel(MASS, DAMPING, GRAVITY, MODEL_DT);
-  OptoForceSensor = ForceSensor::ForceSensor(&Serial1, BAUDRATE, xyzSensitivity[3], MASS, SENSOR_FILTER_WEIGHT, ACC_LIMIT, MODEL_DT);
-  ArmSupportRobot = RobotControl::RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
 }
 
 /* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
 void loop() {
   /* Calibrate Force Sensor */
   delay(100);
-  OptoForceSensor -> SensorConfig();
-  ArmSupportRobot -> MotorConfig(portHandler, packetHandler);
+  OptoForceSensor.SensorConfig();
+  ArmSupportRobot.MotorConfig(portHandler, packetHandler);
   delay(100);
-  OptoForceSensor -> CalibrateSensor();
+  OptoForceSensor.CalibrateSensor();
   delay(2000);
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
@@ -72,15 +67,15 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
   addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
-  ArmSupportRobot -> EnableTorque(portHandler, packetHandler, DISABLE);   // Toggle torque for troubleshooting
+  ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);   // Toggle torque for troubleshooting
   delay(100);
 
   /* Initialize Model */
-  float PresQ[3], GlobalF[3], xyzGoal[3], xyzDotGoal[3],
+  float *presQ, *globalF, *xyzGoal, *xyzDotGoal;
   previousTime = millis();
-  ArmSupportRobot -> ReadRobot(addParamResult, syncReadPacket);
-  presQ[3] = ArmSupportRobot -> GetPresQ();
-  OptoForceSensor -> CalculateGlobalForces(presQ[0], presQ[2]);
+  ArmSupportRobot.ReadRobot(syncReadPacket);
+  presQ = ArmSupportRobot.GetPresQ();
+  OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
   loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
 
   /* Main Loop */
@@ -93,14 +88,14 @@ void loop() {
       previousTime = currentTime;
 
       /* Control */
-      ArmSupportRobot -> ReadRobot(addParamResult, syncReadPacket);
-      presQ[3] = ArmSupportRobot -> GetPresQ();
-      OptoForceSensor -> CalculateGlobalForces(presQ[0], presQ[2]);
-      GlobalF[3] = OptoForceSensor -> GetGlobalF();
-      AdmitModel -> Update(GlobalF[3]);
-      xyzGoal[3] = AdmitModel -> GetGoalPos();
-      xyzDotGoal[3] = AdmitModel -> GetGoalVel();
-      ArmSupportRobot -> WriteToRobot(xyzGoal[3], xyzDotGoal[3], addParamResult, syncReadPacket);
+      ArmSupportRobot.ReadRobot(syncReadPacket);
+      presQ = ArmSupportRobot.GetPresQ();
+      OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
+      globalF = OptoForceSensor.GetGlobalF();
+      AdmitModel.UpdateModel(globalF);
+      xyzGoal = AdmitModel.GetGoalPos();
+      xyzDotGoal = AdmitModel.GetGoalVel();
+      ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncReadPacket);
 
       /* Logging */
       loopTime = millis() - startLoop;
@@ -108,7 +103,7 @@ void loop() {
     }
   }
   if (!Serial) {
-    ArmSupportRobot -> EnableTorque(portHandler, packetHandler, DISABLE);
+    ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);
     while (!Serial);
   }
 }

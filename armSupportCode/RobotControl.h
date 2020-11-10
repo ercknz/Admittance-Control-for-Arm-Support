@@ -14,23 +14,23 @@ class RobotControl {
           RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset);
     void  EnableTorque(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler, uint8_t state);
     void  MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler);
-    void  ReadRobot(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
-    void  WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
-    float GetPresQ();
-    float GetPresQDot();
-    float GetPresQCts();
-    float GetPresQDotCts();
-    float GetPresPos();
-    float GetPresVel();
-    float GetGoalQCts();
-    float GetGoalQDotCts();
-    float GetGoalQ();
-    float GetGoalQDot();
+    void  ReadRobot(dynamixel::GroupSyncRead &syncReadPacket);
+    void  WriteToRobot(float xyz, float xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
+    float* GetPresQ();
+    float* GetPresQDot();
+    float* GetPresQCts();
+    float* GetPresQDotCts();
+    float* GetPresPos();
+    float* GetPresVel();
+    float* GetGoalQCts();
+    float* GetGoalQDotCts();
+    float* GetGoalQ();
+    float* GetGoalQDot();
     
   private:
     void  fKine();
-    void  iKine(float xyz[3], float xyzDot[3]);
-    void  ReadMotors(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket);
+    void  iKine(float &xyz, float &xyzDot);
+    void  ReadMotors(dynamixel::GroupSyncRead &syncReadPacket);
     int   WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
 
     const float _A1A2,      _L1,        _L2;

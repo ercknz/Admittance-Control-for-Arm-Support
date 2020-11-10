@@ -37,12 +37,12 @@ ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float
 }
 
 /******************** Force Sensor Memeber Get Functions ****************************************************************/
-float ForceSensor::GetRawF(){
-  return xyzRaw_M[3];
+float* ForceSensor::GetRawF(){
+  return xyzRaw_M;
 }
 
-float ForceSensor::GetGlobalF(){
-  return xyzGlobal_M[3];
+float* ForceSensor::GetGlobalF(){
+  return xyzGlobal_M;
 }
 
 /******************** Force Sensor Configuration  ***********************************************************************/

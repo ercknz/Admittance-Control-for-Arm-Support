@@ -18,8 +18,6 @@
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
 
-using namespace ArmSupport;
-
 /******************** Arm Support Constructor  ***********************************************************************/
 RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset)
   :_A1A2{A1 + A2},
@@ -28,70 +26,70 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _OFFSET{Offset},
   _PHI{atan(Offset / L2)},
   _H_OF_L2{sqrt(pow(Offset, 2) + pow(L2, 2))},
-  _Q1_MIN{SHOULDER_MIN_POS * DEGREES_PER_COUNT * (PI / 180.0)},
-  _Q1_MAX{SHOULDER_MAX_POS * DEGREES_PER_COUNT * (PI / 180.0)},
-  _Q2_LIMIT{(ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO)},
-  _Q4_MIN{(ELBOW_MIN_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0)},
-  _Q4_MAX{(ELBOW_MAX_POS - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q1_MIN{ASR::SHOULDER_MIN_POS * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q1_MAX{ASR::SHOULDER_MAX_POS * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q2_LIMIT{(ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1 / ASR::ELEVATION_RATIO)},
+  _Q4_MIN{(ASR::ELBOW_MIN_POS - ASR::ELBOW_MIN_POS) * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
+  _Q4_MAX{(ASR::ELBOW_MAX_POS - ASR::ELBOW_MIN_POS) * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
   _INNER_R{A1 + L1 + A2 - L2},
-  _Z_LIMIT{L1 * sin((ELEVATION_MAX_POS - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO))}
+  _Z_LIMIT{L1 * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1 / ASR::ELEVATION_RATIO))}
 {
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
-float RobotControl::GetPresQCts(){ 
-  return qPresCts_M[3];
+float* RobotControl::GetPresQCts(){ 
+  return qPresCts_M;
 }
 
-float RobotControl::GetPresQDotCts(){
-  return qDotPresCts_M[3];
+float* RobotControl::GetPresQDotCts(){
+  return qDotPresCts_M;
 }
 
-float RobotControl::GetPresQ(){
-  return qPres_M[3];
+float* RobotControl::GetPresQ(){
+  return qPres_M;
 }
 
-float RobotControl::GetPresQDot(){
-  return qDotPres_M[3];
+float* RobotControl::GetPresQDot(){
+  return qDotPres_M;
 }
 
-float RobotControl::GetPresPos(){ 
-  return xyzPres_M[3];
+float* RobotControl::GetPresPos(){ 
+  return xyzPres_M;
 }
 
-float RobotControl::GetPresVel(){
-  return xyzDotPres_M[3];
+float* RobotControl::GetPresVel(){
+  return xyzDotPres_M;
 }
 
-float RobotControl::GetGoalQCts(){ 
-  return qCts_M[3];
+float* RobotControl::GetGoalQCts(){ 
+  return qCts_M;
 }
 
-float RobotControl::GetGoalQDotCts(){
-  return qDotCts_M[3];
+float* RobotControl::GetGoalQDotCts(){
+  return qDotCts_M;
 }
 
-float RobotControl::GetGoalQ(){
-  return q_M[3];
+float* RobotControl::GetGoalQ(){
+  return q_M;
 }
 
-float RobotControl::GetGoalQDot(){
-  return qDot_M[3];
+float* RobotControl::GetGoalQDot(){
+  return qDot_M;
 }
 
 /******************** Arm Support Motors Reading/Writing  ***********************************************************************/
-void RobotControl::ReadRobot(bool &addParamResult, dynamixel::GroupSyncRead &syncReadPacket){
-  ReadMotors(addParamResult, syncReadPacket);
+void RobotControl::ReadRobot(dynamixel::GroupSyncRead &syncReadPacket){
+  ReadMotors(syncReadPacket);
   fKine();
 }
 
-void RobotControl::WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
+void RobotControl::WriteToRobot(float xyz, float xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
   iKine(xyz, xyzDot);
   int returnInt = WriteToMotors(addParamResult, syncWritePacket);
 }
 
 /******************** Arm Support Inverse Kinematics Member function ************************************************/
-void RobotControl::iKine(float xyz[3], float xyzDot[3]) {
+void RobotControl::iKine(float &xyz, float &xyzDot) {
   float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
     xyz_M[i]    +=  xyz[i];
@@ -186,6 +184,7 @@ void  RobotControl::fKine() {
 
 /******************** Arm Support DXL Torque Enabling Member Function ************************************************/
 void  RobotControl::EnableTorque(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler, uint8_t state) {
+  using namespace ASR;
   int dxlCommResult;
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, state, &dxl_error);
@@ -194,6 +193,7 @@ void  RobotControl::EnableTorque(dynamixel::PortHandler *portHandler, dynamixel:
 
 /******************** Arm Support DXL Configuration Member Function ************************************************/
 void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler) {
+  using namespace ASR;
   int dxlCommResult;
   /* Enable LED for visual indication */
   dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_LED, ENABLE, &dxl_error);
@@ -222,6 +222,7 @@ void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::
 
 /******************** Arm Support DXL Read Member Function ************************************************/
 void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
+  using namespace ASR;
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
   qPresCts_M[0]    = syncReadPacket.getData(ID_SHOULDER,     ADDRESS_PRESENT_POSITION, LEN_PRESENT_POSITION);
@@ -242,6 +243,7 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
 
 /******************** Arm Support DXL Write Member Function ************************************************/
 int  RobotControl::WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket) {
+  using namespace ASR;
   /* Convert to Counts */
   qCts_M[0]    = q_M[0] * (180.0 / PI) / DEGREES_PER_COUNT;
   qCts_M[1]    = ELEVATION_CENTER - (q_M[1] * ELEVATION_RATIO * (180.0 / PI) / DEGREES_PER_COUNT);

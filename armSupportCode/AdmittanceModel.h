@@ -13,8 +13,8 @@ class AdmittanceModel {
           AdmittanceModel(const float M, const float B, const float G, const float T);
     //void  InitializeModel(float XYZ[3]);
     void  UpdateModel(float forceXYZ[3]);
-    float GetGoalPos();
-    float GetGoalVel();
+    float* GetGoalPos();
+    float* GetGoalVel();
     
   private:
     const float _MASS;

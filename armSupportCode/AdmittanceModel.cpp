@@ -81,10 +81,10 @@ void AdmittanceModel::UpdateModel(float forceXYZ[3]) {
 }
 
 /******************** Admittance Model Get Functions   ***************************************************************/
-float AdmittanceModel::GetGoalPos(){
-  return xyzGoal_M[3];
+float* AdmittanceModel::GetGoalPos(){
+  return xyzGoal_M;
 }
 
-float AdmittanceModel::GetGoalVel(){
-  return xyzDotGoal_M[3];
+float* AdmittanceModel::GetGoalVel(){
+  return xyzDotGoal_M;
 }

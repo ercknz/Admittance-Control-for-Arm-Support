@@ -7,7 +7,7 @@
 #ifndef ARM_SUPPORT_NS_H
 #define ARM_SUPPORT_NS_H
 
-namespace ArmSupport 
+namespace ASR 
 {
 /************************ Constants ************************/
 /* Dynamixel Communication Parameters */
@@ -41,8 +41,6 @@ const uint16_t      LEN_GOAL_POSITION     = 4;
 const uint16_t      LEN_PROFILE_VELOCITY  = 4;
 const uint16_t      LEN_PRESENT_POSITION  = 4;
 const uint16_t      LEN_PRESENT_VELOCITY  = 4;
-const uint8_t       ENABLE                = 1;
-const uint8_t       DISABLE               = 0;
 const int           VEL_BASED_PROFILE     = 0;
 const unsigned char ESC_ASCII_VALUE       = 0x1b;
 /* Force Sensor Constants */

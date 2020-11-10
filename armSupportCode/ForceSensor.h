@@ -7,14 +7,16 @@
 #ifndef FORCE_SENSOR_H
 #define FORCE_SENSOR_H
 
+#include <Arduino.h>
+
 class ForceSensor {
   public:
           ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT);
     void  SensorConfig();
     void  CalibrateSensor();
     void  CalculateGlobalForces(float q1, float q4);
-    float GetRawF();
-    float GetGlobalF();
+    float* GetRawF();
+    float* GetGlobalF();
     
   private:
     void  ReadForceSensor();
