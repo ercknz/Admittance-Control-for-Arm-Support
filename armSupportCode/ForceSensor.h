@@ -36,6 +36,12 @@ class ForceSensor {
     float xyzFilt_M[3]    = {0.0f};
     float xyzLastFilt_M[3]= {0.0f};
     float xyzGlobal_M[3]  = {0.0f};
+
+//    ForceStruct Raw_M       = {0.0f};
+//    ForceStruct LastRaw_M   = {0.0f};
+//    ForceStruct Filt_M      = {0.0f};
+//    ForceStruct LastFilt_M  = {0.0f};
+//    ForceStruct Global_M    = {0.0f};
 };
 
 #endif // FORCE_SENSOR_H

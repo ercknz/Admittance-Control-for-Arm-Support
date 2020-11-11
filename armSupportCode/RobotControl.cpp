@@ -83,13 +83,13 @@ void RobotControl::ReadRobot(dynamixel::GroupSyncRead &syncReadPacket){
   fKine();
 }
 
-void RobotControl::WriteToRobot(float xyz, float xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
+void RobotControl::WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
   iKine(xyz, xyzDot);
   int returnInt = WriteToMotors(addParamResult, syncWritePacket);
 }
 
 /******************** Arm Support Inverse Kinematics Member function ************************************************/
-void RobotControl::iKine(float &xyz, float &xyzDot) {
+void RobotControl::iKine(float xyz[3], float xyzDot[3]) {
   float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
     xyz_M[i]    +=  xyz[i];

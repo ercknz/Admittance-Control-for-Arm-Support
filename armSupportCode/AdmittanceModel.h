@@ -16,7 +16,7 @@ class AdmittanceModel {
     float* GetGoalPos();
     float* GetGoalVel();
     
-  private:
+  private: 
     const float _MASS;
     const float _DAMPING;
     const float _GRAVITY;
@@ -25,6 +25,9 @@ class AdmittanceModel {
     float xyzDotGoal_M[3] = {0.0f};
     float xyzInit_M[3]    = {0.0f};
     float xyzDotInit_M[3] = {0.0f};
+
+//    ModelSpace Goal_M = {0.0f};
+//    ModelSpace Init_M = {0.0f};
 };
 
 #endif // ADMITTANCE_MODEL_H
