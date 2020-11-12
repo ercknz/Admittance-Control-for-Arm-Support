@@ -48,7 +48,7 @@ AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, co
 }
 
 /******************** Admittance Model Initalizer  ***********************************************************************/
-//void AdmittanceModel::InitializeModel(float XYZ[3]) {
+//void AdmittanceModel::InitializeModel(float XYZ) {
 //  for(int i=0; i<3; i++){
 //    xyzGoal_M[i]     = XYZ[i];
 //    xyzDotGoal_M[i]  = 0.0f;

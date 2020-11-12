@@ -42,10 +42,12 @@ void setup() {
   /* Dynamixel Setup */
   portHandler -> openPort();
   portHandler -> setBaudRate(BAUDRATE);
+  Serial.println("Done setup");
 }
 
 /* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
 void loop() {
+  Serial.println("entering loop");
   /* Calibrate Force Sensor */
   delay(100);
   OptoForceSensor.SensorConfig();
@@ -53,6 +55,7 @@ void loop() {
   delay(100);
   OptoForceSensor.CalibrateSensor();
   delay(2000);
+  Serial.println("done calibrating");
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
@@ -71,15 +74,19 @@ void loop() {
   delay(100);
 
   /* Initialize Model */
+  Serial.println("initializing robot");
   float *presQ, *globalF, *xyzGoal, *xyzDotGoal;
   previousTime = millis();
   ArmSupportRobot.ReadRobot(syncReadPacket);
   presQ = ArmSupportRobot.GetPresQ();
   OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
+  Serial.println("before log");
   loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+  Serial.println("after log");
 
   /* Main Loop */
   while (Serial) {
+    Serial.println("entering main");
     currentTime = millis();
     if (currentTime - previousTime >= LOOP_DT) {
       /* Loop Timing */
