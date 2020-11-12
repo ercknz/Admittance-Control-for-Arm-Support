@@ -15,7 +15,7 @@ class RobotControl {
     void  EnableTorque(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler, uint8_t state);
     void  MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler);
     void  ReadRobot(dynamixel::GroupSyncRead &syncReadPacket);
-    void  WriteToRobot(float xyz[3], float xyzDot[3], bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
+    void  WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
     float* GetPresQ();
     float* GetPresQDot();
     float* GetPresQCts();
@@ -29,7 +29,7 @@ class RobotControl {
     
   private:
     void  fKine();
-    void  iKine(float xyz[3], float xyzDot[3]);
+    void  iKine(float *xyz, float *xyzDot);
     void  ReadMotors(dynamixel::GroupSyncRead &syncReadPacket);
     int   WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
 

@@ -95,7 +95,7 @@ void loop() {
       AdmitModel.UpdateModel(globalF);
       xyzGoal = AdmitModel.GetGoalPos();
       xyzDotGoal = AdmitModel.GetGoalVel();
-      ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncReadPacket);
+      ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncWritePacket);
 
       /* Logging */
       loopTime = millis() - startLoop;
