@@ -13,7 +13,7 @@ namespace ASR
 /* Dynamixel Communication Parameters */
 const float PROTOCOL_VERSION = 2.0;
 const int   BAUDRATE         = 1000000;
-const char  *DEVICEPORT       = "3";
+static const char  *DEVICEPORT       = "3";
 /* Dynamixel Motor Parameters */
 const uint8_t ID_SHOULDER       = 3;
 const uint8_t ID_SHLDR_SLAVE    = 13;
