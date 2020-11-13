@@ -13,7 +13,7 @@
 
 int16_t bytesToCounts(byte hByte, byte lByte);
 
-void loggingFunc(unsigned long totalTime, ForceSensor &OptoSensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long loopTime);
+void loggingFunc(unsigned long &totalTime, ForceSensor &OptoSensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
 
 //typedef struct{
 //  float X;

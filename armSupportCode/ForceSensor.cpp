@@ -28,7 +28,7 @@
 /******************** Force Sensor Constructor  ***********************************************************************/
 ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) 
   :_BAUDRATE{baudrate},
-  _xyzSENSITIVITY{xyzSens[3]},
+  _xyzSENSITIVITY{xyzSens[0],xyzSens[1],xyzSens[2]},
   _WEIGHT{weight},
   _FORCELIMIT{(mass * accLimit) / dT},
   _DELTAT{dT}
@@ -114,6 +114,7 @@ void ForceSensor::ReadForceSensor() {
             int16_t xCts = bytesToCounts(goodPacket[8], goodPacket[9]);
             int16_t yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
             int16_t zCts = bytesToCounts(goodPacket[12], goodPacket[13]);
+            Serial.print("Counts: "); Serial.print("\t");Serial.print(xCts); Serial.print("\t"); Serial.print(yCts); Serial.print("\t"); Serial.print(zCts); Serial.print("\n");
 
             xyzRaw_M[0] = (xCts / _xyzSENSITIVITY[0]) - _xyzCALIBRATION[0];
             xyzRaw_M[1] = (yCts / _xyzSENSITIVITY[1]) - _xyzCALIBRATION[1];

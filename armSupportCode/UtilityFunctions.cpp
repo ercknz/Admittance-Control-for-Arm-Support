@@ -21,19 +21,18 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 
 /******************** Streaming Function  ***********************************************************************/
 void loggingFunc(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
-  Serial.println("inside log");
   float * RawF        = Sensor.GetRawF();
   float * GlobalF     = Sensor.GetGlobalF();
   float * xyzGoal     = Model.GetGoalPos();
   float * xyzDotGoal  = Model.GetGoalVel();
-  float * PresQCts    = Robot.GetPresQCts();
-  float * PresQDotCts = Robot.GetPresQDotCts();
+  int   * PresQCts    = Robot.GetPresQCts();
+  int   * PresQDotCts = Robot.GetPresQDotCts();
   float * PresQ       = Robot.GetPresQ();
   float * PresQDot    = Robot.GetPresQDot();
   float * PresPos     = Robot.GetPresPos();
   float * PresVel     = Robot.GetPresVel();
-  float * GoalQCts    = Robot.GetGoalQCts();
-  float * GoalQDotCts = Robot.GetGoalQDotCts();
+  int   * GoalQCts    = Robot.GetGoalQCts();
+  int   * GoalQDotCts = Robot.GetGoalQDotCts();
   float * GoalQ       = Robot.GetGoalQ();
   float * GoalQDot    = Robot.GetGoalQDot();
   

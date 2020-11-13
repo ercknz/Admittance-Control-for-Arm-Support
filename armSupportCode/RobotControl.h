@@ -18,12 +18,12 @@ class RobotControl {
     void  WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
     float* GetPresQ();
     float* GetPresQDot();
-    float* GetPresQCts();
-    float* GetPresQDotCts();
+    int  * GetPresQCts();
+    int  * GetPresQDotCts();
     float* GetPresPos();
     float* GetPresVel();
-    float* GetGoalQCts();
-    float* GetGoalQDotCts();
+    int  * GetGoalQCts();
+    int  * GetGoalQDotCts();
     float* GetGoalQ();
     float* GetGoalQDot();
     
@@ -40,10 +40,10 @@ class RobotControl {
     const float _Q4_MIN,    _Q4_MAX;
     const float _INNER_R,   _Z_LIMIT;
     float J_M[3][3] = {{0.0f}};
-    float qPresCts_M[3],  qDotPresCts_M[3];
+    int   qPresCts_M[3],  qDotPresCts_M[3];
     float qPres_M[3],     qDotPres_M[3];
     float xyzPres_M[3],   xyzDotPres_M[3];
-    float qCts_M[3],      qDotCts_M[3];
+    int   qCts_M[3],      qDotCts_M[3];
     float q_M[3],         qDot_M[3];
     float xyz_M[3],       xyzDot_M[3];
     uint8_t dxl_error = 0;
