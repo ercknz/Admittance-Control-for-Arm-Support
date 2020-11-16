@@ -25,9 +25,6 @@ class AdmittanceModel {
     float xyzDotGoal_M[3] = {0.0f};
     float xyzInit_M[3]    = {0.0f};
     float xyzDotInit_M[3] = {0.0f};
-
-//    ModelSpace Goal_M = {0.0f};
-//    ModelSpace Init_M = {0.0f};
 };
 
 #endif // ADMITTANCE_MODEL_H

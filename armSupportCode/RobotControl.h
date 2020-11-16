@@ -47,15 +47,6 @@ class RobotControl {
     float q_M[3],         qDot_M[3];
     float xyz_M[3],       xyzDot_M[3];
     uint8_t dxl_error = 0;
-
-//    JointSpace PresCts_M  = {0};
-//    JointSpace PresQ_M    = {0.0f};
-//    ModelSpace PresT_M    = {0.0f};
-//    JointSpace GoalCts_M  = {0};
-//    JointSpace GoalQ_M    = {0.0f};
-//    ModelSpace GoalT_M    = {0.0f};
-    
-    
 };
 
 #endif // ROBOT_CONTROL_H

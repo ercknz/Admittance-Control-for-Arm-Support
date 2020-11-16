@@ -27,7 +27,7 @@ dynamixel::PacketHandler *packetHandler;
 
 /* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
 AdmittanceModel AdmitModel = AdmittanceModel(MASS, DAMPING, GRAVITY, MODEL_DT);
-ForceSensor OptoForceSensor = ForceSensor(&Serial1, BAUDRATE, xyzSensitivity, MASS, SENSOR_FILTER_WEIGHT, ACC_LIMIT, MODEL_DT);
+ForceSensor OptoForceSensor = ForceSensor(&Serial1, BAUDRATE, xyzSensitivity, SENSOR_FILTER_WEIGHT);
 RobotControl ArmSupportRobot = RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
 
 /* Setup function /////////////////////////////////////////////////////////////////////////////////*/
@@ -53,7 +53,6 @@ void loop() {
   delay(100);
   OptoForceSensor.CalibrateSensor();
   delay(2000);
-  Serial.println("done calibrating");
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;

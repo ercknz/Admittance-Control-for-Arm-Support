@@ -26,12 +26,10 @@
 #include "ForceSensor.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
-ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float mass, const float weight, const float accLimit, const float dT) 
+ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float filterWeight) 
   :_BAUDRATE{baudrate},
   _xyzSENSITIVITY{xyzSens[0],xyzSens[1],xyzSens[2]},
-  _WEIGHT{weight},
-  _FORCELIMIT{(mass * accLimit) / dT},
-  _DELTAT{dT}
+  _FILTERWEIGHT{filterWeight}
 {
   SensorPort_M = ptrSer;
 }
@@ -93,6 +91,9 @@ void ForceSensor::ReadForceSensor() {
   byte rawPacket[32];
   byte goodPacket[16];
   static byte header[4] = {170, 7, 8, 10};
+  int16_t xCts, yCts, zCts;
+  uint16_t SumCheck;
+  int16_t CHECKSUM;
   while (SensorPort_M->available()) {
     SensorPort_M->read();
   }
@@ -109,30 +110,37 @@ void ForceSensor::ReadForceSensor() {
             for (int j = 0; j < 16; j++) {
               goodPacket[j] = rawPacket[i + j];
             }
-            _SENSORSTATUS = bytesToCounts(goodPacket[6], goodPacket[7]); 
-
-            int16_t xCts = bytesToCounts(goodPacket[8], goodPacket[9]);
-            int16_t yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
-            int16_t zCts = bytesToCounts(goodPacket[12], goodPacket[13]);
-            Serial.print("Counts: "); Serial.print("\t");Serial.print(xCts); Serial.print("\t"); Serial.print(yCts); Serial.print("\t"); Serial.print(zCts); Serial.print("\n");
-
-            xyzRaw_M[0] = (xCts / _xyzSENSITIVITY[0]) - _xyzCALIBRATION[0];
-            xyzRaw_M[1] = (yCts / _xyzSENSITIVITY[1]) - _xyzCALIBRATION[1];
-            xyzRaw_M[2] = (zCts / _xyzSENSITIVITY[2]) - _xyzCALIBRATION[2];
+            CHECKSUM = bytesToCounts(goodPacket[14], goodPacket[15]);
+            SumCheck = 0;
+            for (int j = 0; j<14; j++){
+              SumCheck += goodPacket[j];
+            }
+            if (SumCheck == CHECKSUM) {
+              _SAMPLECOUNTER = bytesToCounts(goodPacket[4], goodPacket[5]);
+              _SENSORSTATUS = bytesToCounts(goodPacket[6], goodPacket[7]); 
+  
+              xCts = bytesToCounts(goodPacket[8], goodPacket[9]);
+              yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
+              zCts = bytesToCounts(goodPacket[12], goodPacket[13]);
+  
+              xyzRaw_M[0] = (xCts / _xyzSENSITIVITY[0]) - _xyzCALIBRATION[0];
+              xyzRaw_M[1] = (yCts / _xyzSENSITIVITY[1]) - _xyzCALIBRATION[1];
+              xyzRaw_M[2] = (zCts / _xyzSENSITIVITY[2]) - _xyzCALIBRATION[2];
+            } else {
+              for(int j=0; i<3; i++){
+                xyzRaw_M[j] = xyzLastRaw_M[j];
+              }
+              while (SensorPort_M->available()) {
+                SensorPort_M->read();
+              }
+            }
+            
           }
         }
       }
     }
   }
-  CheckForces();
   FilterForces();
-}
-
-/******************** Force Sensor Readings Check  ***********************************************************************/
-void ForceSensor::CheckForces() {
-  for(int i=0; i<3; i++){
-    if (abs((xyzRaw_M[i] - xyzLastRaw_M[i]) / _DELTAT) > _FORCELIMIT) xyzRaw_M[i] = xyzLastRaw_M[i];
-  }
 }
 
 /******************** Force Sensor Filter  ***********************************************************************/
@@ -141,7 +149,7 @@ void ForceSensor::FilterForces() {
     xyzLastFilt_M[i] = xyzFilt_M[i];
   }
   for(int i=0; i<3; i++){
-    xyzFilt_M[i] = _WEIGHT * xyzRaw_M[i] + (1 - _WEIGHT) * xyzLastFilt_M[i];
+    xyzFilt_M[i] = _FILTERWEIGHT * xyzRaw_M[i] + (1 - _FILTERWEIGHT) * xyzLastFilt_M[i];
   }
 }
 
@@ -149,6 +157,6 @@ void ForceSensor::FilterForces() {
 void ForceSensor::CalculateGlobalForces(float q1, float q4) {
   ReadForceSensor();
   xyzGlobal_M[0] = xyzFilt_M[0] * ( sin(q1 + q4)) + xyzFilt_M[1] * (-cos(q1 + q4));
-  xyzGlobal_M[0] = xyzFilt_M[0] * (-cos(q1 + q4)) + xyzFilt_M[1] * (-sin(q1 + q4));
-  xyzGlobal_M[0] = -xyzFilt_M[2];
+  xyzGlobal_M[1] = xyzFilt_M[0] * (-cos(q1 + q4)) + xyzFilt_M[1] * (-sin(q1 + q4));
+  xyzGlobal_M[2] = -xyzFilt_M[2];
 }
