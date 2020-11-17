@@ -99,7 +99,7 @@ void loop() {
 
       /* Logging */
       loopTime = millis() - startLoop;
-      loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+      //loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
     }
   }
   if (!Serial) {

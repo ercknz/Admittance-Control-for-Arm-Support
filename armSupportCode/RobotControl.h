@@ -26,6 +26,8 @@ class RobotControl {
     int  * GetGoalQDotCts();
     float* GetGoalQ();
     float* GetGoalQDot();
+    float* GetGoalPos();
+    float* GetGoalVel();
     
   private:
     void  fKine();

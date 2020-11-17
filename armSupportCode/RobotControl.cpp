@@ -14,6 +14,7 @@
 */
 
 #include <DynamixelSDK.h>
+#include <Arduino.h>
 #include <math.h>
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
@@ -34,6 +35,9 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _INNER_R{A1 + L1 + A2 - L2},
   _Z_LIMIT{L1 * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1 / ASR::ELEVATION_RATIO))}
 {
+  Serial.print("z limit: ");Serial.print(_Z_LIMIT,3); 
+  Serial.print(" center: ");Serial.print(ASR::ELEVATION_CENTER);
+  Serial.println("");
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
@@ -77,6 +81,14 @@ float* RobotControl::GetGoalQDot(){
   return qDot_M;
 }
 
+float* RobotControl::GetGoalPos(){ 
+  return xyz_M;
+}
+
+float* RobotControl::GetGoalVel(){
+  return xyzDot_M;
+}
+
 /******************** Arm Support Motors Reading/Writing  ***********************************************************************/
 void RobotControl::ReadRobot(dynamixel::GroupSyncRead &syncReadPacket){
   ReadMotors(syncReadPacket);
@@ -92,9 +104,12 @@ void RobotControl::WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult,
 void RobotControl::iKine(float *xyz, float *xyzDot) {
   float L1_XY, OUTER_R, R, alpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
-    xyz_M[i]    +=  xyz[i];
+    xyz_M[i]    = xyzPres_M[i] +  xyz[i];
     xyzDot_M[i] = xyzDot[i];
   }
+  Serial.print("Pres: ");Serial.print(xyzPres_M[0],3);Serial.print(" ");Serial.print(xyzPres_M[1],3);Serial.print(" ");Serial.print(xyzPres_M[2],3);Serial.print(" ");
+  Serial.print("delta: ");Serial.print(xyz[0],3);Serial.print(" ");Serial.print(xyz[1],3);Serial.print(" ");Serial.print(xyz[2],3);Serial.print(" ");
+  Serial.print("Goal: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);Serial.print(" ");
 
   /* Check Z limits */
   if (xyz_M[2] >  _Z_LIMIT) xyz_M[2] =  _Z_LIMIT;
@@ -128,6 +143,9 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
     R         = OUTER_R;
   }
 
+  Serial.print("New?: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);Serial.print(" ");
+  Serial.println(""); 
+  
   /* Finds and checks Elbow Angle */
   gamma = acos((pow((_A1A2 + L1_XY), 2) + pow(_H_OF_L2, 2) - pow(xyz_M[0], 2) - pow(xyz_M[1], 2)) / (2 * _H_OF_L2 * (_A1A2 + L1_XY)));
 
