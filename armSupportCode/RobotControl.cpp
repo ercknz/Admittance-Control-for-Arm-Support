@@ -29,21 +29,18 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _H_OF_L2{sqrt(pow(Offset, 2) + pow(L2, 2))},
   _Q1_MIN{ASR::SHOULDER_MIN_POS * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
   _Q1_MAX{ASR::SHOULDER_MAX_POS * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
-  _Q2_LIMIT{(ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1 / ASR::ELEVATION_RATIO)},
+  _Q2_LIMIT{abs((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1/ASR::ELEVATION_RATIO))},
   _Q4_MIN{(ASR::ELBOW_MIN_POS - ASR::ELBOW_MIN_POS) * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
   _Q4_MAX{(ASR::ELBOW_MAX_POS - ASR::ELBOW_MIN_POS) * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
   _INNER_R{A1 + L1 + A2 - L2},
-  _Z_LIMIT{L1 * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1 / ASR::ELEVATION_RATIO))}
+  _Z_LIMIT{abs(L1 * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1/ASR::ELEVATION_RATIO)))}
 {
-  Serial.print("z limit: ");Serial.print(_Z_LIMIT,3); 
-  Serial.print(" center: ");Serial.print(ASR::ELEVATION_CENTER);
-  Serial.println("");
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
 int* RobotControl::GetPresQCts(){ 
   return qPresCts_M;
-}
+} 
 
 int* RobotControl::GetPresQDotCts(){
   return qDotPresCts_M;
@@ -107,25 +104,28 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
     xyz_M[i]    = xyzPres_M[i] +  xyz[i];
     xyzDot_M[i] = xyzDot[i];
   }
-  Serial.print("Pres: ");Serial.print(xyzPres_M[0],3);Serial.print(" ");Serial.print(xyzPres_M[1],3);Serial.print(" ");Serial.print(xyzPres_M[2],3);Serial.print(" ");
-  Serial.print("delta: ");Serial.print(xyz[0],3);Serial.print(" ");Serial.print(xyz[1],3);Serial.print(" ");Serial.print(xyz[2],3);Serial.print(" ");
-  Serial.print("Goal: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);Serial.print(" ");
+  Serial.print(" delta: ");Serial.print(xyz[0],3);Serial.print(" ");Serial.print(xyz[1],3);Serial.print(" ");Serial.print(xyz[2],3);
+  Serial.print(" Goal: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);
 
   /* Check Z limits */
   if (xyz_M[2] >  _Z_LIMIT) xyz_M[2] =  _Z_LIMIT;
   if (xyz_M[2] < -_Z_LIMIT) xyz_M[2] = -_Z_LIMIT;
+  Serial.print(" z: ");Serial.print(xyz_M[2],3);
 
   /* Find variables based on Z */
   q_M[1]  = asin(xyz_M[2] / _L1);
   L1_XY   = sqrt(pow(_L1, 2) - pow(xyz_M[2], 2));
+  Serial.print(" q2: ");Serial.print(q_M[1],3);
+  Serial.print(" L1xy: ");Serial.print(L1_XY,3);
 
    /* Checks if X and Y are both 0 */
-  if ((abs(xyz[0]) < 0.001) && (abs(xyz[1]) < 0.001)) {
+  if ((abs(xyz_M[0]) < 0.001) && (abs(xyz_M[1]) < 0.001)) {
     q_M[0] = qPres_M[0];
     q_M[2] = _Q4_MAX;
     xyz_M[0] = _A1A2 * cos(q_M[0]) + _L1 * cos(q_M[0]) * cos(q_M[1]) + _OFFSET * sin(q_M[0] + q_M[2]) + _L2 * cos(q_M[0] + q_M[2]);
     xyz_M[1] = _A1A2 * sin(q_M[0]) + _L1 * sin(q_M[0]) * cos(q_M[1]) - _OFFSET * cos(q_M[0] + q_M[2]) + _L2 * sin(q_M[0] + q_M[2]);
   }
+  Serial.print(" zero?: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);
 
   /* Checks walls */
   OUTER_R = _A1A2 + _H_OF_L2 + L1_XY;
@@ -142,8 +142,10 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
     xyz_M[1]  = OUTER_R * sin(alpha);
     R         = OUTER_R;
   }
+  Serial.print(" R: ");Serial.print(R,3); Serial.print(" alpha: ");Serial.print(alpha,3);
+  Serial.print(" inner: ");Serial.print(_INNER_R,3); Serial.print(" outer: ");Serial.print(OUTER_R,3);  
 
-  Serial.print("New?: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);Serial.print(" ");
+  Serial.print(" New?: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);
   Serial.println(""); 
   
   /* Finds and checks Elbow Angle */
@@ -252,10 +254,10 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
 
   /* Convert Motor Counts */
   qPres_M[0]      =  (qPresCts_M[0]) * DEGREES_PER_COUNT * (PI / 180.0);
-  qPres_M[1]      = -(qPresCts_M[1] - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1 / ELEVATION_RATIO);
+  qPres_M[1]      = -(qPresCts_M[1] - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1/ELEVATION_RATIO);
   qPres_M[2]      =  (qPresCts_M[2] - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
   qDotPres_M[0]   = qDotPresCts_M[0] * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  qDotPres_M[1]   = qDotPresCts_M[1] * RPM_PER_COUNT * (2.0 * PI / 60.0) * (1 / ELEVATION_RATIO);
+  qDotPres_M[1]   = qDotPresCts_M[1] * RPM_PER_COUNT * (2.0 * PI / 60.0) * ELEVATION_RATIO;
   qDotPres_M[2]   = qDotPresCts_M[2] * RPM_PER_COUNT * (2.0 * PI / 60.0);
 }
 
