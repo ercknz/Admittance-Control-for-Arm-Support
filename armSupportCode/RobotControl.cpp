@@ -116,7 +116,6 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
   q_M[1]  = asin(xyz_M[2] / _L1);
   L1_XY   = sqrt(pow(_L1, 2) - pow(xyz_M[2], 2));
   Serial.print(" q2: ");Serial.print(q_M[1],3);
-  Serial.print(" L1xy: ");Serial.print(L1_XY,3);
 
    /* Checks if X and Y are both 0 */
   if ((abs(xyz_M[0]) < 0.001) && (abs(xyz_M[1]) < 0.001)) {
@@ -125,13 +124,14 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
     xyz_M[0] = _A1A2 * cos(q_M[0]) + _L1 * cos(q_M[0]) * cos(q_M[1]) + _OFFSET * sin(q_M[0] + q_M[2]) + _L2 * cos(q_M[0] + q_M[2]);
     xyz_M[1] = _A1A2 * sin(q_M[0]) + _L1 * sin(q_M[0]) * cos(q_M[1]) - _OFFSET * cos(q_M[0] + q_M[2]) + _L2 * sin(q_M[0] + q_M[2]);
   }
-  Serial.print(" zero?: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);
 
   /* Checks walls */
   OUTER_R = _A1A2 + _H_OF_L2 + L1_XY;
   R       = sqrt(pow(xyz_M[0], 2) + pow(xyz_M[1], 2));
   alpha   = atan2(xyz_M[1], xyz_M[0]);
-  if (alpha < 0.0f) alpha += 2 * PI;
+  float presR       = sqrt(pow(xyzPres_M[0], 2) + pow(xyzPres_M[1], 2));
+  float presAlpha   = atan2(xyzPres_M[1], xyzPres_M[0]);
+  //if (alpha < 0.0f) alpha += 2 * PI;
   if (R < _INNER_R) {
     xyz_M[0]  = _INNER_R * cos(alpha);
     xyz_M[1]  = _INNER_R * sin(alpha);
@@ -141,29 +141,42 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
     xyz_M[0]  = OUTER_R * cos(alpha);
     xyz_M[1]  = OUTER_R * sin(alpha);
     R         = OUTER_R;
-  }
-  Serial.print(" R: ");Serial.print(R,3); Serial.print(" alpha: ");Serial.print(alpha,3);
-  Serial.print(" inner: ");Serial.print(_INNER_R,3); Serial.print(" outer: ");Serial.print(OUTER_R,3);  
+  } 
+  Serial.print(" presR: ");Serial.print(presR,3);
+  Serial.print(" presAlpha: ");Serial.print(presAlpha,3);
+  Serial.print(" R: ");Serial.print(R,3);
+  Serial.print(" alpha: ");Serial.print(alpha,3);
 
   Serial.print(" New?: ");Serial.print(xyz_M[0],3);Serial.print(" ");Serial.print(xyz_M[1],3);Serial.print(" ");Serial.print(xyz_M[2],3);
-  Serial.println(""); 
   
   /* Finds and checks Elbow Angle */
   gamma = acos((pow((_A1A2 + L1_XY), 2) + pow(_H_OF_L2, 2) - pow(xyz_M[0], 2) - pow(xyz_M[1], 2)) / (2 * _H_OF_L2 * (_A1A2 + L1_XY)));
 
+  Serial.print(" gamma: ");Serial.print(gamma,3);
+
   q_M[2] = PI - gamma;
-  if (q_M[2] < _Q4_MIN) q_M[2] = _Q4_MIN;
-  if (q_M[2] > _Q4_MAX) q_M[2] = _Q4_MAX;
+
+  Serial.print(" q4: ");Serial.print(q_M[2],3);
 
   /* Finds and checks shoulder angle */
   beta = asin((_H_OF_L2 * sin(gamma)) / R);
+
+  Serial.print(" beta: ");Serial.print(beta,3);
+  
   q_M[0] = alpha - beta;
-  if (q_M[0] < _Q1_MIN) q_M[0] = _Q1_MIN;
-  if (q_M[0] > _Q1_MAX) q_M[0] = _Q1_MAX;
+
+  Serial.print(" q1: ");Serial.print(q_M[0],3);
 
   /* Check for nans */
   if (q_M[0] != q_M[0]) q_M[0] = qPres_M[0];
   if (q_M[2] != q_M[2]) q_M[2] = qPres_M[2];
+
+  if (q_M[2] < _Q4_MIN) q_M[2] = _Q4_MIN;
+  if (q_M[2] > _Q4_MAX) q_M[2] = _Q4_MAX;
+  if (q_M[0] < _Q1_MIN) q_M[0] = _Q1_MIN;
+  if (q_M[0] > _Q1_MAX) q_M[0] = _Q1_MAX;
+
+  Serial.print(" nan?: ");Serial.print(q_M[0],3);Serial.print(" ");Serial.print(q_M[2],3);
 
   /* Checks XYZ */
   float xyzCheck[3];
@@ -179,6 +192,8 @@ void RobotControl::iKine(float *xyz, float *xyzDot) {
   qDot_M[0] = (xyzDot_M[0] * (_L2 * cos(q_M[0] + q_M[2])) + xyzDot_M[1] * (_L2 * sin(q_M[0] + q_M[2]))) / detJ;
   qDot_M[1] = xyzDot_M[2] / (_L1 * sqrt(1 - pow((xyz_M[2] / _L1), 2)));
   qDot_M[2] = -(xyzDot_M[0] * (-_L1 * cos(q_M[0]) - _L2 * cos(q_M[0] + q_M[2])) + xyzDot_M[1] * (-_L1 * sin(q_M[0]) - _L2 * sin(q_M[0] + q_M[2]))) / detJ;
+
+  Serial.println(""); 
 }
 
 /******************** Arm Support Forward Kinematics Member Function ************************************************/
@@ -257,7 +272,7 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
   qPres_M[1]      = -(qPresCts_M[1] - ELEVATION_CENTER) * DEGREES_PER_COUNT * (PI / 180.0) * (1/ELEVATION_RATIO);
   qPres_M[2]      =  (qPresCts_M[2] - ELBOW_MIN_POS) * DEGREES_PER_COUNT * (PI / 180.0);
   qDotPres_M[0]   = qDotPresCts_M[0] * RPM_PER_COUNT * (2.0 * PI / 60.0);
-  qDotPres_M[1]   = qDotPresCts_M[1] * RPM_PER_COUNT * (2.0 * PI / 60.0) * ELEVATION_RATIO;
+  qDotPres_M[1]   = qDotPresCts_M[1] * RPM_PER_COUNT * (2.0 * PI / 60.0) * (1/ELEVATION_RATIO);
   qDotPres_M[2]   = qDotPresCts_M[2] * RPM_PER_COUNT * (2.0 * PI / 60.0);
 }
 
