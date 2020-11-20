@@ -42,13 +42,13 @@ void loggingFunc(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel 
 
   Serial.print(GlobalF[0]); Serial.print("\t"); Serial.print(GlobalF[1]); Serial.print("\t"); Serial.print(GlobalF[2]); Serial.print("\t");
 
-  //Serial.print(PresQ[0]); Serial.print("\t"); Serial.print(PresQ[1]); Serial.print("\t"); Serial.print(PresQ[2]); Serial.print("\t");
+  Serial.print(PresQ[0]); Serial.print("\t"); Serial.print(PresQ[1]); Serial.print("\t"); Serial.print(PresQ[2]); Serial.print("\t");
 
   Serial.print(PresPos[0]); Serial.print("\t"); Serial.print(PresPos[1]); Serial.print("\t"); Serial.print(PresPos[2]); Serial.print("\t");
-
-  Serial.print(xyzGoal[0]); Serial.print("\t"); Serial.print(xyzGoal[1]); Serial.print("\t"); Serial.print(xyzGoal[2]); Serial.print("\t");
   
   Serial.print(xyzBotGoal[0]); Serial.print("\t"); Serial.print(xyzBotGoal[1]); Serial.print("\t"); Serial.print(xyzBotGoal[2]); Serial.print("\t");
+
+  Serial.print(GoalQ[0]); Serial.print("\t"); Serial.print(GoalQ[1]); Serial.print("\t"); Serial.print(GoalQ[2]); Serial.print("\t");
   
   Serial.print(loopTime);
   
