@@ -2,7 +2,7 @@
 
    Packet Reference:
    [   1,  2,  3,  4,  5,  6,  7,     8,     9,    10,11,12,13,14,15,16, 17, 18, 19,    20,    21,    22,     23, 24]
-   [time, Fx, Fy, Fz, q1, q2, q4, q1Dot, q2Dot, q4Dot, x, y, z, u, v, w, Q1, Q2, Q4, Q1Dot, Q2Dot, Q4Dot, return, dT]
+   [time, Fx, Fy, Fz, q1, q2, q4, q1Dot, q2Dot, q4Dot, x, y, z, u, v, w, Q1, Q2, Q4, Q1Dot, Q2Dot, Q4Dot, dT]
 
    Created 10/28/2020
    by Erick Nunez
@@ -44,11 +44,15 @@ void loggingFunc(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel 
 
   Serial.print(PresQ[0]); Serial.print("\t"); Serial.print(PresQ[1]); Serial.print("\t"); Serial.print(PresQ[2]); Serial.print("\t");
 
-  Serial.print(PresPos[0]); Serial.print("\t"); Serial.print(PresPos[1]); Serial.print("\t"); Serial.print(PresPos[2]); Serial.print("\t");
+  Serial.print(PresQDot[0]); Serial.print("\t"); Serial.print(PresQDot[1]); Serial.print("\t"); Serial.print(PresQDot[2]); Serial.print("\t");
   
   Serial.print(xyzBotGoal[0]); Serial.print("\t"); Serial.print(xyzBotGoal[1]); Serial.print("\t"); Serial.print(xyzBotGoal[2]); Serial.print("\t");
 
+  Serial.print(xyzDotBotGoal[0]); Serial.print("\t"); Serial.print(xyzDotBotGoal[1]); Serial.print("\t"); Serial.print(xyzDotBotGoal[2]); Serial.print("\t");
+
   Serial.print(GoalQ[0]); Serial.print("\t"); Serial.print(GoalQ[1]); Serial.print("\t"); Serial.print(GoalQ[2]); Serial.print("\t");
+
+  Serial.print(GoalQDot[0]); Serial.print("\t"); Serial.print(GoalQDot[1]); Serial.print("\t"); Serial.print(GoalQDot[2]); Serial.print("\t");
   
   Serial.print(loopTime);
   

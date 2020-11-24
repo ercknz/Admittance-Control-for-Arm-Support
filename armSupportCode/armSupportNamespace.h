@@ -58,12 +58,12 @@ const int ELEVATION_MIN_POS = 1170;
 const int ELEVATION_MAX_POS = 3520;
 const int ELEVATION_CENTER  = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 const float ELEVATION_RATIO = 2.2978;
-const int VEL_MAX_LIMIT     = 20;
+const int VEL_MAX_LIMIT     = 30;
 /* Admitance Control Constants */
 const float LOOP_DT       = 8;    // Milliseconds
 const float MODEL_DT      = 0.008;   // Seconds
-const float MASS          = 5.0f;
-const float DAMPING       = 25.0f;
+const float MASS          = 2.5f;
+const float DAMPING       = 5.0f;
 const float GRAVITY       = 9.80665;
 /* Kinematic Constants */
 const float A1_LINK     = 0.073;     // Shoulder to 4bar linkage

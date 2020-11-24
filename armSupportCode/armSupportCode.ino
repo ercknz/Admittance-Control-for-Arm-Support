@@ -67,7 +67,7 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
   addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
-  ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);   // Toggle torque for troubleshooting
+  ArmSupportRobot.EnableTorque(portHandler, packetHandler, ENABLE);   // Toggle torque for troubleshooting
   delay(100);
 
   /* Initialize Model */

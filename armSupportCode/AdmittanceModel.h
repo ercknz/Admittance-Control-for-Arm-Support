@@ -11,8 +11,8 @@
 class AdmittanceModel {
   public:
           AdmittanceModel(const float M, const float B, const float G, const float T);
-    //void  InitializeModel(float XYZ);
-    void  UpdateModel(float *forceXYZ);
+    void   SetPosition(float *newXYZ);
+    void   UpdateModel(float *forceXYZ);
     float* GetGoalPos();
     float* GetGoalVel();
     
