@@ -10,15 +10,17 @@
 
 class AdmittanceModel {
   public:
-          AdmittanceModel(const float M, const float B, const float G, const float T);
+          AdmittanceModel(const float Mxy, const float Bxy, const float Mz, const float Bz, const float G, const float T);
     void   SetPosition(float *newXYZ);
     void   UpdateModel(float *forceXYZ);
     float* GetGoalPos();
     float* GetGoalVel();
     
   private: 
-    const float _MASS;
-    const float _DAMPING;
+    const float _MASS_XY;
+    const float _DAMPING_XY;
+    const float _MASS_Z;
+    const float _DAMPING_Z;
     const float _GRAVITY;
     const float _DELTAT;
     float xyzGoal_M[3]    = {0.0f};

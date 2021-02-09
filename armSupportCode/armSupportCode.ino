@@ -26,7 +26,7 @@ dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
 /* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
-AdmittanceModel AdmitModel = AdmittanceModel(MASS, DAMPING, GRAVITY, MODEL_DT);
+AdmittanceModel AdmitModel = AdmittanceModel(MASS_XY, DAMPING_XY, MASS_Z, DAMPING_Z, GRAVITY, MODEL_DT);
 ForceSensor OptoForceSensor = ForceSensor(&Serial1, BAUDRATE, xyzSensitivity, SENSOR_FILTER_WEIGHT);
 RobotControl ArmSupportRobot = RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
 

@@ -58,19 +58,21 @@ const int ELEVATION_MIN_POS = 1170;
 const int ELEVATION_MAX_POS = 3520;
 const int ELEVATION_CENTER  = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 const float ELEVATION_RATIO = 2.2978;
-const int VEL_MAX_LIMIT     = 30;
+const int VEL_MAX_LIMIT     = 100;
 /* Admitance Control Constants */
-const float LOOP_DT       = 8;    // Milliseconds
-const float MODEL_DT      = 0.008;   // Seconds
-const float MASS          = 2.5f;
-const float DAMPING       = 5.0f;
-const float GRAVITY       = 9.80665;
+const float LOOP_DT       = 8;        // Milliseconds
+const float MODEL_DT      = 0.008;    // Secs
+const float MASS_XY       = 1.5f;     // kg
+const float DAMPING_XY    = 5.0f;     // N*(sec/m)
+const float MASS_Z        = 1.5f;     // kg
+const float DAMPING_Z     = 4.5f;     // N*(sec/m)
+const float GRAVITY       = 9.80665;  // m/sec^2
 /* Kinematic Constants */
-const float A1_LINK     = 0.073;     // Shoulder to 4bar linkage
-const float L1_LINK     = 0.419;     // length of 4bar linkage
-const float A2_LINK     = 0.082;     // 4bar linkage to elbow
-const float L2_LINK     = 0.520;     // elbow to sensor
-const float LINK_OFFSET = 0.035;   // elbow to sensor offset
+const float A1_LINK     = 0.073;      // Shoulder to 4bar linkage
+const float L1_LINK     = 0.419;      // length of 4bar linkage
+const float A2_LINK     = 0.082;      // 4bar linkage to elbow
+const float L2_LINK     = 0.520;      // elbow to sensor
+const float LINK_OFFSET = 0.035;      // elbow to sensor offset
 }
 
 #endif // ARM_SUPPORT_NS_H

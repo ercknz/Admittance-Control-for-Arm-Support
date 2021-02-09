@@ -38,9 +38,11 @@
 #include "AdmittanceModel.h"
 
 /******************** Admittance Model Constructor  ***********************************************************************/
-AdmittanceModel::AdmittanceModel(const float M, const float B, const float G, const float T)
-  : _MASS{M},
-    _DAMPING{B},
+AdmittanceModel::AdmittanceModel(const float Mxy, const float Bxy, const float Mz, const float Bz, const float G, const float T)
+  : _MASS_XY{Mxy},
+    _DAMPING_XY{Bxy},
+    _MASS_Z{Mz},
+    _DAMPING_Z{Bz},
     _GRAVITY{G},
     _DELTAT{T}
 {
@@ -61,26 +63,22 @@ void AdmittanceModel::UpdateModel(float *forceXYZ) {
   }
 
   // Coefficents and Solution for X-Direction /////////////////////////////////////////////////////
-  float Cx1 = ((forceXYZ[0] / _DAMPING) - xyzDotInit_M[0]) * (_MASS / _DAMPING);
+  float Cx1 = ((forceXYZ[0] / _DAMPING_XY) - xyzDotInit_M[0]) * (_MASS_XY / _DAMPING_XY);
   float Cx2 = xyzInit_M[0] - Cx1;
-  xyzGoal_M[0]    = Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (forceXYZ[0] / _DAMPING) * _DELTAT + Cx2;
-  xyzDotGoal_M[0] = (forceXYZ[0] / _DAMPING) - (_DAMPING / _MASS) * Cx1 * exp(-(_DAMPING / _MASS) * _DELTAT);
+  xyzGoal_M[0]    = Cx1 * exp(-(_DAMPING_XY / _MASS_XY) * _DELTAT) + (forceXYZ[0] / _DAMPING_XY) * _DELTAT + Cx2;
+  xyzDotGoal_M[0] = (forceXYZ[0] / _DAMPING_XY) - (_DAMPING_XY / _MASS_XY) * Cx1 * exp(-(_DAMPING_XY / _MASS_XY) * _DELTAT);
 
   // Coefficents and Solution for Y-Direction //////////////////////////////////////////////////////
-  float Cy1 = ((forceXYZ[1] / _DAMPING) - xyzDotInit_M[1]) * (_MASS / _DAMPING);
+  float Cy1 = ((forceXYZ[1] / _DAMPING_XY) - xyzDotInit_M[1]) * (_MASS_XY / _DAMPING_XY);
   float Cy2 = xyzInit_M[1] - Cy1;
-  xyzGoal_M[1]    = Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (forceXYZ[1] / _DAMPING) * _DELTAT + Cy2;
-  xyzDotGoal_M[1] = (forceXYZ[1] / _DAMPING) - (_DAMPING / _MASS) * Cy1 * exp(-(_DAMPING / _MASS) * _DELTAT);
+  xyzGoal_M[1]    = Cy1 * exp(-(_DAMPING_XY / _MASS_XY) * _DELTAT) + (forceXYZ[1] / _DAMPING_XY) * _DELTAT + Cy2;
+  xyzDotGoal_M[1] = (forceXYZ[1] / _DAMPING_XY) - (_DAMPING_XY / _MASS_XY) * Cy1 * exp(-(_DAMPING_XY / _MASS_XY) * _DELTAT);
 
   // Coefficents and Solution for Z-Direction //////////////////////////////////////////////////////
-//  float Cz1 = (((forceXYZ[2] - _GRAVITY * _MASS) / _DAMPING) - xyzDotInit_M[2]) * (_MASS / _DAMPING);
-//  float Cz2 = xyzInit_M[2] - Cz1;
-//  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + ((forceXYZ[2] - _GRAVITY * _MASS) / _DAMPING) * _DELTAT + Cz2;
-//  xyzDotGoal_M[2] = ((forceXYZ[2] - _GRAVITY * _MASS) / _DAMPING ) - (_DAMPING / _MASS) * Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT);
-  float Cz1 = ((forceXYZ[2]  / _DAMPING) - xyzDotInit_M[2]) * (_MASS / _DAMPING);
+  float Cz1 = ((forceXYZ[2]  / _DAMPING_Z) - xyzDotInit_M[2]) * (_MASS_Z / _DAMPING_Z);
   float Cz2 = xyzInit_M[2] - Cz1;
-  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT) + (forceXYZ[2] / _DAMPING) * _DELTAT + Cz2;
-  xyzDotGoal_M[2] = (forceXYZ[2] / _DAMPING ) - (_DAMPING / _MASS) * Cz1 * exp(-(_DAMPING / _MASS) * _DELTAT);
+  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT) + (forceXYZ[2] / _DAMPING_Z) * _DELTAT + Cz2;
+  xyzDotGoal_M[2] = (forceXYZ[2] / _DAMPING_Z) - (_DAMPING_Z / _MASS_Z) * Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT);
 }
 
 /******************** Admittance Model Get Functions   ***************************************************************/

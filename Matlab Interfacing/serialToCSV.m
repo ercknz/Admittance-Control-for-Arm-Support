@@ -7,10 +7,12 @@
 %% Clean workspace
 clear; clc; delete(instrfindall);
 %% CSV file
+keyWords = input('String of keywords for this trial? ');
 fileTime = datestr(now,'mmddyyHHMM');
-csvFile = ['Logs/armSupportLog',fileTime,'.csv'];
+csvFile = ['Logs/armSupportLog',keyWords,fileTime,'.csv'];
 %% Sets up duration of test
 secs = input('Collection time duration in Secs? ');
+pause(10)
 %% Sets up serial object
 s1 = serial('COM28');
 s1.BaudRate = 115200;
@@ -88,8 +90,8 @@ legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Posit
 
 %% saves plots
 set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
-saveas(fig1, ['./Logs/armSupport',fileTime,'_1of2.pdf']);
-saveas(fig1, ['./Logs/armSupport',fileTime,'_1of2.fig']);
+saveas(fig1, ['./Logs/armSupport',keyWords,fileTime,'_1of2.pdf']);
+saveas(fig1, ['./Logs/armSupport',keyWords,fileTime,'_1of2.fig']);
 set(fig2, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
-saveas(fig2, ['./Logs/armSupport',fileTime,'_2of2.pdf']);
-saveas(fig2, ['./Logs/armSupport',fileTime,'_2of2.fig']);
+saveas(fig2, ['./Logs/armSupport',keyWords,fileTime,'_2of2.pdf']);
+saveas(fig2, ['./Logs/armSupport',keyWords,fileTime,'_2of2.fig']);
