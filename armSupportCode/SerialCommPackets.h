@@ -11,11 +11,16 @@
 
 class SerialPackets {
   public:
-
+         SerialPackets(HardwareSerial *ptrSer, const int baudrate);
+    void ReadSerialPackets();
+    void WriteSerialPackets();
     
   private:
-    bool sendVel = false;
+    const int       _BAUDRATE;  
+    HardwareSerial  *SerialPort_M;
+    int16_t         _SAMPLECOUNTER;
     
+    bool sendVel = false;
 };
 
 #endif // SERIAL_PACKETS_H
