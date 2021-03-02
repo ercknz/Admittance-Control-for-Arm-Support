@@ -14,7 +14,8 @@ class SerialPackets {
 
     
   private:
-
+    bool sendVel = false;
+    
 };
 
 #endif // SERIAL_PACKETS_H
