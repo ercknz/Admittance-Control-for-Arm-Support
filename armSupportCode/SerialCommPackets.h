@@ -19,8 +19,14 @@ class SerialPackets {
     const int       _BAUDRATE;  
     HardwareSerial  *SerialPort_M;
     int16_t         _SAMPLECOUNTER;
+    int16_t         _TX_PKT_LEN;
+    int16_t         _RX_PKT_LEN;
+    int16_t
     
-    bool sendVel = false;
+    bool _RX_PRESVEL = false;
+    bool _RX_GOALVEL = false;
+    bool _RX_PRESVEL = false;
+    bool _RX_GOALVEL = false;
 };
 
 #endif // SERIAL_PACKETS_H
