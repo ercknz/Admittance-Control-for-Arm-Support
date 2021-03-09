@@ -21,10 +21,9 @@ class SerialPackets {
     int16_t         _SAMPLECOUNTER;
     int16_t         _TX_PKT_LEN;
     int16_t         _RX_PKT_LEN;
-    int16_t
     
-    bool _RX_PRESVEL = false;
-    bool _RX_GOALVEL = false;
+    bool _RX_PRESPOS = false;
+    bool _RX_GOALPOS = false;
     bool _RX_PRESVEL = false;
     bool _RX_GOALVEL = false;
 };

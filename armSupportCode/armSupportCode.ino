@@ -51,8 +51,8 @@ void loop() {
   OptoForceSensor.SensorConfig();
   ArmSupportRobot.MotorConfig(portHandler, packetHandler);
   delay(100);
-  OptoForceSensor.CalibrateSensor();
-  delay(2000);
+//  OptoForceSensor.CalibrateSensor();
+//  delay(2000);
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
@@ -72,6 +72,8 @@ void loop() {
 
   /* Initialize Model */
   float *presQ, *globalF, *xyzGoal, *xyzDotGoal;
+//  OptoForceSensor.SensorConfig();
+//  delay(100);
   previousTime = millis();
   ArmSupportRobot.ReadRobot(syncReadPacket);
   presQ = ArmSupportRobot.GetPresQ();

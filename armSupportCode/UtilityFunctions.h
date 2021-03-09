@@ -15,8 +15,8 @@ int16_t bytesToCounts(byte hByte, byte lByte);
 
 void loggingFunc(unsigned long &totalTime, ForceSensor &OptoSensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
 
-union {
-  
-};
+//union {
+//  
+//};
 
 #endif // UTILITY_FUNCTIONS_H
