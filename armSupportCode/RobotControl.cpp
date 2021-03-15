@@ -38,11 +38,11 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
-int* RobotControl::GetPresQCts(){ 
+int32_t* RobotControl::GetPresQCts(){ 
   return qPresCts_M;
 } 
 
-int* RobotControl::GetPresQDotCts(){
+int32_t* RobotControl::GetPresQDotCts(){
   return qDotPresCts_M;
 }
 
@@ -62,11 +62,11 @@ float* RobotControl::GetPresVel(){
   return xyzDotPres_M;
 }
 
-int* RobotControl::GetGoalQCts(){ 
+int32_t* RobotControl::GetGoalQCts(){ 
   return qCts_M;
 }
 
-int* RobotControl::GetGoalQDotCts(){
+int32_t* RobotControl::GetGoalQDotCts(){
   return qDotCts_M;
 }
 

@@ -16,18 +16,18 @@ class RobotControl {
     void  MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler);
     void  ReadRobot(dynamixel::GroupSyncRead &syncReadPacket);
     void  WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
-    float* GetPresQ();
-    float* GetPresQDot();
-    int  * GetPresQCts();
-    int  * GetPresQDotCts();
-    float* GetPresPos();
-    float* GetPresVel();
-    int  * GetGoalQCts();
-    int  * GetGoalQDotCts();
-    float* GetGoalQ();
-    float* GetGoalQDot();
-    float* GetGoalPos();
-    float* GetGoalVel();
+    float *   GetPresQ();
+    float *   GetPresQDot();
+    int32_t * GetPresQCts();
+    int32_t * GetPresQDotCts();
+    float *   GetPresPos();
+    float *   GetPresVel();
+    int32_t * GetGoalQCts();
+    int32_t * GetGoalQDotCts();
+    float *   GetGoalQ();
+    float *   GetGoalQDot();
+    float *   GetGoalPos();
+    float *   GetGoalVel();
     
   private:
     void  fKine();
@@ -42,12 +42,12 @@ class RobotControl {
     const double _Q4_MIN,    _Q4_MAX;
     const double _INNER_R,   _Z_LIMIT;
     float J_M[3][3] = {{0.0f}};
-    int   qPresCts_M[3],  qDotPresCts_M[3];
-    float qPres_M[3],     qDotPres_M[3];
-    float xyzPres_M[3],   xyzDotPres_M[3];
-    int   qCts_M[3],      qDotCts_M[3];
-    float q_M[3],         qDot_M[3];
-    float xyz_M[3],       xyzDot_M[3];
+    int32_t qPresCts_M[3],  qDotPresCts_M[3];
+    float   qPres_M[3],     qDotPres_M[3];
+    float   xyzPres_M[3],   xyzDotPres_M[3];
+    int32_t qCts_M[3],      qDotCts_M[3];
+    float   q_M[3],         qDot_M[3];
+    float   xyz_M[3],       xyzDot_M[3];
     uint8_t dxl_error = 0;
 };
 

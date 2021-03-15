@@ -93,7 +93,7 @@ void ForceSensor::ReadForceSensor() {
   static byte header[4] = {170, 7, 8, 10};
   int16_t xCts, yCts, zCts;
   uint16_t SumCheck;
-  int16_t CHECKSUM;
+  uint16_t CHECKSUM;
   while (SensorPort_M->available()) {
     SensorPort_M->read();
   }

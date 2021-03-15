@@ -72,8 +72,6 @@ void loop() {
 
   /* Initialize Model */
   float *presQ, *globalF, *xyzGoal, *xyzDotGoal;
-//  OptoForceSensor.SensorConfig();
-//  delay(100);
   previousTime = millis();
   ArmSupportRobot.ReadRobot(syncReadPacket);
   presQ = ArmSupportRobot.GetPresQ();
@@ -83,6 +81,12 @@ void loop() {
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
+//    if (Serial.availabledata){
+//      something;
+//    }
+//    if (button.pressed){
+//      something;
+//    }
     if (currentTime - previousTime >= LOOP_DT) {
       /* Loop Timing */
       startLoop = millis();

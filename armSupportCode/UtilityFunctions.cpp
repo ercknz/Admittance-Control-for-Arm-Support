@@ -21,22 +21,22 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 
 /******************** Streaming Function  ***********************************************************************/
 void loggingFunc(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
-  float * RawF          = Sensor.GetRawF();
-  float * GlobalF       = Sensor.GetGlobalF();
-  float * xyzGoal       = Model.GetGoalPos();
-  float * xyzDotGoal    = Model.GetGoalVel();
-  float * xyzBotGoal    = Robot.GetGoalPos();
-  float * xyzDotBotGoal = Robot.GetGoalVel();
-  int   * PresQCts      = Robot.GetPresQCts();
-  int   * PresQDotCts   = Robot.GetPresQDotCts();
-  float * PresQ         = Robot.GetPresQ();
-  float * PresQDot      = Robot.GetPresQDot();
-  float * PresPos       = Robot.GetPresPos();
-  float * PresVel       = Robot.GetPresVel();
-  int   * GoalQCts      = Robot.GetGoalQCts();
-  int   * GoalQDotCts   = Robot.GetGoalQDotCts();
-  float * GoalQ         = Robot.GetGoalQ();
-  float * GoalQDot      = Robot.GetGoalQDot();
+  float *   RawF          = Sensor.GetRawF();
+  float *   GlobalF       = Sensor.GetGlobalF();
+  float *   xyzGoal       = Model.GetGoalPos();
+  float *   xyzDotGoal    = Model.GetGoalVel();
+  float *   xyzBotGoal    = Robot.GetGoalPos();
+  float *   xyzDotBotGoal = Robot.GetGoalVel();
+  int32_t * PresQCts      = Robot.GetPresQCts();
+  int32_t * PresQDotCts   = Robot.GetPresQDotCts();
+  float *   PresQ         = Robot.GetPresQ();
+  float *   PresQDot      = Robot.GetPresQDot();
+  float *   PresPos       = Robot.GetPresPos();
+  float *   PresVel       = Robot.GetPresVel();
+  int32_t * GoalQCts      = Robot.GetGoalQCts();
+  int32_t * GoalQDotCts   = Robot.GetGoalQDotCts();
+  float *   GoalQ         = Robot.GetGoalQ();
+  float *   GoalQDot      = Robot.GetGoalQDot();
   
   Serial.print(totalTime); Serial.print("\t");
 

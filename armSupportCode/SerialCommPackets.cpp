@@ -20,44 +20,51 @@ void SerialPackets::WriteSerialPackets() {
 }
 
 void SerialPackets::ReadSerialPackets() {
-  byte rawPacket[32];
-  byte goodPacket[16];
+  byte rawPacket[16];
   static byte header[4] = {170, 7, 8, 10};
-  uint16_t SumCheck;
+  int16_t SumCheck;
   int16_t CHECKSUM;
   while (SerialPort_M->available()) {
     SerialPort_M->read();
   }
-  while (SerialPort_M->available() < 32) {} // Reads 2xpacket length incase of a packet shift
-  for (int i = 0; i < 32; i++) {
-    rawPacket[i] = SerialPort_M->read();
-  }
-  // Searches for good packet
-  for (int i = 0; i < 32 - 12; i++) {
-    if (rawPacket[i] == header[0]) {
-      if (rawPacket[i + 1] == header[1]) {
-        if (rawPacket[i + 2] == header[2]) {
-          if (rawPacket[i + 3] == header[3]) {
-            for (int j = 0; j < 16; j++) {
-              goodPacket[j] = rawPacket[i + j];
-            }
-            CHECKSUM = bytesToCounts(goodPacket[14], goodPacket[15]);
-            SumCheck = 0;
-            for (int j = 0; j<14; j++){
-              SumCheck += goodPacket[j];
-            }
-            if (SumCheck == CHECKSUM) {
-              _SAMPLECOUNTER = bytesToCounts(goodPacket[4], goodPacket[5]);
+//  while (SerialPort_M->available() < 32) {} // Reads 2xpacket length incase of a packet shift
+//  for (int i = 0; i < 32; i++) {
+//    rawPacket[i] = SerialPort_M->read();
+//  }
+//  // Searches for good packet
+//  for (int i = 0; i < 32 - 12; i++) {
+//    if (rawPacket[i] == header[0]) {
+//      if (rawPacket[i + 1] == header[1]) {
+//        if (rawPacket[i + 2] == header[2]) {
+//          if (rawPacket[i + 3] == header[3]) {
+//            for (int j = 0; j < 16; j++) {
+//              goodPacket[j] = rawPacket[i + j];
+//            }
+//            CHECKSUM = bytesToCounts(goodPacket[14], goodPacket[15]);
+//            SumCheck = 0;
+//            for (int j = 0; j<14; j++){
+//              SumCheck += goodPacket[j];
+//            }
+//            if (SumCheck == CHECKSUM) {
+//              _SAMPLECOUNTER = bytesToCounts(goodPacket[4], goodPacket[5]);
+//
+//            } else {
+//              while (SerialPort_M->available()) {
+//                SerialPort_M->read();
+//              }
+//            }
+//            
+//          }
+//        }
+//      }
+//    }
+//  }
+}
 
-            } else {
-              while (SerialPort_M->available()) {
-                SerialPort_M->read();
-              }
-            }
-            
-          }
-        }
-      }
-    }
-  }
+void SerialPackets::ConfigPacketRX(){
+  
+}
+
+void SerialPackets::ModifierPacketRX(){
+  
 }

@@ -22,8 +22,8 @@ class ForceSensor {
     void  ReadForceSensor();
     void  FilterForces();
 
-    const int   _BAUDRATE;  
     HardwareSerial *SensorPort_M;
+    const int   _BAUDRATE;  
     float       _xyzCALIBRATION[3] = {0.0f};
     int16_t     _SAMPLECOUNTER;
     int16_t     _SENSORSTATUS;
