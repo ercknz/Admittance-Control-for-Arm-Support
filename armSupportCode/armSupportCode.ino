@@ -18,6 +18,7 @@
 #include "ForceSensor.h"
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
+#include "SerialCommPackets.h"
 
 using namespace ASR;
 
@@ -26,22 +27,24 @@ dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
 /* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
-AdmittanceModel AdmitModel = AdmittanceModel(MASS_XY, DAMPING_XY, MASS_Z, DAMPING_Z, GRAVITY, MODEL_DT);
-ForceSensor OptoForceSensor = ForceSensor(&Serial1, BAUDRATE, xyzSensitivity, SENSOR_FILTER_WEIGHT);
-RobotControl ArmSupportRobot = RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
+AdmittanceModel AdmitModel      = AdmittanceModel(MASS_XY, DAMPING_XY, MASS_Z, DAMPING_Z, GRAVITY, MODEL_DT);
+ForceSensor     OptoForceSensor = ForceSensor(&Serial1, SENSOR_BAUDRATE, xyzSensitivity, SENSOR_FILTER_WEIGHT);
+RobotControl    ArmSupportRobot = RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
+SerialPackets   pcComm          = SerialPackets(&Serial, SERIAL_BAUDRATE);
 
 /* Setup function /////////////////////////////////////////////////////////////////////////////////*/
 void setup() {
-  /* Serial Monitor */
-  Serial.begin(115200);
+  /* Wait for Serial Comm */
   while (!Serial);
+  /* Seutp user calibration buttons */
+  pinMode(CAL_BUTTON_PIN, INPUT_PULLDOWN);
   /* Setup port and packet handlers */
   portHandler   = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
   delay(100);
   /* Dynamixel Setup */
   portHandler -> openPort();
-  portHandler -> setBaudRate(BAUDRATE);
+  portHandler -> setBaudRate(MOTOR_BAUDRATE);
 }
 
 /* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
@@ -67,7 +70,7 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ID_ELBOW);
   addParamResult = syncReadPacket.addParam(ID_ELEVATION);
 
-  ArmSupportRobot.EnableTorque(portHandler, packetHandler, ENABLE);   // Toggle torque for troubleshooting
+  ArmSupportRobot.EnableTorque(portHandler, packetHandler, ~ENABLE);   // Toggle torque for troubleshooting
   delay(100);
 
   /* Initialize Model */
@@ -81,12 +84,9 @@ void loop() {
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
-//    if (Serial.availabledata){
-//      something;
-//    }
-//    if (button.pressed){
-//      something;
-//    }
+    if (pcComm.DataAvailable()) pcComm.ReadPackets;
+    if (digitalRead(CAL_BUTTON_PIN) == HIGH) OptoForceSensor.SensorConfig();
+    
     if (currentTime - previousTime >= LOOP_DT) {
       /* Loop Timing */
       startLoop = millis();

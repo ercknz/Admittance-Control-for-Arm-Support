@@ -11,18 +11,19 @@
 
 class SerialPackets {
   public:
-         SerialPackets(HardwareSerial *ptrSer, const int baudrate);
-    void ReadSerialPackets();
-    void WriteSerialPackets();
+         SerialPackets(USBSerial *ptrSer, const int baudrate);
+    bool DataAvailable();
+    void ReadPackets();
+    void WritePackets();
     void ConfigPacketRX();
     void ModifierPacketRX();
     
   private:
-    const int       _BAUDRATE;  
-    HardwareSerial  *SerialPort_M;
-    int16_t         _SAMPLECOUNTER;
-    int16_t         _TX_PKT_LEN;
-    int16_t         _RX_PKT_LEN;
+    const int _BAUDRATE;  
+    USBSerial *SerialPort_M;
+    int16_t   _SAMPLECOUNTER;
+    int16_t   _TX_PKT_LEN;
+    int16_t   _RX_PKT_LEN;
 
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = false;

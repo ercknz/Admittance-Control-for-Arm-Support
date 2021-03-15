@@ -9,17 +9,22 @@
 #include "UtilityFunctions.h"
 
 /******************** Serial Packet Contructor  ***********************************************************************/
-SerialPackets::SerialPackets(HardwareSerial *ptrSer, const int baudrate) 
+SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate) 
   :_BAUDRATE{baudrate}
 {
   SerialPort_M = ptrSer;
+  SerialPort_M->begin(_BAUDRATE);
 }
 
-void SerialPackets::WriteSerialPackets() {
+bool SerialPackets::DataAvailable(){
+  return SerialPort_M->available();
+}
+
+void SerialPackets::WritePackets() {
   
 }
 
-void SerialPackets::ReadSerialPackets() {
+void SerialPackets::ReadPackets() {
   byte rawPacket[16];
   static byte header[4] = {170, 7, 8, 10};
   int16_t SumCheck;

@@ -62,11 +62,13 @@ void ForceSensor::SensorConfig() {
   }
   configPacket[7] = floor(packetSum / 256);
   configPacket[8] = floor(packetSum % 256);
-
+  
   /* write config packet */
+  delay(500);
   for (int i = 0; i < 9; i++) {
     SensorPort_M->write(configPacket[i]);
   }
+  delay(500);
 }
 
 /******************** Force Sensor Calibration  ***********************************************************************/
