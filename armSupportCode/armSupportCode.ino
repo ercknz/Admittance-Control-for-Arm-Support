@@ -84,7 +84,7 @@ void loop() {
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
-    if (pcComm.DataAvailable()) pcComm.ReadPackets;
+    if (pcComm.DataAvailable()) pcComm.ReadPackets();
     if (digitalRead(CAL_BUTTON_PIN) == HIGH) OptoForceSensor.SensorConfig();
     
     if (currentTime - previousTime >= LOOP_DT) {
