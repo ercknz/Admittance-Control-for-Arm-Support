@@ -26,20 +26,20 @@
 #include "ForceSensor.h"
 
 /******************** Force Sensor Constructor  ***********************************************************************/
-ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float filterWeight) 
-  :_BAUDRATE{baudrate},
-  _xyzSENSITIVITY{xyzSens[0],xyzSens[1],xyzSens[2]},
-  _FILTERWEIGHT{filterWeight}
+ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float filterWeight)
+  : _BAUDRATE{baudrate},
+    _xyzSENSITIVITY{xyzSens[0], xyzSens[1], xyzSens[2]},
+    _FILTERWEIGHT{filterWeight}
 {
   SensorPort_M = ptrSer;
 }
 
 /******************** Force Sensor Memeber Get Functions ****************************************************************/
-float* ForceSensor::GetRawF(){
+float* ForceSensor::GetRawF() {
   return xyzRaw_M;
 }
 
-float* ForceSensor::GetGlobalF(){
+float* ForceSensor::GetGlobalF() {
   return xyzGlobal_M;
 }
 
@@ -62,7 +62,7 @@ void ForceSensor::SensorConfig() {
   }
   configPacket[7] = floor(packetSum / 256);
   configPacket[8] = floor(packetSum % 256);
-  
+
   /* write config packet */
   delay(500);
   for (int i = 0; i < 9; i++) {
@@ -73,13 +73,13 @@ void ForceSensor::SensorConfig() {
 
 /******************** Force Sensor Calibration  ***********************************************************************/
 void ForceSensor::CalibrateSensor() {
-  for(int i=0; i<3; i++){
+  for (int i = 0; i < 3; i++) {
     _xyzCALIBRATION[i] = 0.0f;
   }
   static float samples = 2000.0;
   for (int i = 0; i < samples; i++) {
     ReadForceSensor();
-    for(int i=0; i<3; i++){
+    for (int i = 0; i < 3; i++) {
       _xyzCALIBRATION[i] += xyzRaw_M[i] / samples;
     }
   }
@@ -87,7 +87,7 @@ void ForceSensor::CalibrateSensor() {
 
 /******************** Force Sensor Reading  ***********************************************************************/
 void ForceSensor::ReadForceSensor() {
-  for(int i=0; i<3; i++){
+  for (int i = 0; i < 3; i++) {
     xyzLastRaw_M[i] = xyzRaw_M[i];
   }
   byte rawPacket[32];
@@ -105,41 +105,35 @@ void ForceSensor::ReadForceSensor() {
   }
   // Searches for good packet
   for (int i = 0; i < 32 - 12; i++) {
-    if (rawPacket[i] == header[0]) {
-      if (rawPacket[i + 1] == header[1]) {
-        if (rawPacket[i + 2] == header[2]) {
-          if (rawPacket[i + 3] == header[3]) {
-            for (int j = 0; j < 16; j++) {
-              goodPacket[j] = rawPacket[i + j];
-            }
-            CHECKSUM = bytesToCounts(goodPacket[14], goodPacket[15]);
-            SumCheck = 0;
-            for (int j = 0; j<14; j++){
-              SumCheck += goodPacket[j];
-            }
-            if (SumCheck == CHECKSUM) {
-              _SAMPLECOUNTER = bytesToCounts(goodPacket[4], goodPacket[5]);
-              _SENSORSTATUS = bytesToCounts(goodPacket[6], goodPacket[7]); 
-  
-              xCts = bytesToCounts(goodPacket[8], goodPacket[9]);
-              yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
-              zCts = bytesToCounts(goodPacket[12], goodPacket[13]);
-  
-              xyzRaw_M[0] = (xCts / _xyzSENSITIVITY[0]) - _xyzCALIBRATION[0];
-              xyzRaw_M[1] = (yCts / _xyzSENSITIVITY[1]) - _xyzCALIBRATION[1];
-              xyzRaw_M[2] = (zCts / _xyzSENSITIVITY[2]) - _xyzCALIBRATION[2];
-            } else {
-              for(int j=0; i<3; i++){
-                xyzRaw_M[j] = xyzLastRaw_M[j];
-              }
-              while (SensorPort_M->available()) {
-                SensorPort_M->read();
-              }
-            }
-            
-          }
+    if (memcmp(header, rawPacket[i], 4) == 0) {
+      for (int j = 0; j < 16; j++) {
+        goodPacket[j] = rawPacket[i + j];
+      }
+      CHECKSUM = bytesToCounts(goodPacket[14], goodPacket[15]);
+      SumCheck = 0;
+      for (int j = 0; j < 14; j++) {
+        SumCheck += goodPacket[j];
+      }
+      if (SumCheck == CHECKSUM) {
+        _SAMPLECOUNTER = bytesToCounts(goodPacket[4], goodPacket[5]);
+        _SENSORSTATUS = bytesToCounts(goodPacket[6], goodPacket[7]);
+
+        xCts = bytesToCounts(goodPacket[8], goodPacket[9]);
+        yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
+        zCts = bytesToCounts(goodPacket[12], goodPacket[13]);
+
+        xyzRaw_M[0] = (xCts / _xyzSENSITIVITY[0]) - _xyzCALIBRATION[0];
+        xyzRaw_M[1] = (yCts / _xyzSENSITIVITY[1]) - _xyzCALIBRATION[1];
+        xyzRaw_M[2] = (zCts / _xyzSENSITIVITY[2]) - _xyzCALIBRATION[2];
+      } else {
+        for (int j = 0; i < 3; i++) {
+          xyzRaw_M[j] = xyzLastRaw_M[j];
+        }
+        while (SensorPort_M->available()) {
+          SensorPort_M->read();
         }
       }
+      break;
     }
   }
   FilterForces();
@@ -147,10 +141,10 @@ void ForceSensor::ReadForceSensor() {
 
 /******************** Force Sensor Filter  ***********************************************************************/
 void ForceSensor::FilterForces() {
-  for(int i=0; i<3; i++){
+  for (int i = 0; i < 3; i++) {
     xyzLastFilt_M[i] = xyzFilt_M[i];
   }
-  for(int i=0; i<3; i++){
+  for (int i = 0; i < 3; i++) {
     xyzFilt_M[i] = _FILTERWEIGHT * xyzRaw_M[i] + (1 - _FILTERWEIGHT) * xyzLastFilt_M[i];
   }
 }
