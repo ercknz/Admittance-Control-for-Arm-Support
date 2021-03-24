@@ -92,7 +92,6 @@ void ForceSensor::ReadForceSensor() {
   }
   byte rawPacket[32];
   byte goodPacket[16];
-  static byte header[4] = {170, 7, 8, 10};
   int16_t xCts, yCts, zCts;
   uint16_t SumCheck;
   uint16_t CHECKSUM;
@@ -105,7 +104,7 @@ void ForceSensor::ReadForceSensor() {
   }
   // Searches for good packet
   for (int i = 0; i < 32 - 12; i++) {
-    if (memcmp(header, rawPacket[i], 4) == 0) {
+    if (memcmp((void*)_READHEADER, (void*)rawPacket[i], sizeof(_READHEADER)) == 0) {
       for (int j = 0; j < 16; j++) {
         goodPacket[j] = rawPacket[i + j];
       }

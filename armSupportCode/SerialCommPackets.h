@@ -15,15 +15,17 @@ class SerialPackets {
     bool DataAvailable();
     void ReadPackets();
     void WritePackets();
-    void ConfigPacketRX();
-    void ModifierPacketRX();
     
   private:
-    const int _BAUDRATE;  
-    USBSerial *SerialPort_M;
-    int16_t   _SAMPLECOUNTER;
-    int16_t   _TX_PKT_LEN;
-    int16_t   _RX_PKT_LEN;
+    void ConfigPacketRX();
+    void ModifierPacketRX();
+  
+    const int   _BAUDRATE;  
+    USBSerial * SerialPort_M;
+    int16_t     _TX_PKT_LEN;
+    int16_t     _RX_PKT_LEN;
+    const byte  _CONFIGHEADER[4] = {150,0, 69, 0};
+    const byte  _MODHEADER[4]    = {150,10,10,96};
 
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = false;

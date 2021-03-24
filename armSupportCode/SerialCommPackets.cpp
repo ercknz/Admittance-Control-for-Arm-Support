@@ -9,67 +9,65 @@
 #include "UtilityFunctions.h"
 
 /******************** Serial Packet Contructor  ***********************************************************************/
-SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate) 
-  :_BAUDRATE{baudrate}
+SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
+  : _BAUDRATE{baudrate}
 {
   SerialPort_M = ptrSer;
   SerialPort_M->begin(_BAUDRATE);
 }
 
-bool SerialPackets::DataAvailable(){
+bool SerialPackets::DataAvailable() {
   return SerialPort_M->available();
 }
 
 void SerialPackets::WritePackets() {
+  byte dataPacket[9];
+  uint16_t packetSum = 0;
+  /* Header */
+  dataPacket[0] = 150;   dataPacket[1] = 10;   dataPacket[2] = 100;   dataPacket[3] = 10;
+  /* Data Packets */
   
+  /* Check Sum */
+  for (int i = 0; i < 7; i++) {
+    packetSum += dataPacket[i];
+  }
+  dataPacket[7] = floor(packetSum / 256);
+  dataPacket[8] = floor(packetSum % 256);
+
+  /* write data packet */
+  for (int i = 0; i < 9; i++) {
+    SerialPort_M->write(dataPacket[i]);
+  }
 }
 
 void SerialPackets::ReadPackets() {
-  byte rawPacket[16];
-  static byte header[4] = {170, 7, 8, 10};
+  byte RXPacket[20];
   int16_t SumCheck;
   int16_t CHECKSUM;
-  while (SerialPort_M->available()) {
-    SerialPort_M->read();
+  while (SerialPort_M->available() < 20) {}
+  for (int i = 0; i < 20; i++) {
+    RXPacket[i] = SerialPort_M->read();
   }
-//  while (SerialPort_M->available() < 32) {} // Reads 2xpacket length incase of a packet shift
-//  for (int i = 0; i < 32; i++) {
-//    rawPacket[i] = SerialPort_M->read();
-//  }
-//  // Searches for good packet
-//  for (int i = 0; i < 32 - 12; i++) {
-//    if (rawPacket[i] == header[0]) {
-//      if (rawPacket[i + 1] == header[1]) {
-//        if (rawPacket[i + 2] == header[2]) {
-//          if (rawPacket[i + 3] == header[3]) {
-//            for (int j = 0; j < 16; j++) {
-//              goodPacket[j] = rawPacket[i + j];
-//            }
-//            CHECKSUM = bytesToCounts(goodPacket[14], goodPacket[15]);
-//            SumCheck = 0;
-//            for (int j = 0; j<14; j++){
-//              SumCheck += goodPacket[j];
-//            }
-//            if (SumCheck == CHECKSUM) {
-//              _SAMPLECOUNTER = bytesToCounts(goodPacket[4], goodPacket[5]);
-//
-//            } else {
-//              while (SerialPort_M->available()) {
-//                SerialPort_M->read();
-//              }
-//            }
-//            
-//          }
-//        }
-//      }
-//    }
-//  }
+  CHECKSUM = bytesToCounts(RXPacket[18], RXPacket[19]);
+  SumCheck = 0;
+  for (int j = 0; j < 14; j++) {
+    SumCheck += RXPacket[j];
+  }
+  if (SumCheck == CHECKSUM) {
+    if (memcmp(_CONFIGHEADER, RXPacket, sizeof(_CONFIGHEADER)) == 0) ConfigPacketRX();
+    if (memcmp(_MODHEADER,    RXPacket, sizeof(_MODHEADER))    == 0) ModifierPacketRX();
+
+  } else {
+    while (SerialPort_M->available()) {
+      SerialPort_M->read();
+    }
+  }
 }
 
-void SerialPackets::ConfigPacketRX(){
-  
+void SerialPackets::ConfigPacketRX() {
+
 }
 
-void SerialPackets::ModifierPacketRX(){
-  
+void SerialPackets::ModifierPacketRX() {
+
 }
