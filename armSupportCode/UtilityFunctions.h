@@ -17,7 +17,7 @@ void loggingFunc(unsigned long &totalTime, ForceSensor &OptoSensor, AdmittanceMo
 
 typedef union {
   float floatVal;
-  byte byteFloat[4];
+  byte  byteFloat[4];
 } floatToBytes;
 
 #endif // UTILITY_FUNCTIONS_H

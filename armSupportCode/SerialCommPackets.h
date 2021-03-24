@@ -14,18 +14,19 @@ class SerialPackets {
          SerialPackets(USBSerial *ptrSer, const int baudrate);
     bool DataAvailable();
     void ReadPackets();
-    void WritePackets();
-    
+    void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
+
   private:
     void ConfigPacketRX();
     void ModifierPacketRX();
-  
-    const int   _BAUDRATE;  
+
+    const int   _BAUDRATE;
     USBSerial * SerialPort_M;
     int16_t     _TX_PKT_LEN;
     int16_t     _RX_PKT_LEN;
-    const byte  _CONFIGHEADER[4] = {150,0, 69, 0};
+    const byte  _CONFIGHEADER[4] = {150,0, 69, 8};
     const byte  _MODHEADER[4]    = {150,10,10,96};
+    const byte  _WRITEHEADER[4]  = {170,8, 69, 0};
 
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = false;

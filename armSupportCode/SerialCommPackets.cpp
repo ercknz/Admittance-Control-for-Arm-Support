@@ -20,13 +20,45 @@ bool SerialPackets::DataAvailable() {
   return SerialPort_M->available();
 }
 
-void SerialPackets::WritePackets() {
-  byte dataPacket[9];
+void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
+  byte dataPacket[20];
   uint16_t packetSum = 0;
-  /* Header */
-  dataPacket[0] = 150;   dataPacket[1] = 10;   dataPacket[2] = 100;   dataPacket[3] = 10;
+  /* Header Bytes */
+  for (int i = 0; i < 4; i++){
+    dataPacket[i] = _WRITEHEADER[i];
+  }
   /* Data Packets */
-  
+  // Sensor
+  floatToBytes RawF;
+  RawF.floatVal = Sensor.GetRawF();
+  floatToBytes GlobalF;
+  RawF.floatVal = Sensor.GetGlobalF();
+  // Model
+  floatToBytes xyzGoal;
+  RawF.floatVal = Model.GetGoalPos();
+  floatToBytes xyzDotGoal;
+  RawF.floatVal = Model.GetGoalVel();
+  // Robot
+  floatToBytes xyzBotGoal;
+  RawF.floatVal = Robot.GetGoalPos();
+  floatToBytes xyzDotBotGoal;
+  RawF.floatVal = Robot.GetGoalVel();
+  int32_t * PresQCts      = Robot.GetPresQCts();
+  int32_t * PresQDotCts   = Robot.GetPresQDotCts();
+  floatToBytes PresQ;
+  RawF.floatVal = Robot.GetPresQ();
+  floatToBytes PresQDot;
+  RawF.floatVal = Robot.GetPresQDot();
+  floatToBytes PresPos;
+  RawF.floatVal = Robot.GetPresPos();
+  floatToBytes PresVel;
+  RawF.floatVal = Robot.GetPresVel();
+  int32_t * GoalQCts      = Robot.GetGoalQCts();
+  int32_t * GoalQDotCts   = Robot.GetGoalQDotCts();
+  floatToBytes GoalQ;
+  RawF.floatVal = Robot.GetGoalQ();
+  floatToBytes GoalQDot;
+  RawF.floatVal = Robot.GetGoalQDot();
   /* Check Sum */
   for (int i = 0; i < 7; i++) {
     packetSum += dataPacket[i];
