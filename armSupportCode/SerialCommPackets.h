@@ -8,6 +8,9 @@
 #define SERIAL_PACKETS_H
 
 #include <Arduino.h>
+#include "ForceSensor.h"
+#include "AdmittanceModel.h"
+#include "RobotControl.h"
 
 class SerialPackets {
   public:
@@ -22,12 +25,15 @@ class SerialPackets {
 
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
-    int16_t     _TX_PKT_LEN;
-    int16_t     _RX_PKT_LEN;
+    const int16_t _TX_PKT_LEN = 86;
+    const int16_t _RX_PKT_LEN = 22;
+    const int16_t _MAX_DATA_SLOTS = 6;
     const byte  _CONFIGHEADER[4] = {150,0, 69, 8};
     const byte  _MODHEADER[4]    = {150,10,10,96};
     const byte  _WRITEHEADER[4]  = {170,8, 69, 0};
-
+    uint16_t    _OUTPUT_CONFIG   = 0;
+    byte        _CONFIG_BITS[16] = {0};
+    
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = false;
     bool _SEND_XYZGOAL        = false;

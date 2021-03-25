@@ -5,6 +5,9 @@
 */
 
 #include <Arduino.h>
+#include "ForceSensor.h"
+#include "AdmittanceModel.h"
+#include "RobotControl.h"
 #include "SerialCommPackets.h"
 #include "UtilityFunctions.h"
 
@@ -27,18 +30,17 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
   for (int i = 0; i < 4; i++){
     dataPacket[i] = _WRITEHEADER[i];
   }
-  /* Data Packets */
-  // Sensor
+  /* Sensor Data Packets */
   floatToBytes RawF;
   RawF.floatVal = Sensor.GetRawF();
   floatToBytes GlobalF;
   RawF.floatVal = Sensor.GetGlobalF();
-  // Model
+  /* Model Data Packets */
   floatToBytes xyzGoal;
   RawF.floatVal = Model.GetGoalPos();
   floatToBytes xyzDotGoal;
   RawF.floatVal = Model.GetGoalVel();
-  // Robot
+  /* Robot Data Packets */
   floatToBytes xyzBotGoal;
   RawF.floatVal = Robot.GetGoalPos();
   floatToBytes xyzDotBotGoal;
@@ -97,7 +99,7 @@ void SerialPackets::ReadPackets() {
 }
 
 void SerialPackets::ConfigPacketRX() {
-
+  
 }
 
 void SerialPackets::ModifierPacketRX() {
