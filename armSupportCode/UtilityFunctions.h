@@ -16,8 +16,8 @@ int16_t bytesToCounts(byte hByte, byte lByte);
 void loggingFunc(unsigned long &totalTime, ForceSensor &OptoSensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
 
 typedef union {
-  float floatVal;
-  byte  byteFloat[4];
+  float  floatVal[3];
+  byte   byteFloat[12];
 } floatToBytes;
 
 #endif // UTILITY_FUNCTIONS_H

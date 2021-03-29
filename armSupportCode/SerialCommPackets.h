@@ -20,20 +20,18 @@ class SerialPackets {
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
 
   private:
-    void ConfigPacketRX();
-    void ModifierPacketRX();
+    void ConfigPacketRX(byte RxPacket(_RX_PKT_LEN));
+    void ModifierPacketRX(byte RxPacket(_RX_PKT_LEN));
 
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
-    const int16_t _TX_PKT_LEN = 86;
-    const int16_t _RX_PKT_LEN = 22;
+    const int16_t _TX_PKT_LEN     = 86;
+    const int16_t _RX_PKT_LEN     = 22;
     const int16_t _MAX_DATA_SLOTS = 6;
-    const byte  _CONFIGHEADER[4] = {150,0, 69, 8};
-    const byte  _MODHEADER[4]    = {150,10,10,96};
-    const byte  _WRITEHEADER[4]  = {170,8, 69, 0};
-    uint16_t    _OUTPUT_CONFIG   = 0;
-    byte        _CONFIG_BITS[16] = {0};
-    
+    const byte  _CONFIGHEADER[4]  = {150,0, 69, 8};
+    const byte  _MODHEADER[4]     = {150,10,10,96};
+    const byte  _WRITEHEADER[4]   = {170,8, 69, 0};
+
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = false;
     bool _SEND_XYZGOAL        = false;
