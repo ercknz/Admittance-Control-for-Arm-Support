@@ -79,7 +79,7 @@ void loop() {
   ArmSupportRobot.ReadRobot(syncReadPacket);
   presQ = ArmSupportRobot.GetPresQ();
   OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
-  loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+  pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
 
   /* Main Loop */
   while (Serial) {
@@ -105,7 +105,7 @@ void loop() {
 
       /* Logging */
       loopTime = millis() - startLoop;
-      loggingFunc(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+      pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
     }
   }
   if (!Serial) {

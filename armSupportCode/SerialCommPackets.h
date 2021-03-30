@@ -14,40 +14,40 @@
 
 class SerialPackets {
   public:
-         SerialPackets(USBSerial *ptrSer, const int baudrate);
+    SerialPackets(USBSerial *ptrSer, const int baudrate);
     bool DataAvailable();
     void ReadPackets();
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
 
   private:
-    void ConfigPacketRX(byte RxPacket(_RX_PKT_LEN));
-    void ModifierPacketRX(byte RxPacket(_RX_PKT_LEN));
-
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
-    const int16_t _TX_PKT_LEN     = 86;
+    const int16_t _TX_PKT_LEN     = 100;
     const int16_t _RX_PKT_LEN     = 22;
-    const int16_t _MAX_DATA_SLOTS = 6;
-    const byte  _CONFIGHEADER[4]  = {150,0, 69, 8};
-    const byte  _MODHEADER[4]     = {150,10,10,96};
-    const byte  _WRITEHEADER[4]   = {170,8, 69, 0};
+    const int16_t _MAX_DATA_SLOTS = 7;
+    const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};
+    const byte  _MODHEADER[4]     = {150, 10, 10, 96};
+    const byte  _WRITEHEADER[4]   = {170, 8, 69, 0};
+
+    void ConfigPacketRX(byte * RxPacket);
+    void ModifierPacketRX(byte * RxPacket);
 
     bool _SEND_RAWF           = false;
-    bool _SEND_GLOBALF        = false;
+    bool _SEND_GLOBALF        = true;
     bool _SEND_XYZGOAL        = false;
     bool _SEND_XYZDOTGOAL     = false;
-    bool _SEND_XYZBOTGOAL     = false;
-    bool _SEND_XYZDOTBOTGOAL  = false;
+    bool _SEND_XYZBOTGOAL     = true;
+    bool _SEND_XYZDOTBOTGOAL  = true;
     bool _SEND_PRESQCTS       = false;
     bool _SEND_PRESQDOTCTS    = false;
-    bool _SEND_PRESQ          = false;
-    bool _SEND_PRESQDOT       = false;
+    bool _SEND_PRESQ          = true;
+    bool _SEND_PRESQDOT       = true;
     bool _SEND_PRESPOS        = false;
     bool _SEND_PRESVEL        = false;
     bool _SEND_GOALQCTS       = false;
     bool _SEND_GOALQDOTCTS    = false;
-    bool _SEND_GOALQ          = false;
-    bool _SEND_GOALQDOT       = false;
+    bool _SEND_GOALQ          = true;
+    bool _SEND_GOALQDOT       = true;
 };
 
 #endif // SERIAL_PACKETS_H

@@ -24,25 +24,31 @@ bool SerialPackets::DataAvailable() {
 }
 
 void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
-  byte dataPacket[_TX_PKT_LEN];
-  int16_t slotsFilled = 0;
-  int16_t dataPosition = 4;
-  uint16_t packetSum = 0;
-  /* Header Bytes */
-  for (int16_t i = 0; i < 4; i++){
+  byte dataPacket[_TX_PKT_LEN] = {0};
+  int16_t slotsFilled   = 0;
+  int16_t dataPosition  = 8;
+  uint16_t packetSum    = 0;
+  int16_t byteLen       = 12;
+  /* Header Bytes ****************************************************************/
+  for (int16_t i = 0; i < 4; i++) {
     dataPacket[i] = _WRITEHEADER[i];
   }
-  /* Sensor Data Packets */
+  /* Totel Time *****************************************************************/
+  dataPacket[4]      = DXL_HIBYTE(DXL_HIWORD(totalTime));
+  dataPacket[5]  = DXL_LOBYTE(DXL_HIWORD(totalTime));
+  dataPacket[6]  = DXL_HIBYTE(DXL_LOWORD(totalTime));
+  dataPacket[7]  = DXL_LOBYTE(DXL_LOWORD(totalTime));
+  /* Sensor Data Packets *********************************************************/
   floatToBytes RawF;
   RawF.floatVal     = Sensor.GetRawF();
   floatToBytes GlobalF;
   GlobalF.floatVal  = Sensor.GetGlobalF();
-  /* Model Data Packets */
+  /* Model Data Packets **********************************************************/
   floatToBytes xyzGoal;
   xyzGoal.floatVal    = Model.GetGoalPos();
   floatToBytes xyzDotGoal;
   xyzDotGoal.floatVal = Model.GetGoalVel();
-  /* Robot Data Packets */
+  /* Robot Data Packets **********************************************************/
   floatToBytes xyzBotGoal;
   xyzBotGoal.floatVal     = Robot.GetGoalPos();
   floatToBytes xyzDotBotGoal;
@@ -57,108 +63,175 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
   PresPos.floatVal  = Robot.GetPresPos();
   floatToBytes PresVel;
   PresVel.floatVal  = Robot.GetPresVel();
-  // float *   PresQ         = Robot.GetPresQ();
-  // float *   PresQDot      = Robot.GetPresQDot();
-  // float *   PresPos       = Robot.GetPresPos();
-  // float *   PresVel       = Robot.GetPresVel();
   int32_t * GoalQCts      = Robot.GetGoalQCts();
   int32_t * GoalQDotCts   = Robot.GetGoalQDotCts();
   floatToBytes GoalQ;
   GoalQ.floatVal    = Robot.GetGoalQ();
   floatToBytes GoalQDot;
   GoalQDot.floatVal = Robot.GetGoalQDot();
-  // float *   GoalQ         = Robot.GetGoalQ();
-  // float *   GoalQDot      = Robot.GetGoalQDot();
-  /* Buildling dataPacket */
+  /* Buildling dataPacket *******************************************************/
   if (_SEND_RAWF & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = RawF.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_GLOBALF & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = GlobalF.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_XYZGOAL & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = xyzGoal.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_XYZDOTGOAL & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = xyzDotGoal.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_XYZBOTGOAL & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = xyzBotGoal.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_XYZDOTBOTGOAL & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = xyzDotBotGoal.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_PRESQCTS & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(PresQCts[0]));
+    dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(PresQCts[0]));
+    dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(PresQCts[0]));
+    dataPacket[dataPosition + 3]  = DXL_LOBYTE(DXL_LOWORD(PresQCts[0]));
+    dataPacket[dataPosition + 4]  = DXL_HIBYTE(DXL_HIWORD(PresQCts[1]));
+    dataPacket[dataPosition + 5]  = DXL_LOBYTE(DXL_HIWORD(PresQCts[1]));
+    dataPacket[dataPosition + 6]  = DXL_HIBYTE(DXL_LOWORD(PresQCts[1]));
+    dataPacket[dataPosition + 7]  = DXL_LOBYTE(DXL_LOWORD(PresQCts[1]));
+    dataPacket[dataPosition + 8]  = DXL_HIBYTE(DXL_HIWORD(PresQCts[2]));
+    dataPacket[dataPosition + 9]  = DXL_LOBYTE(DXL_HIWORD(PresQCts[2]));
+    dataPacket[dataPosition + 10] = DXL_HIBYTE(DXL_LOWORD(PresQCts[2]));
+    dataPacket[dataPosition + 11] = DXL_LOBYTE(DXL_LOWORD(PresQCts[2]));
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_PRESQDOTCTS & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(PresQDotCts[0]));
+    dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(PresQDotCts[0]));
+    dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(PresQDotCts[0]));
+    dataPacket[dataPosition + 3]  = DXL_LOBYTE(DXL_LOWORD(PresQDotCts[0]));
+    dataPacket[dataPosition + 4]  = DXL_HIBYTE(DXL_HIWORD(PresQDotCts[1]));
+    dataPacket[dataPosition + 5]  = DXL_LOBYTE(DXL_HIWORD(PresQDotCts[1]));
+    dataPacket[dataPosition + 6]  = DXL_HIBYTE(DXL_LOWORD(PresQDotCts[1]));
+    dataPacket[dataPosition + 7]  = DXL_LOBYTE(DXL_LOWORD(PresQDotCts[1]));
+    dataPacket[dataPosition + 8]  = DXL_HIBYTE(DXL_HIWORD(PresQDotCts[2]));
+    dataPacket[dataPosition + 9]  = DXL_LOBYTE(DXL_HIWORD(PresQDotCts[2]));
+    dataPacket[dataPosition + 10] = DXL_HIBYTE(DXL_LOWORD(PresQDotCts[2]));
+    dataPacket[dataPosition + 11] = DXL_LOBYTE(DXL_LOWORD(PresQDotCts[2]));
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_PRESQ & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = PresQ.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_PRESQDOTCTS & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = PresQDot.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_PRESPOS & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = PresPos.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_PRESVEL & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = PresVel.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_GOALQCTS & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(GoalQCts[0]));
+    dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(GoalQCts[0]));
+    dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(GoalQCts[0]));
+    dataPacket[dataPosition + 3]  = DXL_LOBYTE(DXL_LOWORD(GoalQCts[0]));
+    dataPacket[dataPosition + 4]  = DXL_HIBYTE(DXL_HIWORD(GoalQCts[1]));
+    dataPacket[dataPosition + 5]  = DXL_LOBYTE(DXL_HIWORD(GoalQCts[1]));
+    dataPacket[dataPosition + 6]  = DXL_HIBYTE(DXL_LOWORD(GoalQCts[1]));
+    dataPacket[dataPosition + 7]  = DXL_LOBYTE(DXL_LOWORD(GoalQCts[1]));
+    dataPacket[dataPosition + 8]  = DXL_HIBYTE(DXL_HIWORD(GoalQCts[2]));
+    dataPacket[dataPosition + 9]  = DXL_LOBYTE(DXL_HIWORD(GoalQCts[2]));
+    dataPacket[dataPosition + 10] = DXL_HIBYTE(DXL_LOWORD(GoalQCts[2]));
+    dataPacket[dataPosition + 11] = DXL_LOBYTE(DXL_LOWORD(GoalQCts[2]));
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_GOALQDOTCTS & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(GoalQDotCts[0]));
+    dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(GoalQDotCts[0]));
+    dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(GoalQDotCts[0]));
+    dataPacket[dataPosition + 3]  = DXL_LOBYTE(DXL_LOWORD(GoalQDotCts[0]));
+    dataPacket[dataPosition + 4]  = DXL_HIBYTE(DXL_HIWORD(GoalQDotCts[1]));
+    dataPacket[dataPosition + 5]  = DXL_LOBYTE(DXL_HIWORD(GoalQDotCts[1]));
+    dataPacket[dataPosition + 6]  = DXL_HIBYTE(DXL_LOWORD(GoalQDotCts[1]));
+    dataPacket[dataPosition + 7]  = DXL_LOBYTE(DXL_LOWORD(GoalQDotCts[1]));
+    dataPacket[dataPosition + 8]  = DXL_HIBYTE(DXL_HIWORD(GoalQDotCts[2]));
+    dataPacket[dataPosition + 9]  = DXL_LOBYTE(DXL_HIWORD(GoalQDotCts[2]));
+    dataPacket[dataPosition + 10] = DXL_HIBYTE(DXL_LOWORD(GoalQDotCts[2]));
+    dataPacket[dataPosition + 11] = DXL_LOBYTE(DXL_LOWORD(GoalQDotCts[2]));
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_GOALQ & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = GoalQ.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
   if (_SEND_GOALQDOT & slotsFilled < _MAX_DATA_SLOTS) {
-    //save bytes
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = GoalQDot.byteFloat[i - dataPosition];
+    }
     slotsFilled += 1;
-    dataPosition += 12;
+    dataPosition += byteLen;
   }
-  /* Check Sum */
-  for (i = 0; i < _TX_PKT_LEN-2; i++) {
+  /* Looptime ********************************************************************/
+  dataPacket[80] = DXL_HIBYTE(DXL_HIWORD(loopTime));
+  dataPacket[81] = DXL_LOBYTE(DXL_HIWORD(loopTime));
+  dataPacket[82] = DXL_HIBYTE(DXL_LOWORD(loopTime));
+  dataPacket[83] = DXL_LOBYTE(DXL_LOWORD(loopTime));
+  /* Check Sum *******************************************************************/
+  for (int16_t i = 0; i < _TX_PKT_LEN - 2; i++) {
     packetSum += dataPacket[i];
   }
   dataPacket[84] = floor(packetSum / 256);
   dataPacket[85] = floor(packetSum % 256);
 
-  /* write data packet */
-  for (i = 0; i < _TX_PKT_LEN; i++) {
+  /* write data packet ***********************************************************/
+  for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
     SerialPort_M->write(dataPacket[i]);
   }
 }
@@ -174,10 +247,10 @@ void SerialPackets::ReadPackets() {
   }
   CHECKSUM = bytesToCounts(RXPacket[20], RXPacket[21]);
   SumCheck = 0;
-  for (i = 0; i < _RX_PKT_LEN-2; i++) {
-    SumCheck += RXPacket[j];
+  for (int16_t i = 0; i < _RX_PKT_LEN - 2; i++) {
+    SumCheck += RXPacket[i];
   }
-  for (i = 0; i < 4; i++){
+  for (int16_t i = 0; i < 4; i++) {
     tempHeader[i] = RXPacket[i];
   }
   if (SumCheck == CHECKSUM) {
@@ -191,7 +264,7 @@ void SerialPackets::ReadPackets() {
   }
 }
 
-void SerialPackets::ConfigPacketRX(byte RxPacket[_RX_PKT_LEN]) {
+void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[4])  _SEND_RAWF          = true;
   if (RxPacket[5])  _SEND_GLOBALF       = true;
   if (RxPacket[6])  _SEND_XYZGOAL       = true;
@@ -210,6 +283,6 @@ void SerialPackets::ConfigPacketRX(byte RxPacket[_RX_PKT_LEN]) {
   if (RxPacket[19]) _SEND_GOALQDOT      = true;
 }
 
-void SerialPackets::ModifierPacketRX(byte RxPacket[_RX_PKT_LEN]) {
+void SerialPackets::ModifierPacketRX(byte * RxPacket) {
 
 }

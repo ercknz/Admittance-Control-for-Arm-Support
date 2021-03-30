@@ -40,13 +40,13 @@ void loggingFunc(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel 
   
   Serial.print(totalTime); Serial.print("\t");
 
-  Serial.print(RawF[0]); Serial.print("\t"); Serial.print(RawF[1]); Serial.print("\t"); Serial.print(RawF[2]); Serial.print("\t");
+  //Serial.print(RawF[0]); Serial.print("\t"); Serial.print(RawF[1]); Serial.print("\t"); Serial.print(RawF[2]); Serial.print("\t");
 
   Serial.print(GlobalF[0]); Serial.print("\t"); Serial.print(GlobalF[1]); Serial.print("\t"); Serial.print(GlobalF[2]); Serial.print("\t");
 
   Serial.print(PresQ[0]); Serial.print("\t"); Serial.print(PresQ[1]); Serial.print("\t"); Serial.print(PresQ[2]); Serial.print("\t");
 
-  //Serial.print(PresQDot[0]); Serial.print("\t"); Serial.print(PresQDot[1]); Serial.print("\t"); Serial.print(PresQDot[2]); Serial.print("\t");
+  Serial.print(PresQDot[0]); Serial.print("\t"); Serial.print(PresQDot[1]); Serial.print("\t"); Serial.print(PresQDot[2]); Serial.print("\t");
   
   Serial.print(xyzBotGoal[0]); Serial.print("\t"); Serial.print(xyzBotGoal[1]); Serial.print("\t"); Serial.print(xyzBotGoal[2]); Serial.print("\t");
 
@@ -54,7 +54,7 @@ void loggingFunc(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel 
 
   Serial.print(GoalQ[0]); Serial.print("\t"); Serial.print(GoalQ[1]); Serial.print("\t"); Serial.print(GoalQ[2]); Serial.print("\t");
 
-  //Serial.print(GoalQDot[0]); Serial.print("\t"); Serial.print(GoalQDot[1]); Serial.print("\t"); Serial.print(GoalQDot[2]); Serial.print("\t");
+  Serial.print(GoalQDot[0]); Serial.print("\t"); Serial.print(GoalQDot[1]); Serial.print("\t"); Serial.print(GoalQDot[2]); Serial.print("\t");
   
   Serial.print(loopTime);
   
