@@ -22,7 +22,7 @@ class SerialPackets {
   private:
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
-    const int16_t _TX_PKT_LEN     = 100;
+    const int16_t _TX_PKT_LEN     = 98;
     const int16_t _RX_PKT_LEN     = 22;
     const int16_t _MAX_DATA_SLOTS = 7;
     const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};

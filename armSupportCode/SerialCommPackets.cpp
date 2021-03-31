@@ -36,10 +36,10 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPacket[i] = _WRITEHEADER[i];
   }
   /* totel time *****************************************************************/
-  dataPacket[4]      = DXL_HIBYTE(DXL_HIWORD(totalTime));
-  dataPacket[5]  = DXL_LOBYTE(DXL_HIWORD(totalTime));
-  dataPacket[6]  = DXL_HIBYTE(DXL_LOWORD(totalTime));
-  dataPacket[7]  = DXL_LOBYTE(DXL_LOWORD(totalTime));
+  dataPacket[4] = DXL_HIBYTE(DXL_HIWORD(totalTime));
+  dataPacket[5] = DXL_LOBYTE(DXL_HIWORD(totalTime));
+  dataPacket[6] = DXL_HIBYTE(DXL_LOWORD(totalTime));
+  dataPacket[7] = DXL_LOBYTE(DXL_LOWORD(totalTime));
   /* sensor Data Packets *********************************************************/
   floatToBytes RawF;
   RawF.floatVal     = Sensor.GetRawF();
@@ -72,49 +72,54 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
   floatToBytes GoalQDot;
   GoalQDot.floatVal = Robot.GetGoalQDot();
   /* buildling dataPacket *******************************************************/
-  if (_SEND_RAWF & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_RAWF && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = RawF.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_GLOBALF & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GLOBALF && slotsFilled < _MAX_DATA_SLOTS) {
+    for (int16_t i = 0; i<3; i++){
+      SerialPort_M->print(GlobalF.floatVal[i],4); SerialPort_M->print("\t");
+      SerialPort_M->print(sizeof(GlobalF.floatVal[i])); SerialPort_M->print("\t");
+    }
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GlobalF.byteFloat[i - dataPosition];
+      SerialPort_M->print(dataPacket[i]); SerialPort_M->print("\t");
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_XYZGOAL & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZGOAL && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = xyzGoal.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_XYZDOTGOAL & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZDOTGOAL && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = xyzDotGoal.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_XYZBOTGOAL & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZBOTGOAL && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = xyzBotGoal.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_XYZDOTBOTGOAL & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZDOTBOTGOAL && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = xyzDotBotGoal.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_PRESQCTS & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQCTS && slotsFilled < _MAX_DATA_SLOTS) {
     dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(PresQCts[0]));
     dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(PresQCts[0]));
     dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(PresQCts[0]));
@@ -130,7 +135,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_PRESQDOTCTS & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQDOTCTS && slotsFilled < _MAX_DATA_SLOTS) {
     dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(PresQDotCts[0]));
     dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(PresQDotCts[0]));
     dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(PresQDotCts[0]));
@@ -146,35 +151,35 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_PRESQ & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQ && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = PresQ.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_PRESQDOTCTS & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQDOT && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = PresQDot.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_PRESPOS & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESPOS && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = PresPos.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_PRESVEL & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESVEL && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = PresVel.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_GOALQCTS & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQCTS && slotsFilled < _MAX_DATA_SLOTS) {
     dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(GoalQCts[0]));
     dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(GoalQCts[0]));
     dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(GoalQCts[0]));
@@ -190,7 +195,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_GOALQDOTCTS & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQDOTCTS && slotsFilled < _MAX_DATA_SLOTS) {
     dataPacket[dataPosition]      = DXL_HIBYTE(DXL_HIWORD(GoalQDotCts[0]));
     dataPacket[dataPosition + 1]  = DXL_LOBYTE(DXL_HIWORD(GoalQDotCts[0]));
     dataPacket[dataPosition + 2]  = DXL_HIBYTE(DXL_LOWORD(GoalQDotCts[0]));
@@ -206,14 +211,14 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_GOALQ & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQ && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GoalQ.byteFloat[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_GOALQDOT & slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQDOT && slotsFilled < _MAX_DATA_SLOTS) {
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GoalQDot.byteFloat[i - dataPosition];
     }
@@ -221,24 +226,22 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPosition += byteLen;
   }
   /* looptime *****************************************************************/
-  dataPacket[80] = DXL_HIBYTE(DXL_HIWORD(loopTime));
-  dataPacket[81] = DXL_LOBYTE(DXL_HIWORD(loopTime));
-  dataPacket[82] = DXL_HIBYTE(DXL_LOWORD(loopTime));
-  dataPacket[83] = DXL_LOBYTE(DXL_LOWORD(loopTime));
+  dataPacket[_TX_PKT_LEN - 6] = DXL_HIBYTE(DXL_HIWORD(loopTime));
+  dataPacket[_TX_PKT_LEN - 5] = DXL_LOBYTE(DXL_HIWORD(loopTime));
+  dataPacket[_TX_PKT_LEN - 4] = DXL_HIBYTE(DXL_LOWORD(loopTime));
+  dataPacket[_TX_PKT_LEN - 3] = DXL_LOBYTE(DXL_LOWORD(loopTime));
   /* check Sum ****************************************************************/
   for (int16_t i = 0; i < _TX_PKT_LEN - 2; i++) {
     packetSum += dataPacket[i];
   }
-  dataPacket[84] = floor(packetSum / 256);
-  dataPacket[85] = floor(packetSum % 256);
+  dataPacket[_TX_PKT_LEN - 2] = floor(packetSum / 256);
+  dataPacket[_TX_PKT_LEN - 1] = floor(packetSum % 256);
 
   /* write data packet ********************************************************/
-  for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
-    SerialPort_M->write(dataPacket[i]);
-  }
-  /* terminator CR/LF "Carriage Return" and "Linefeed" ************************/
-  SerialPort_M->write(13);
-  SerialPort_M->write(10);
+  //  for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
+  //    SerialPort_M->write(dataPacket[i]);
+  //  }
+  SerialPort_M->println("\t");
 }
 
 //* Serial Packet Reader  ****************************************************//
