@@ -76,7 +76,7 @@ void ForceSensor::CalibrateSensor() {
   for (int i = 0; i < 3; i++) {
     _xyzCALIBRATION[i] = 0.0f;
   }
-  static float samples = 2000.0;
+  float samples = 2000.0;
   for (int i = 0; i < samples; i++) {
     ReadForceSensor();
     for (int i = 0; i < 3; i++) {

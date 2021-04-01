@@ -18,6 +18,14 @@ class SerialPackets {
     bool DataAvailable();
     void ReadPackets();
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
+    bool ModifyXYMass();
+    bool ModifyZMass();
+    bool ModifyXZDampening();
+    bool ModifyZDampening();
+    float GetNewXYMass();
+    float GetNewZMass();
+    float GetNewXYDampening();
+    float GetNewZDampening();
 
   private:
     const int   _BAUDRATE;
@@ -48,6 +56,12 @@ class SerialPackets {
     bool _SEND_GOALQDOTCTS    = false;
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = true;
+
+    bool _NEW_XY_MASS         = false;
+    bool _NEW_Z_MASS          = false;
+    bool _NEW_XY_DAMPENING    = false;
+    bool _NEW_Z_DAMPENING     = false;
+    float newXYMass_M, newZMass_M, newXYDamp_M, newZDamp_M;
 };
 
 #endif // SERIAL_PACKETS_H

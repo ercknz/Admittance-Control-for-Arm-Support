@@ -13,7 +13,9 @@
 
 int16_t bytesToCounts(byte hByte, byte lByte);
 
-void loggingFunc(unsigned long &totalTime, ForceSensor &OptoSensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
+int32_t * floatToIntArray(float * floatData);
+
+byte * int32ToByteArray(int32_t * int32Data) ;
 
 typedef union {
   float * floatVal;
