@@ -8,9 +8,7 @@
    by Erick Nunez
 */
 
-#include "ForceSensor.h"
-#include "AdmittanceModel.h"
-#include "RobotControl.h"
+#include <DynamixelSDK.h>
 #include "UtilityFunctions.h"
 
 /* Bytes to Counts Converter  *************************************************/
@@ -23,7 +21,7 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 int32_t * floatToIntArray(float * floatData) {
   static int32_t intOut[3];
   for (int16_t i = 0; i < 3; i++) {
-    intOut[i] = (int32_t)(floatData[i] * 1000.0);
+    intOut[i] = (int32_t)(floatData[i] * 10000.0);
   }
   return intOut;
 }
@@ -39,3 +37,11 @@ byte * int32ToByteArray(int32_t * int32Data) {
   }
   return bytesOut;
 }
+
+/* Byte Array to Float Function  **********************************************/
+float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4) {
+  int32_t inInt = ((byte4 & 0xFF) << 24 | (byte3 & 0xFF) << 16 | (byte2 & 0xFF) << 8 | (byte1 & 0xFF));
+  float outFloat = (inInt / 10000.0);
+  return outFloat;
+}
+

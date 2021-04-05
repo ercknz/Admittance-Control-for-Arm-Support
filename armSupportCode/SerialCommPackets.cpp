@@ -23,33 +23,33 @@ SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
 bool SerialPackets::DataAvailable() {
   return SerialPort_M->available();
 }
-bool ModifyXYMass(){
-  return _NEW_XY_MASS;
+bool SerialPackets::ModifyMassXY(){
+  return _NEW_MASS_XY;
 }
-bool ModifyZMass(){
-  return _NEW_Z_MASS;
+bool SerialPackets::ModifyMassZ(){
+  return _NEW_MASS_Z;
 }
-bool ModifyXZDampening(){
-  return _NEW_XY_DAMPENING;
+bool SerialPackets::ModifyDampingXY(){
+  return _NEW_DAMPING_XY;
 }
-bool ModifyZDampening(){
-  return _NEW_Z_DAMPENING;
+bool SerialPackets::ModifyDampingZ(){
+  return _NEW_DAMPING_Z;
 }
-float GetNewXYMass(){
-  _NEW_XY_MASS = false;
-  return newXYMass_M
+float SerialPackets::GetNewMassXY(){
+  _NEW_MASS_XY = false;
+  return newMassXY_M;
 }
-float GetNewZMass(){
-  _NEW_Z_MASS = false;
-  return newXMass_M;
+float SerialPackets::GetNewMassZ(){
+  _NEW_MASS_Z = false;
+  return newMassZ_M;
 }
-float GetNewXYDampening(){
-  _NEW_XY_DAMPENING = false;
-  return newXYDamp_M;
+float SerialPackets::GetNewDampingXY(){
+  _NEW_DAMPING_XY = false;
+  return newDampingXY_M;
 }
-float GetNewZDampening(){
-  _NEW_Z_DAMPENING = false;
-  return newZDamp_M
+float SerialPackets::GetNewDampingZ(){
+  _NEW_DAMPING_Z = false;
+  return newDampingZ_M;
 }
 
 /* Serial Packet Writer  ******************************************************/
@@ -258,75 +258,48 @@ void SerialPackets::ReadPackets() {
 
 /* Configuration RX Packet  ***************************************************/
 void SerialPackets::ConfigPacketRX(byte * RxPacket) {
-  if (RxPacket[4])  _SEND_RAWF          = true;
-  if (RxPacket[5])  _SEND_GLOBALF       = true;
-  if (RxPacket[6])  _SEND_XYZGOAL       = true;
-  if (RxPacket[7])  _SEND_XYZDOTGOAL    = true;
-  if (RxPacket[8])  _SEND_XYZBOTGOAL    = true;
-  if (RxPacket[9])  _SEND_XYZDOTBOTGOAL = true;
-  if (RxPacket[10]) _SEND_PRESQCTS      = true;
-  if (RxPacket[11]) _SEND_PRESQDOTCTS   = true;
-  if (RxPacket[12]) _SEND_PRESQ         = true;
-  if (RxPacket[13]) _SEND_PRESQDOT      = true;
-  if (RxPacket[14]) _SEND_PRESPOS       = true;
-  if (RxPacket[15]) _SEND_PRESVEL       = true;
-  if (RxPacket[16]) _SEND_GOALQCTS      = true;
-  if (RxPacket[17]) _SEND_GOALQDOTCTS   = true;
-  if (RxPacket[18]) _SEND_GOALQ         = true;
-  if (RxPacket[19]) _SEND_GOALQDOT      = true;
+  if (RxPacket[5])  _SEND_RAWF          = true;
+  if (RxPacket[6])  _SEND_GLOBALF       = true;
+  if (RxPacket[7])  _SEND_XYZGOAL       = true;
+  if (RxPacket[8])  _SEND_XYZDOTGOAL    = true;
+  if (RxPacket[9])  _SEND_XYZBOTGOAL    = true;
+  if (RxPacket[10]) _SEND_XYZDOTBOTGOAL = true;
+  if (RxPacket[11]) _SEND_PRESQCTS      = true;
+  if (RxPacket[12]) _SEND_PRESQDOTCTS   = true;
+  if (RxPacket[13]) _SEND_PRESQ         = true;
+  if (RxPacket[14]) _SEND_PRESQDOT      = true;
+  if (RxPacket[15]) _SEND_PRESPOS       = true;
+  if (RxPacket[16]) _SEND_PRESVEL       = true;
+  if (RxPacket[17]) _SEND_GOALQCTS      = true;
+  if (RxPacket[18]) _SEND_GOALQDOTCTS   = true;
+  if (RxPacket[19]) _SEND_GOALQ         = true;
+  if (RxPacket[20]) _SEND_GOALQDOT      = true;
 }
 
 /* Modifier RX Packet  ********************************************************/
 void SerialPackets::ModifierPacketRX(byte * RxPacket) {
-  if (RxPacket[5] < 16){
-    //split bytes for floats
-    switch (RxPacket[5]) {
-      // [xyMass][zMass][xyDamp][zDamp]
-      case 1: // 0001
-        // update zDamp
-        break;
-      case 2: // 0010
-        // update xyDamp
-        break;
-      case 3: // 0011
-        // update xyDamp and zDamp
-        break;
-      case 4: // 0100
-        // update zMass
-        break;
-      case 5: // 0101
-        // update zMass and zDamp
-        break;
-      case 6: // 0110
-        // update zMass and xyDamp
-        break;
-      case 7: // 0111
-        // update zMass xyDamp and zDamp
-        break;
-      case 8: // 1000
-        // update xyMass
-        break;
-      case 9: // 1001
-        // update xyMass and zDamp
-        break;
-      case 10: // 1010
-        // update xyMass and xyDamp
-        break;
-      case 11: // 1011
-        // update xyMass xyDamp and zDamp
-        break;
-      case 12: // 1100
-        // update xyMass and zMass
-        break;
-      case 13: // 1101
-        // update xyMass zMass and zDamp
-        break;
-      case 14: // 1110
-        // update xyMass zMass and xyDamp
-        break;
-      case 15: // 1111
-        // update xyMass zMass xyDamp and zDamp
-        break;
+  /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ */
+  byte mask = 1;
+  byte bitArray[8];
+  if (RxPacket[4] < 16) {
+    for (int16_t i = 0; i < 4; i++){
+      bitArray[i] = (RxPacket[4] & (mask << i)) != 0;
+    }
+    if (bitArray[0] == 1){
+      _NEW_MASS_XY = true;
+      newMassXY_M = bytesToFloat(RxPacket[5], RxPacket[6], RxPacket[7], RxPacket[8]);
+    }
+    if (bitArray[1] == 1){
+      _NEW_MASS_Z = true;
+      newMassZ_M = bytesToFloat(RxPacket[9], RxPacket[10], RxPacket[11], RxPacket[12]);
+    }
+    if (bitArray[2] == 1){
+      _NEW_DAMPING_XY = true;
+      newDampingXY_M = bytesToFloat(RxPacket[13], RxPacket[14], RxPacket[15], RxPacket[16]);
+    }
+    if (bitArray[3] == 1){
+      _NEW_DAMPING_Z = true;
+      newDampingZ_M = bytesToFloat(RxPacket[17], RxPacket[18], RxPacket[19], RxPacket[20]);
     }
   }
 }

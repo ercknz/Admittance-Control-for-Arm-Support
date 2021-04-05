@@ -38,10 +38,10 @@
 #include "AdmittanceModel.h"
 
 /* Admittance Model Constructor  **********************************************/
-AdmittanceModel::AdmittanceModel(float Mxy, float Bxy, float Mz, float Bz, const float G, const float T)
+AdmittanceModel::AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T)
   : _MASS_XY{Mxy},
-    _DAMPING_XY{Bxy},
     _MASS_Z{Mz},
+    _DAMPING_XY{Bxy},
     _DAMPING_Z{Bz},
     _GRAVITY{G},
     _DELTAT{T}
@@ -91,18 +91,18 @@ float* AdmittanceModel::GetGoalVel() {
 }
 
 /* Admittance Model Setter Functions ******************************************/
-void SetXYMass(float newXYMass){
-  _MASS_XY = newXYMass;
+void AdmittanceModel::SetMassXY(float newMxy){
+  _MASS_XY += newMxy;
 }
 
-void SetZMass(float newZMass){
-  _MASS_Z = newZMass;
+void AdmittanceModel::SetMassZ(float newMz){
+  _MASS_Z += newMz;
 }
 
-void SetXYDampening(float newXYDampening){
-  _DAMPING_XY = newXYDampening;
+void AdmittanceModel::SetDampingXY(float newBxy){
+  _DAMPING_XY += newBxy;
 }
 
-void SetZDampening(float newZDampening){
-  _DAMPING_Z = newZDampening;
+void AdmittanceModel::SetDampingZ(float newBz){
+  _DAMPING_Z += newBz;
 }

@@ -20,31 +20,29 @@
 #include "UtilityFunctions.h"
 #include "SerialCommPackets.h"
 
-using namespace ASR;
-
 /* DXL port and packets /////////////////////////////////////////////////////////////////////////*/
 dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
 /* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
-AdmittanceModel AdmitModel      = AdmittanceModel(MASS_XY, DAMPING_XY, MASS_Z, DAMPING_Z, GRAVITY, MODEL_DT);
-ForceSensor     OptoForceSensor = ForceSensor(&Serial1, SENSOR_BAUDRATE, xyzSensitivity, SENSOR_FILTER_WEIGHT);
-RobotControl    ArmSupportRobot = RobotControl(A1_LINK, L1_LINK, A2_LINK, L2_LINK, LINK_OFFSET);
-SerialPackets   pcComm          = SerialPackets(&Serial, SERIAL_BAUDRATE);
+AdmittanceModel AdmitModel      = AdmittanceModel(ASR::initMassXY, ASR::initMassZ, ASR::initDampingXY, ASR::initDampingZ, ASR::GRAVITY, ASR::MODEL_DT);
+ForceSensor     OptoForceSensor = ForceSensor(&Serial1, ASR::SENSOR_BAUDRATE, ASR::xyzSensitivity, ASR::SENSOR_FILTER_WEIGHT);
+RobotControl    ArmSupportRobot = RobotControl(ASR::A1_LINK, ASR::L1_LINK, ASR::A2_LINK, ASR::L2_LINK, ASR::LINK_OFFSET);
+SerialPackets   pcComm          = SerialPackets(&Serial, ASR::SERIAL_BAUDRATE);
 
 /* Setup function /////////////////////////////////////////////////////////////////////////////////*/
 void setup() {
   /* Wait for Serial Comm */
   while (!Serial);
   /* Seutp user calibration buttons */
-  pinMode(CAL_BUTTON_PIN, INPUT_PULLDOWN);
+  pinMode(ASR::CAL_BUTTON_PIN, INPUT_PULLDOWN);
   /* Setup port and packet handlers */
-  portHandler   = dynamixel::PortHandler::getPortHandler(DEVICEPORT);
-  packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+  portHandler   = dynamixel::PortHandler::getPortHandler(ASR::DEVICEPORT);
+  packetHandler = dynamixel::PacketHandler::getPacketHandler(ASR::PROTOCOL_VERSION);
   delay(100);
   /* Dynamixel Setup */
   portHandler -> openPort();
-  portHandler -> setBaudRate(MOTOR_BAUDRATE);
+  portHandler -> setBaudRate(ASR::MOTOR_BAUDRATE);
 }
 
 /* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
@@ -61,12 +59,12 @@ void loop() {
   /* Sets up dynamixel read/write packet parameters */
   int  goalReturn;
   bool addParamResult = false;
-  //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
-  dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
-  dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_GOAL_POSITION, LEN_GOAL_POSITION);
-  addParamResult = syncReadPacket.addParam(ID_SHOULDER);
-  addParamResult = syncReadPacket.addParam(ID_ELBOW);
-  addParamResult = syncReadPacket.addParam(ID_ELEVATION);
+  //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ASR::ADDRESS_PROFILE_VELOCITY, ASR::LEN_PROFILE_VELOCITY + ASR::LEN_GOAL_POSITION);
+  dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ASR::ADDRESS_PRESENT_VELOCITY, ASR::LEN_PRESENT_VELOCITY + ASR::LEN_PRESENT_POSITION);
+  dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ASR::ADDRESS_GOAL_POSITION, ASR::LEN_GOAL_POSITION);
+  addParamResult = syncReadPacket.addParam(ASR::ID_SHOULDER);
+  addParamResult = syncReadPacket.addParam(ASR::ID_ELBOW);
+  addParamResult = syncReadPacket.addParam(ASR::ID_ELEVATION);
 
   ArmSupportRobot.EnableTorque(portHandler, packetHandler, ~ENABLE);   // Toggle torque for troubleshooting
   delay(100);
@@ -82,10 +80,15 @@ void loop() {
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
+    
+    /* Incoming check */
     if (pcComm.DataAvailable()) pcComm.ReadPackets();
-    if (digitalRead(CAL_BUTTON_PIN) == HIGH) OptoForceSensor.SensorConfig();
 
-    if (currentTime - previousTime >= LOOP_DT) {
+    /* Calibration button checker */
+    if (digitalRead(ASR::CAL_BUTTON_PIN) == HIGH) OptoForceSensor.SensorConfig();
+
+    /* Admittance Loop */
+    if (currentTime - previousTime >= ASR::LOOP_DT) {
       /* Loop Timing */
       startLoop = millis();
       totalTime += (currentTime - previousTime);

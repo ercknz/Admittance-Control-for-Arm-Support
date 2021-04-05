@@ -18,20 +18,20 @@ class SerialPackets {
     bool DataAvailable();
     void ReadPackets();
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
-    bool ModifyXYMass();
-    bool ModifyZMass();
-    bool ModifyXZDampening();
-    bool ModifyZDampening();
-    float GetNewXYMass();
-    float GetNewZMass();
-    float GetNewXYDampening();
-    float GetNewZDampening();
+    bool ModifyMassXY();
+    bool ModifyMassZ();
+    bool ModifyDampingXY();
+    bool ModifyDampingZ();
+    float GetNewMassXY();
+    float GetNewMassZ();
+    float GetNewDampingXY();
+    float GetNewDampingZ();
 
   private:
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
     const int16_t _TX_PKT_LEN     = 98;
-    const int16_t _RX_PKT_LEN     = 22;
+    const int16_t _RX_PKT_LEN     = 23;
     const int16_t _MAX_DATA_SLOTS = 7;
     const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};
     const byte  _MODHEADER[4]     = {150, 10, 10, 96};
@@ -57,11 +57,11 @@ class SerialPackets {
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = true;
 
-    bool _NEW_XY_MASS         = false;
-    bool _NEW_Z_MASS          = false;
-    bool _NEW_XY_DAMPENING    = false;
-    bool _NEW_Z_DAMPENING     = false;
-    float newXYMass_M, newZMass_M, newXYDamp_M, newZDamp_M;
+    bool _NEW_MASS_XY         = false;
+    bool _NEW_MASS_Z          = false;
+    bool _NEW_DAMPING_XY    = false;
+    bool _NEW_DAMPING_Z     = false;
+    float newMassXY_M, newMassZ_M, newDampingXY_M, newDampingZ_M;
 };
 
 #endif // SERIAL_PACKETS_H

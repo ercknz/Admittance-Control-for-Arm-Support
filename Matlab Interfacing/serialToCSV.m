@@ -30,33 +30,33 @@ while(totalTime < secs )
         % Total Time
         data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
         % XYZ Global Forces
-        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'))/1000;
-        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'))/1000;
-        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'))/1000;
+        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'))/10000;
+        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'))/10000;
+        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'))/10000;
         % XYZ Bot Goal
-        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'))/1000;
-        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'))/1000;
-        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'))/1000;
+        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'))/10000;
+        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'))/10000;
+        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'))/10000;
         % XYZ Dot Bot Goal
-        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'))/1000;
-        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'))/1000;
-        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'))/1000;
+        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'))/10000;
+        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'))/10000;
+        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'))/10000;
         % Pres Q
-        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'))/1000;
-        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'))/1000;
-        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'))/1000;
+        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'))/10000;
+        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'))/10000;
+        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'))/10000;
         % Pres Q Dot
-        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'))/1000;
-        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'))/1000;
-        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'))/1000;
+        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'))/10000;
+        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'))/10000;
+        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'))/10000;
         % Goal Q
-        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'))/1000;
-        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'))/1000;
-        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'))/1000;
+        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'))/10000;
+        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'))/10000;
+        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'))/10000;
         % Goal Q Dot
-        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'))/1000;
-        data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'))/1000;
-        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/1000;
+        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'))/10000;
+        data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'))/10000;
+        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/10000;
         % Loop time
         data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
         i = i + 1;

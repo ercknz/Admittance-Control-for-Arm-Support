@@ -7,19 +7,12 @@
 #ifndef UTILITY_FUNCTIONS_H
 #define UTILITY_FUNCTIONS_H
 
-#include "ForceSensor.h"
-#include "AdmittanceModel.h"
-#include "RobotControl.h"
-
 int16_t bytesToCounts(byte hByte, byte lByte);
 
 int32_t * floatToIntArray(float * floatData);
 
-byte * int32ToByteArray(int32_t * int32Data) ;
+byte * int32ToByteArray(int32_t * int32Data);
 
-typedef union {
-  float * floatVal;
-  byte   byteFloat[12];
-} floatToBytes;
+float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4);
 
 #endif // UTILITY_FUNCTIONS_H

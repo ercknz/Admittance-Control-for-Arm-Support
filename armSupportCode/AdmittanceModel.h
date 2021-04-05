@@ -10,23 +10,19 @@
 
 class AdmittanceModel {
   public:
-          AdmittanceModel(const float Mxy, const float Bxy, const float Mz, const float Bz, const float G, const float T);
+           AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T);
     void   SetPosition(float *newXYZ);
     void   UpdateModel(float *forceXYZ);
     float* GetGoalPos();
     float* GetGoalVel();
-    void   SetXYMass(float newXYMass);
-    void   SetZMass(float newZMass);
-    void   SetXYDampening(float newXYDampening);
-    void   SetZDampening(float newZDampening);
+    void   SetMassXY(float newMxy);
+    void   SetMassZ(float newMz);
+    void   SetDampingXY(float newBxy);
+    void   SetDampingZ(float newBz);
 
   private:
-    const float _GRAVITY;
-    const float _DELTAT;
-    float _MASS_XY;
-    float _DAMPING_XY;
-    float _MASS_Z;
-    float _DAMPING_Z;
+    const float _GRAVITY, _DELTAT;
+    float _MASS_XY, _MASS_Z, _DAMPING_XY, _DAMPING_Z;
 
     float xyzGoal_M[3]    = {0.0f};
     float xyzDotGoal_M[3] = {0.0f};
