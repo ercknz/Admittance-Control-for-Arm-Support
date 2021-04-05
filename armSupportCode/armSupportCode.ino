@@ -12,7 +12,6 @@
 
 /* Libraries and Headers ///////////////////////////////////////////////////////////////////////////////*/
 #include <DynamixelSDK.h>
-#include <PID_v1.h>
 #include "armSupportNamespace.h"
 #include "AdmittanceModel.h"
 #include "ForceSensor.h"
@@ -81,8 +80,22 @@ void loop() {
   while (Serial) {
     currentTime = millis();
     
-    /* Incoming check */
-    if (pcComm.DataAvailable()) pcComm.ReadPackets();
+    /* Incoming Data check */
+    if (pcComm.DataAvailable()) {
+      pcComm.ReadPackets();
+      if (pcComm.ModifyMassXY()) {
+        AdmitModel.SetMassXY(pcComm.GetNewMassXY());
+      }
+      if (pcComm.ModifyMassZ()) {
+        AdmitModel.SetMassZ(pcComm.GetNewMassZ());
+      }
+      if (pcComm.ModifyDampingXY()) {
+        AdmitModel.SetDampingXY(pcComm.GetNewDampingXY());
+      }
+      if (pcComm.ModifyDampingZ()) {
+        AdmitModel.SetDampingZ(pcComm.GetNewDampingZ());
+      }
+    }
 
     /* Calibration button checker */
     if (digitalRead(ASR::CAL_BUTTON_PIN) == HIGH) OptoForceSensor.SensorConfig();
@@ -104,7 +117,7 @@ void loop() {
       xyzDotGoal = AdmitModel.GetGoalVel();
       ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncWritePacket);
 
-      /* Logging */
+      /* Outgoing Data */
       loopTime = millis() - startLoop;
       pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
     }
