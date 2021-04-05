@@ -11,7 +11,7 @@
 #include "SerialCommPackets.h"
 #include "UtilityFunctions.h"
 
-//* Serial Packet Contructor  ************************************************//
+/* Serial Packet Contructor  **************************************************/
 SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
   : _BAUDRATE{baudrate}
 {
@@ -19,7 +19,7 @@ SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
   SerialPort_M->begin(_BAUDRATE);
 }
 
-//* Serial Data Getters  *****************************************************//
+/* Serial Data Getters  *******************************************************/
 bool SerialPackets::DataAvailable() {
   return SerialPort_M->available();
 }
@@ -52,23 +52,23 @@ float GetNewZDampening(){
   return newZDamp_M
 }
 
-//* Serial Packet Writer  ****************************************************//
+/* Serial Packet Writer  ******************************************************/
 void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
   byte dataPacket[_TX_PKT_LEN] = {0};
   int16_t slotsFilled   = 0;
   int16_t dataPosition  = 8;
   uint16_t packetSum    = 0;
   int16_t byteLen       = 12;
-  /* header Bytes ****************************************************************/
+  /* header Bytes ------------------------------------------------------------*/
   for (int16_t i = 0; i < 4; i++) {
     dataPacket[i] = _WRITEHEADER[i];
   }
-  /* totel time *****************************************************************/
+  /* totel time --------------------------------------------------------------*/
   dataPacket[4] = DXL_LOBYTE(DXL_LOWORD(totalTime));
   dataPacket[5] = DXL_HIBYTE(DXL_LOWORD(totalTime));
   dataPacket[6] = DXL_LOBYTE(DXL_HIWORD(totalTime));
   dataPacket[7] = DXL_HIBYTE(DXL_HIWORD(totalTime));
-  /* buildling dataPacket *******************************************************/
+  /* buildling dataPacket ----------------------------------------------------*/
   if (_SEND_RAWF && slotsFilled < _MAX_DATA_SLOTS) {
     int32_t * RawF = floatToIntArray(Sensor.GetRawF());
     byte * RawF_bytes = int32ToByteArray(RawF);
@@ -209,25 +209,25 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  /* looptime *****************************************************************/
+  /* looptime ----------------------------------------------------------------*/
   dataPacket[_TX_PKT_LEN - 6] = DXL_LOBYTE(DXL_LOWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 5] = DXL_HIBYTE(DXL_LOWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 4] = DXL_LOBYTE(DXL_HIWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 3] = DXL_HIBYTE(DXL_HIWORD(loopTime));
-  /* check Sum ****************************************************************/
+  /* check Sum ---------------------------------------------------------------*/
   for (int16_t i = 0; i < _TX_PKT_LEN - 2; i++) {
     packetSum += dataPacket[i];
   }
   dataPacket[_TX_PKT_LEN - 2] = floor(packetSum / 256);
   dataPacket[_TX_PKT_LEN - 1] = floor(packetSum % 256);
 
-  /* write data packet ********************************************************/
+  /* write data packet -------------------------------------------------------*/
   for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
     SerialPort_M->write(dataPacket[i]);
   }
 }
 
-//* Serial Packet Reader  ****************************************************//
+/* Serial Packet Reader  ******************************************************/
 void SerialPackets::ReadPackets() {
   byte RXPacket[_RX_PKT_LEN];
   byte tempHeader[4];
@@ -256,7 +256,7 @@ void SerialPackets::ReadPackets() {
   }
 }
 
-//* Configuration RX Packet  *************************************************//
+/* Configuration RX Packet  ***************************************************/
 void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[4])  _SEND_RAWF          = true;
   if (RxPacket[5])  _SEND_GLOBALF       = true;
@@ -279,6 +279,54 @@ void SerialPackets::ConfigPacketRX(byte * RxPacket) {
 /* Modifier RX Packet  ********************************************************/
 void SerialPackets::ModifierPacketRX(byte * RxPacket) {
   if (RxPacket[5] < 16){
-    if 
+    //split bytes for floats
+    switch (RxPacket[5]) {
+      // [xyMass][zMass][xyDamp][zDamp]
+      case 1: // 0001
+        // update zDamp
+        break;
+      case 2: // 0010
+        // update xyDamp
+        break;
+      case 3: // 0011
+        // update xyDamp and zDamp
+        break;
+      case 4: // 0100
+        // update zMass
+        break;
+      case 5: // 0101
+        // update zMass and zDamp
+        break;
+      case 6: // 0110
+        // update zMass and xyDamp
+        break;
+      case 7: // 0111
+        // update zMass xyDamp and zDamp
+        break;
+      case 8: // 1000
+        // update xyMass
+        break;
+      case 9: // 1001
+        // update xyMass and zDamp
+        break;
+      case 10: // 1010
+        // update xyMass and xyDamp
+        break;
+      case 11: // 1011
+        // update xyMass xyDamp and zDamp
+        break;
+      case 12: // 1100
+        // update xyMass and zMass
+        break;
+      case 13: // 1101
+        // update xyMass zMass and zDamp
+        break;
+      case 14: // 1110
+        // update xyMass zMass and xyDamp
+        break;
+      case 15: // 1111
+        // update xyMass zMass xyDamp and zDamp
+        break;
+    }
   }
 }

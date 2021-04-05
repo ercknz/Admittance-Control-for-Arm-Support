@@ -54,14 +54,12 @@ void loop() {
   OptoForceSensor.SensorConfig();
   ArmSupportRobot.MotorConfig(portHandler, packetHandler);
   delay(100);
-//  OptoForceSensor.CalibrateSensor();
-//  delay(2000);
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
   unsigned long loopTime, startLoop;
   /* Sets up dynamixel read/write packet parameters */
-  int     goalReturn;
+  int  goalReturn;
   bool addParamResult = false;
   //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ADDRESS_PROFILE_VELOCITY, LEN_PROFILE_VELOCITY + LEN_GOAL_POSITION);
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ADDRESS_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY + LEN_PRESENT_POSITION);
@@ -86,7 +84,7 @@ void loop() {
     currentTime = millis();
     if (pcComm.DataAvailable()) pcComm.ReadPackets();
     if (digitalRead(CAL_BUTTON_PIN) == HIGH) OptoForceSensor.SensorConfig();
-    
+
     if (currentTime - previousTime >= LOOP_DT) {
       /* Loop Timing */
       startLoop = millis();

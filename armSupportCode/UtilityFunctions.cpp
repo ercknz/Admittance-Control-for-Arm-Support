@@ -13,13 +13,13 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 
-/******************** Bytes to Counts Converter  ***********************************************************************/
+/* Bytes to Counts Converter  *************************************************/
 int16_t bytesToCounts(byte hByte, byte lByte) {
   int16_t decimal = hByte * 256 + lByte;
   return decimal;
 }
 
-/******************** Float to Int Array Function  ***********************************************************************/
+/* Float to Int Array Function  ***********************************************/
 int32_t * floatToIntArray(float * floatData) {
   static int32_t intOut[3];
   for (int16_t i = 0; i < 3; i++) {
@@ -28,7 +28,7 @@ int32_t * floatToIntArray(float * floatData) {
   return intOut;
 }
 
-/******************** Int32 to Byte Array Function  ***********************************************************************/
+/* Int32 to Byte Array Function  **********************************************/
 byte * int32ToByteArray(int32_t * int32Data) {
   static byte bytesOut[12];
   for (int16_t i = 0; i < 3; i++) {
@@ -39,4 +39,3 @@ byte * int32ToByteArray(int32_t * int32Data) {
   }
   return bytesOut;
 }
-
