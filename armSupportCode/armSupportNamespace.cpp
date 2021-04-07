@@ -4,18 +4,19 @@
    by Erick Nunez
 */
 
+#include <Arduino.h>
 #include "armSupportNamespace.h"
 
 namespace ASR
 {
 /************************ Constants ************************/
 /* Dynamixel Communication Parameters */
-const float PROTOCOL_VERSION        = 2.0;
-const int   SENSOR_BAUDRATE         = 1000000;
-const int   SERIAL_BAUDRATE         = 115200;
-const int   MOTOR_BAUDRATE          = 1000000;
-static const char *DEVICEPORT       = "3";
-const uint8_t      CAL_BUTTON_PIN   = 17;
+const float   PROTOCOL_VERSION = 2.0;
+const int     SENSOR_BAUDRATE  = 1000000;
+const int     SERIAL_BAUDRATE  = 115200;
+const int     MOTOR_BAUDRATE   = 1000000;
+const char   *DEVICEPORT       = "3";
+const uint8_t CAL_BUTTON_PIN   = 17;
 /* Dynamixel Motor Parameters */
 const uint8_t ID_SHOULDER       = 3;
 const uint8_t ID_SHLDR_SLAVE    = 13;
@@ -62,13 +63,13 @@ const int ELEVATION_CENTER  = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 const float ELEVATION_RATIO = 2.2978;
 const int VEL_MAX_LIMIT     = 100;
 /* Admitance Control Constants and initial Values */
-const float LOOP_DT       = 8;        // Milliseconds
-const float MODEL_DT      = 0.008;    // Secs
-const float GRAVITY       = 9.80665;  // m/sec^2
-float initMassXY       = 1.5f;     // kg
-float initDampingXY    = 5.0f;     // N*(sec/m)
-float initMassZ        = 1.5f;     // kg
-float initDampingZ     = 4.5f;     // N*(sec/m)
+const float LOOP_DT        = 8;        // Milliseconds
+const float MODEL_DT       = 0.008;    // Secs
+const float GRAVITY        = 9.80665;  // m/sec^2
+float initMassXY    = 1.5f;     // kg
+float initDampingXY = 5.0f;     // N*(sec/m)
+float initMassZ     = 1.5f;     // kg
+float initDampingZ  = 4.5f;     // N*(sec/m)
 /* Kinematic Constants */
 const float A1_LINK     = 0.073;      // Shoulder to 4bar linkage
 const float L1_LINK     = 0.419;      // length of 4bar linkage

@@ -14,7 +14,7 @@
 
 class SerialPackets {
   public:
-    SerialPackets(USBSerial *ptrSer, const int baudrate);
+         SerialPackets(USBSerial *ptrSer, const int baudrate);
     bool DataAvailable();
     void ReadPackets();
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
