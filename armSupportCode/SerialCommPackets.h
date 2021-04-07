@@ -57,10 +57,10 @@ class SerialPackets {
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = true;
 
-    bool _NEW_MASS_XY         = false;
-    bool _NEW_MASS_Z          = false;
-    bool _NEW_DAMPING_XY    = false;
-    bool _NEW_DAMPING_Z     = false;
+    bool _NEW_MASS_XY    = false;
+    bool _NEW_MASS_Z     = false;
+    bool _NEW_DAMPING_XY = false;
+    bool _NEW_DAMPING_Z  = false;
     float newMassXY_M, newMassZ_M, newDampingXY_M, newDampingZ_M;
 };
 
