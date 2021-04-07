@@ -14,7 +14,7 @@
 
 class SerialPackets {
   public:
-    SerialPackets(USBSerial *ptrSer, const int baudrate);
+         SerialPackets(USBSerial *ptrSer, const int baudrate);
     bool DataAvailable();
     void ReadPackets();
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
@@ -57,10 +57,10 @@ class SerialPackets {
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = true;
 
-    bool _NEW_MASS_XY         = false;
-    bool _NEW_MASS_Z          = false;
-    bool _NEW_DAMPING_XY    = false;
-    bool _NEW_DAMPING_Z     = false;
+    bool _NEW_MASS_XY    = false;
+    bool _NEW_MASS_Z     = false;
+    bool _NEW_DAMPING_XY = false;
+    bool _NEW_DAMPING_Z  = false;
     float newMassXY_M, newMassZ_M, newDampingXY_M, newDampingZ_M;
 };
 
