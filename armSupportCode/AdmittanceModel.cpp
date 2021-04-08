@@ -90,6 +90,22 @@ float* AdmittanceModel::GetGoalVel() {
   return xyzDotGoal_M;
 }
 
+float  AdmittanceModel::GetMassXY(){
+  return _MASS_XY;
+}
+
+float  AdmittanceModel::GetMassZ(){
+  return _MASS_Z;
+}
+
+float  AdmittanceModel::GetDampingXY(){
+  return _DAMPING_XY;
+}
+
+float  AdmittanceModel::GetDampingZ(){
+  return _DAMPING_Z;
+}
+
 /* Admittance Model Setter Functions ******************************************/
 void AdmittanceModel::SetMassXY(float newMxy){
   _MASS_XY += newMxy;

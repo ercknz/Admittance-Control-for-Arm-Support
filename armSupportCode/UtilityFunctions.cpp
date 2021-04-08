@@ -17,17 +17,29 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
   return decimal;
 }
 
-/* Float to Int Array Function  ***********************************************/
-int32_t * floatToIntArray(float * floatData) {
-  static int32_t intOut[3];
+/* Float Array to Byte Array Function  ****************************************/
+byte * floatArrayToBytes(float * floatValues) {
+  int32_t int32Data[3];
   for (int16_t i = 0; i < 3; i++) {
-    intOut[i] = (int32_t)(floatData[i] * 10000.0);
+    int32Data[i] = (int32_t)(floatData[i] * 10000.0);
   }
-  return intOut;
+  byte * bytesOut = int32ArrayToBytes(int32Data);
+  return bytesOut;
 }
 
-/* Int32 to Byte Array Function  **********************************************/
-byte * int32ToByteArray(int32_t * int32Data) {
+/* Single Float to Byte Array Function  ***************************************/
+byte * floatToBytes(float floatVal){
+  int32_t int32Data = (int32_t)(floatData[i] * 10000.0);
+  static byte bytesOut[4];
+  bytesOut[0] = DXL_LOBYTE(DXL_LOWORD(int32Data));
+  bytesOut[1] = DXL_HIBYTE(DXL_LOWORD(int32Data));
+  bytesOut[2] = DXL_LOBYTE(DXL_HIWORD(int32Data));
+  bytesOut[3] = DXL_HIBYTE(DXL_HIWORD(int32Data));
+  return bytesOut;
+}
+
+/* Int32 Array to Byte Array Function  ****************************************/
+byte * int32ArrayToBytes(int32_t * int32Values) {
   static byte bytesOut[12];
   for (int16_t i = 0; i < 3; i++) {
     bytesOut[4 * i]     = DXL_LOBYTE(DXL_LOWORD(int32Data[i]));
@@ -44,4 +56,3 @@ float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4) {
   float outFloat = (inInt / 10000.0);
   return outFloat;
 }
-

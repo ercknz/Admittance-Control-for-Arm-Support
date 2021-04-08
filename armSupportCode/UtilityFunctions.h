@@ -9,9 +9,11 @@
 
 int16_t bytesToCounts(byte hByte, byte lByte);
 
-int32_t * floatToIntArray(float * floatData);
+byte * floatArrayToBytes(float * floatValues);
 
-byte * int32ToByteArray(int32_t * int32Data);
+byte * floatToBytes(float floatValue);
+
+byte * int32ArrayToBytes(int32_t * int32Values);
 
 float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4);
 

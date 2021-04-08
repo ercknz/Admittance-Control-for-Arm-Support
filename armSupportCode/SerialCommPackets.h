@@ -48,14 +48,18 @@ class SerialPackets {
     bool _SEND_XYZDOTBOTGOAL  = true;
     bool _SEND_PRESQCTS       = false;
     bool _SEND_PRESQDOTCTS    = false;
-    bool _SEND_PRESQ          = true;
-    bool _SEND_PRESQDOT       = true;
+    bool _SEND_PRESQ          = false;
+    bool _SEND_PRESQDOT       = false;
     bool _SEND_PRESPOS        = false;
     bool _SEND_PRESVEL        = false;
     bool _SEND_GOALQCTS       = false;
     bool _SEND_GOALQDOTCTS    = false;
-    bool _SEND_GOALQ          = true;
-    bool _SEND_GOALQDOT       = true;
+    bool _SEND_GOALQ          = false;
+    bool _SEND_GOALQDOT       = false;
+    bool _SEND_MXY            = true;
+    bool _SEND_MZ             = true;
+    bool _SEND_BXY            = true;
+    bool _SEND_BZ             = true;
 
     bool _NEW_MASS_XY    = false;
     bool _NEW_MASS_Z     = false;

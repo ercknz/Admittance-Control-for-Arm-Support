@@ -15,6 +15,10 @@ class AdmittanceModel {
     void   UpdateModel(float *forceXYZ);
     float* GetGoalPos();
     float* GetGoalVel();
+    float  GetMassXY();
+    float  GetMassZ();
+    float  GetDampingXY();
+    float  GetDampingZ();
     void   SetMassXY(float newMxy);
     void   SetMassZ(float newMz);
     void   SetDampingXY(float newBxy);
