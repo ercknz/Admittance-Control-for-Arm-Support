@@ -118,7 +118,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPosition += byteLen;
   }
   if (_SEND_PRESQCTS && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * PresQCts_bytes = int32ArrayToByteArray(Robot.GetPresQCts());
+    byte * PresQCts_bytes = int32ArrayToBytes(Robot.GetPresQCts());
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = PresQCts_bytes[i - dataPosition];
     }
@@ -126,7 +126,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPosition += byteLen;
   }
   if (_SEND_PRESQDOTCTS && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * PresQDotCts_bytes = int32ArrayToByteArray(Robot.GetPresQDotCts());
+    byte * PresQDotCts_bytes = int32ArrayToBytes(Robot.GetPresQDotCts());
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = PresQDotCts_bytes[i - dataPosition];
     }
@@ -166,7 +166,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPosition += byteLen;
   }
   if (_SEND_GOALQCTS && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQCts_bytes = int32ArrayToByteArray(Robot.GetGoalQCts());
+    byte * GoalQCts_bytes = int32ArrayToBytes(Robot.GetGoalQCts());
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GoalQCts_bytes[i - dataPosition];
     }
@@ -174,7 +174,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPosition += byteLen;
   }
   if (_SEND_GOALQDOTCTS && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDotCts_bytes = int32ArrayToByteArray(Robot.GetGoalQDotCts());
+    byte * GoalQDotCts_bytes = int32ArrayToBytes(Robot.GetGoalQDotCts());
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GoalQDotCts_bytes[i - dataPosition];
     }

@@ -21,15 +21,15 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 byte * floatArrayToBytes(float * floatValues) {
   int32_t int32Data[3];
   for (int16_t i = 0; i < 3; i++) {
-    int32Data[i] = (int32_t)(floatData[i] * 10000.0);
+    int32Data[i] = (int32_t)(floatValues[i] * 10000.0);
   }
   byte * bytesOut = int32ArrayToBytes(int32Data);
   return bytesOut;
 }
 
 /* Single Float to Byte Array Function  ***************************************/
-byte * floatToBytes(float floatVal){
-  int32_t int32Data = (int32_t)(floatData[i] * 10000.0);
+byte * floatToBytes(float floatValue){
+  int32_t int32Data = (int32_t)(floatValue * 10000.0);
   static byte bytesOut[4];
   bytesOut[0] = DXL_LOBYTE(DXL_LOWORD(int32Data));
   bytesOut[1] = DXL_HIBYTE(DXL_LOWORD(int32Data));
@@ -42,10 +42,10 @@ byte * floatToBytes(float floatVal){
 byte * int32ArrayToBytes(int32_t * int32Values) {
   static byte bytesOut[12];
   for (int16_t i = 0; i < 3; i++) {
-    bytesOut[4 * i]     = DXL_LOBYTE(DXL_LOWORD(int32Data[i]));
-    bytesOut[4 * i + 1] = DXL_HIBYTE(DXL_LOWORD(int32Data[i]));
-    bytesOut[4 * i + 2] = DXL_LOBYTE(DXL_HIWORD(int32Data[i]));
-    bytesOut[4 * i + 3] = DXL_HIBYTE(DXL_HIWORD(int32Data[i]));
+    bytesOut[4 * i]     = DXL_LOBYTE(DXL_LOWORD(int32Values[i]));
+    bytesOut[4 * i + 1] = DXL_HIBYTE(DXL_LOWORD(int32Values[i]));
+    bytesOut[4 * i + 2] = DXL_LOBYTE(DXL_HIWORD(int32Values[i]));
+    bytesOut[4 * i + 3] = DXL_HIBYTE(DXL_HIWORD(int32Values[i]));
   }
   return bytesOut;
 }

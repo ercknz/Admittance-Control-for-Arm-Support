@@ -13,18 +13,43 @@ csvFile = ['Logs/armSupportLog',keyWords,fileTime,'.csv'];
 %% Sets up duration of test
 secs = input('Collection time duration in Secs? ');
 pause(2)
+
+%% Modify mass and damping setup
+Mxy = 2.25; % kg
+Mz = 5.5; % kg
+Bxy = 10.75; % 
+Bz = 7.99; %
+newMxy = typecast(int32(Mxy*10000),'uint8');
+newMz = typecast(int32(Mz*10000),'uint8');
+newBxy = typecast(int32(Bxy*10000),'uint8');
+newBz = typecast(int32(Bz*10000),'uint8');
+header = uint8([150, 10, 10, 96]);
+modByte = uint8(15);
+writePacket = [header,modByte,newMxy,newMz,newBxy,newBz];
+checkSum = sum(writePacket);
+csHi = uint8(floor(checkSum/256));
+csLo = uint8(mod(checkSum,256));
+writePacket = [writePacket,csHi,csLo];
+writePacketLen = length(writePacket);
+dataSent = false;
+
 %% Sets up and open serial object
 BaudRate = 115200;
 packetLen = 98;
 dt = 0.008;
-length = secs/dt; % seconds*(1frame/secs)=frames
-rawData = nan(length,packetLen);
-data = nan(length,23);
+numFrames = secs/dt; % seconds*(1frame/secs)=frames
+rawData = nan(numFrames,packetLen);
+data = nan(numFrames,23);
 disp('........opening port...........');
 s1 = serialport('COM28',BaudRate);
 %% start main collection loop
 totalTime = 0; i = 1;
 while(totalTime < secs )
+    if i == 1000 && ~dataSent
+        write(s1,writePacket,'uint8');
+        dataSent = true;
+        disp('sending......')
+    end
     if s1.NumBytesAvailable >= packetLen
         rawData(i,:) = read(s1,packetLen,'uint8');
         % Total Time
