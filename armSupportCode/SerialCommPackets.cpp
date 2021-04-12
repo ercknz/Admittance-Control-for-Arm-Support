@@ -230,7 +230,6 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  
   /* looptime ----------------------------------------------------------------*/
   dataPacket[_TX_PKT_LEN - 6] = DXL_LOBYTE(DXL_LOWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 5] = DXL_HIBYTE(DXL_LOWORD(loopTime));
@@ -259,7 +258,7 @@ void SerialPackets::ReadPackets() {
   for (int16_t i = 0; i < _RX_PKT_LEN; i++) {
     RXPacket[i] = SerialPort_M->read();
   }
-  CHECKSUM = bytesToCounts(RXPacket[20], RXPacket[21]);
+  CHECKSUM = bytesToCounts(RXPacket[_RX_PKT_LEN-2], RXPacket[_RX_PKT_LEN-1]);
   SumCheck = 0;
   for (int16_t i = 0; i < _RX_PKT_LEN - 2; i++) {
     SumCheck += RXPacket[i];

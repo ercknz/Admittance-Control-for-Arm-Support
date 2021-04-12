@@ -7,11 +7,13 @@
 %% Clean workspace
 clear; clc; delete(instrfindall);
 %% CSV file
-keyWords = input('String of keywords for this trial? ');
+% keyWords = input('String of keywords for this trial? ');
+keyWords = 'test';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['Logs/armSupportLog',keyWords,fileTime,'.csv'];
 %% Sets up duration of test
-secs = input('Collection time duration in Secs? ');
+% secs = input('Collection time duration in Secs? ');
+secs = 10;
 pause(2)
 
 %% Modify mass and damping setup
@@ -98,41 +100,41 @@ disp('.........Serial Connection close...............')
 disp('Writing file............................')
 %writematrix(data,csvFile)
 %% plot data
-close all
-fig1 = figure;
-set(fig1, 'Units', 'Normalized','OuterPosition', [0 ,0, 1, 1]);
-
-subplot(2,3,1)
-plot(data(:,1),data(:,[11 17])); grid on;
-legend('Pres','Goal');title('Shoulder Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-
-subplot(2,3,2)
-plot(data(:,1),data(:,[12 18])); grid on;
-legend('Pres','Goal');title('Elevation Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-
-subplot(2,3,3)
-plot(data(:,1),data(:,[13 19])); grid on;
-legend('Pres','Goal');title('Elbow Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-
-subplot(2,3,4:6)
-plot(data(:,1),data(:,23)); grid on; ylim([0,10])
-title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
-
-fig2 = figure;
-set(fig2, 'Units', 'Normalized','OuterPosition', [1, 0, 1, 1]);
-
-subplot(2,2,1:2)
-plot(data(:,1),data(:,[2 3 4])); grid on;
-legend('X','Y','Z');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
-
-subplot(2,2,3)
-quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10)); grid on; 
-xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); view(3);
-title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
-
-subplot(2,2,4)
-plot(data(:,1),data(:,[5 6 7])); grid on;
-legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
+% close all
+% fig1 = figure;
+% set(fig1, 'Units', 'Normalized','OuterPosition', [0 ,0, 1, 1]);
+% 
+% subplot(2,3,1)
+% plot(data(:,1),data(:,[11 17])); grid on;
+% legend('Pres','Goal');title('Shoulder Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+% 
+% subplot(2,3,2)
+% plot(data(:,1),data(:,[12 18])); grid on;
+% legend('Pres','Goal');title('Elevation Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+% 
+% subplot(2,3,3)
+% plot(data(:,1),data(:,[13 19])); grid on;
+% legend('Pres','Goal');title('Elbow Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+% 
+% subplot(2,3,4:6)
+% plot(data(:,1),data(:,23)); grid on; ylim([0,10])
+% title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
+% 
+% fig2 = figure;
+% set(fig2, 'Units', 'Normalized','OuterPosition', [1, 0, 1, 1]);
+% 
+% subplot(2,2,1:2)
+% plot(data(:,1),data(:,[2 3 4])); grid on;
+% legend('X','Y','Z');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
+% 
+% subplot(2,2,3)
+% quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10)); grid on; 
+% xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); view(3);
+% title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
+% 
+% subplot(2,2,4)
+% plot(data(:,1),data(:,[5 6 7])); grid on;
+% legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
 
 %% saves plots
 % set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);

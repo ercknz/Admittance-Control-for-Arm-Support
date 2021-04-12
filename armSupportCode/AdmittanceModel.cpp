@@ -108,17 +108,25 @@ float  AdmittanceModel::GetDampingZ(){
 
 /* Admittance Model Setter Functions ******************************************/
 void AdmittanceModel::SetMassXY(float newMxy){
-  _MASS_XY += newMxy;
+  if (newMxy > 0.1){
+    _MASS_XY = newMxy;
+  } else {
+    _MASS_XY = 0.1;
+  }
 }
 
 void AdmittanceModel::SetMassZ(float newMz){
-  _MASS_Z += newMz;
+  if (newMxy > 0.1){
+    _MASS_Z = newMz;
+  } else {
+    _MASS_Z = 0.1;
+  }
 }
 
 void AdmittanceModel::SetDampingXY(float newBxy){
-  _DAMPING_XY += newBxy;
+  _DAMPING_XY = newBxy;
 }
 
 void AdmittanceModel::SetDampingZ(float newBz){
-  _DAMPING_Z += newBz;
+  _DAMPING_Z = newBz;
 }
