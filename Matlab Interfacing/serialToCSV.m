@@ -1,3 +1,4 @@
+function serialToCSV()
 %% Serial to CSV script
 % This code takes in the serial data being sent from the dynamixel board to
 % logs it to a csv file. 
@@ -5,7 +6,7 @@
 % Script by erick nunez
 
 %% Clean workspace
-clear; clc; delete(instrfindall);
+close all; delete(instrfindall);
 %% CSV file
 % keyWords = input('String of keywords for this trial? ');
 keyWords = 'test';
@@ -13,7 +14,7 @@ fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['Logs/armSupportLog',keyWords,fileTime,'.csv'];
 %% Sets up duration of test
 % secs = input('Collection time duration in Secs? ');
-secs = 10;
+secs = 30;
 pause(2)
 
 %% Modify mass and damping setup
@@ -42,8 +43,45 @@ dt = 0.008;
 numFrames = secs/dt; % seconds*(1frame/secs)=frames
 rawData = nan(numFrames,packetLen);
 data = nan(numFrames,23);
+
+%% plot data
+fig1 = figure;
+set(fig1, 'Units', 'Normalized','OuterPosition', [0 ,0, 1, 1]);
+
+subplot(2,6,1)
+q1Pos = plot(data(:,1),data(:,[11 17])); grid on; xlim([0,secs]);
+legend('Pres','Goal');title('Shoulder Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+
+subplot(2,6,2)
+q2Pos = plot(data(:,1),data(:,[12 18])); grid on; xlim([0,secs]);
+legend('Pres','Goal');title('Elevation Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+
+subplot(2,6,3)
+q3Pos = plot(data(:,1),data(:,[13 19])); grid on; xlim([0,secs]);
+legend('Pres','Goal');title('Elbow Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+
+subplot(2,6,7:9)
+lTime = plot(data(:,1),data(:,23)); grid on; xlim([0,secs]); ylim([0,10]);
+title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
+
+subplot(2,6,4:6)
+fPlot = plot(data(:,1),data(:,[2 3 4])); grid on; xlim([0,secs]);
+legend('X','Y','Z');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
+
+subplot(2,6,10:11)
+mPlot = quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10)); grid on; 
+xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); view(3);
+title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
+
+subplot(2,6,12)
+tPlot = plot(data(:,1),data(:,[5 6 7])); grid on; xlim([0,secs]);
+legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
+shg
+
+%% Open Serial Port
 disp('........opening port...........');
 s1 = serialport('COM28',BaudRate);
+
 %% start main collection loop
 totalTime = 0; i = 1;
 while(totalTime < secs )
@@ -86,6 +124,12 @@ while(totalTime < secs )
         data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/10000;
         % Loop time
         data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
+        % Update plot
+%         set(fPlot,'XData',data(1:i,1),'YData',data(1:i,[2 3 4]));
+        set(lTime,'XData', data(1:i,1),'YData',data(1:i,23));
+        set(mPlot,'XData',data(1:i,5),'YData',data(1:i,6),'ZData',data(1:i,7),'UData',data(1:i,8),'VData',data(1:i,9),'WData',data(1:i,10));
+        drawnow
+        % Loop Data
         i = i + 1;
         totalTime = totalTime + dt;
     end
@@ -96,45 +140,11 @@ data(:,1) = data(:,1)*0.001;
 delete(s1);
 disp('.........Serial Connection close...............')
 
+
+
 %% write data to file
 disp('Writing file............................')
 %writematrix(data,csvFile)
-%% plot data
-% close all
-% fig1 = figure;
-% set(fig1, 'Units', 'Normalized','OuterPosition', [0 ,0, 1, 1]);
-% 
-% subplot(2,3,1)
-% plot(data(:,1),data(:,[11 17])); grid on;
-% legend('Pres','Goal');title('Shoulder Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-% 
-% subplot(2,3,2)
-% plot(data(:,1),data(:,[12 18])); grid on;
-% legend('Pres','Goal');title('Elevation Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-% 
-% subplot(2,3,3)
-% plot(data(:,1),data(:,[13 19])); grid on;
-% legend('Pres','Goal');title('Elbow Position');xlabel('Time (sec)');ylabel('Angle (rad)');
-% 
-% subplot(2,3,4:6)
-% plot(data(:,1),data(:,23)); grid on; ylim([0,10])
-% title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
-% 
-% fig2 = figure;
-% set(fig2, 'Units', 'Normalized','OuterPosition', [1, 0, 1, 1]);
-% 
-% subplot(2,2,1:2)
-% plot(data(:,1),data(:,[2 3 4])); grid on;
-% legend('X','Y','Z');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
-% 
-% subplot(2,2,3)
-% quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10)); grid on; 
-% xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); view(3);
-% title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
-% 
-% subplot(2,2,4)
-% plot(data(:,1),data(:,[5 6 7])); grid on;
-% legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
 
 %% saves plots
 % set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
@@ -143,3 +153,5 @@ disp('Writing file............................')
 % set(fig2, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
 % saveas(fig2, ['./Logs/armSupport',keyWords,fileTime,'_2of2.pdf']);
 % saveas(fig2, ['./Logs/armSupport',keyWords,fileTime,'_2of2.fig']);
+
+end
