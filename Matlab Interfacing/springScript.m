@@ -21,6 +21,12 @@ betaI = asind((sideA./Li) * sind(90));
 Fz = (Ks * (L-Li + Xi-Xo) .* sind(beta - q2)) - (Ks *  (Xi-Xo) * sind(betaI)); 
 
 %% plot
-plot(q2,Fz); grid on;
+subplot(1,2,1)
+plot(q2,L-Li); grid on;
 xlabel('Q2 Angle');
 ylabel('length (m)');
+
+subplot(1,2,2)
+plot(q2,Fz); grid on;
+xlabel('Q2 Angle');
+ylabel('Spring Force (N)');

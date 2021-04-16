@@ -1,4 +1,4 @@
-function serialToCSV()
+function serialToCSV(timeInSecs, logFileID)
 %% Serial to CSV script
 % This code takes in the serial data being sent from the dynamixel board to
 % logs it to a csv file. 
@@ -8,13 +8,8 @@ function serialToCSV()
 %% Clean workspace
 close all; delete(instrfindall);
 %% CSV file
-% keyWords = input('String of keywords for this trial? ');
-keyWords = 'test';
 fileTime = datestr(now,'mmddyyHHMM');
-csvFile = ['Logs/armSupportLog',keyWords,fileTime,'.csv'];
-%% Sets up duration of test
-% secs = input('Collection time duration in Secs? ');
-secs = 30;
+csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
 
 %% Modify mass and damping setup
@@ -40,43 +35,63 @@ dataSent = false;
 BaudRate = 115200;
 packetLen = 98;
 dt = 0.008;
-numFrames = secs/dt; % seconds*(1frame/secs)=frames
+numFrames = timeInSecs/dt; % seconds*(1frame/secs)=frames
 rawData = nan(numFrames,packetLen);
-data = nan(numFrames,23);
+data = nan(numFrames,writePacketLen);
 
 %% plot data
 fig1 = figure;
 set(fig1, 'Units', 'Normalized','OuterPosition', [0 ,0, 1, 1]);
 
 subplot(2,6,1)
-q1Pos = plot(data(:,1),data(:,[11 17])); grid on; xlim([0,secs]);
-legend('Pres','Goal');title('Shoulder Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+q1PosPres = plot(data(:,1),data(:,11),'LineWidth',1.5,'Color',[0.00,0.45,0.74]); 
+hold on; grid on; xlim([0,timeInSecs]);
+q1PosGoal = plot(data(:,1),data(:,17),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
+legend('Pres','Goal');title('Shoulder Position');
+xlabel('Time (sec)');ylabel('Angle (rad)');
 
 subplot(2,6,2)
-q2Pos = plot(data(:,1),data(:,[12 18])); grid on; xlim([0,secs]);
-legend('Pres','Goal');title('Elevation Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+q2PosPres = plot(data(:,1),data(:,12),'LineWidth',1.5,'Color',[0.00,0.45,0.74]); 
+hold on; grid on; xlim([0,timeInSecs]);
+q2PosGoal = plot(data(:,1),data(:,18),'LineWidth',1.5,'Color',[0.85,0.33,0.10]); 
+legend('Pres','Goal');title('Elevation Position');
+xlabel('Time (sec)');ylabel('Angle (rad)');
 
 subplot(2,6,3)
-q3Pos = plot(data(:,1),data(:,[13 19])); grid on; xlim([0,secs]);
-legend('Pres','Goal');title('Elbow Position');xlabel('Time (sec)');ylabel('Angle (rad)');
+q3PosPres = plot(data(:,1),data(:,13),'LineWidth',1.5,'Color',[0.00,0.45,0.74]); 
+hold on; grid on; xlim([0,timeInSecs]);
+q3PosGoal = plot(data(:,1),data(:,19),'LineWidth',1.5,'Color',[0.85,0.33,0.10]); 
+legend('Pres','Goal');title('Elbow Position');
+xlabel('Time (sec)');ylabel('Angle (rad)');
 
 subplot(2,6,7:9)
-lTime = plot(data(:,1),data(:,23)); grid on; xlim([0,secs]); ylim([0,10]);
+lTime = plot(data(:,1),data(:,23),'LineWidth',1.5,'Color',[0.00,0.45,0.74]); 
+grid on; xlim([0,timeInSecs]); ylim([0,10]);
 title('Loop Time'); xlabel('Time (sec)'); ylabel('Looptime (sec)');
 
 subplot(2,6,4:6)
-fPlot = plot(data(:,1),data(:,[2 3 4])); grid on; xlim([0,secs]);
-legend('X','Y','Z');title('Global Forces'); xlabel('Time (sec)'); ylabel('Force (N)');
+fPlotX = plot(data(:,1),data(:,2),'LineWidth',1.5,'Color',[0.00,0.45,0.74]); 
+hold on; grid on; xlim([0,timeInSecs]);
+fPlotY = plot(data(:,1),data(:,3),'LineWidth',1.5,'Color',[0.85,0.33,0.10]); 
+fPlotZ = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.93,0.69,0.13]); 
+legend('X','Y','Z');title('Global Forces'); 
+xlabel('Time (sec)'); ylabel('Force (N)');
 
 subplot(2,6,10:11)
-mPlot = quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10)); grid on; 
-xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); view(3);
-title('Mass of Model'); xlabel('X (m)'); ylabel('Y (m)');
+mPlot = quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10)); 
+grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]); 
+view(3); title('Mass of Model'); 
+xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
 
 subplot(2,6,12)
-tPlot = plot(data(:,1),data(:,[5 6 7])); grid on; xlim([0,secs]);
-legend('X','Y','Z');title('Task Space X-Y'); xlabel('Time (sec)'); ylabel('Position (m)');
-shg
+tPlotX = plot(data(:,1),data(:,5),'LineWidth',1.5,'Color',[0.00,0.45,0.74]); 
+hold on; grid on; xlim([0,timeInSecs]);
+tPlotY = plot(data(:,1),data(:,6),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);  
+tPlotZ = plot(data(:,1),data(:,7),'LineWidth',1.5,'Color',[0.93,0.69,0.13]); 
+legend('X','Y','Z');title('Task Space X-Y'); 
+xlabel('Time (sec)'); ylabel('Position (m)');
+
+set(fig1,'Visible','on');
 
 %% Open Serial Port
 disp('........opening port...........');
@@ -84,7 +99,7 @@ s1 = serialport('COM28',BaudRate);
 
 %% start main collection loop
 totalTime = 0; i = 1;
-while(totalTime < secs )
+while(totalTime < timeInSecs )
     if i == 1000 && ~dataSent
         write(s1,writePacket,'uint8');
         dataSent = true;
@@ -124,11 +139,12 @@ while(totalTime < secs )
         data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/10000;
         % Loop time
         data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
-        % Update plot
-%         set(fPlot,'XData',data(1:i,1),'YData',data(1:i,[2 3 4]));
+        % Update plots
+        set(fPlotX,'XData',data(1:i,1),'YData',data(1:i,2));
+        set(fPlotY,'XData',data(1:i,1),'YData',data(1:i,3));
+        set(fPlotZ,'XData',data(1:i,1),'YData',data(1:i,4));
         set(lTime,'XData', data(1:i,1),'YData',data(1:i,23));
         set(mPlot,'XData',data(1:i,5),'YData',data(1:i,6),'ZData',data(1:i,7),'UData',data(1:i,8),'VData',data(1:i,9),'WData',data(1:i,10));
-        drawnow
         % Loop Data
         i = i + 1;
         totalTime = totalTime + dt;
@@ -140,18 +156,13 @@ data(:,1) = data(:,1)*0.001;
 delete(s1);
 disp('.........Serial Connection close...............')
 
-
-
 %% write data to file
 disp('Writing file............................')
 %writematrix(data,csvFile)
 
 %% saves plots
 % set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
-% saveas(fig1, ['./Logs/armSupport',keyWords,fileTime,'_1of2.pdf']);
-% saveas(fig1, ['./Logs/armSupport',keyWords,fileTime,'_1of2.fig']);
-% set(fig2, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
-% saveas(fig2, ['./Logs/armSupport',keyWords,fileTime,'_2of2.pdf']);
-% saveas(fig2, ['./Logs/armSupport',keyWords,fileTime,'_2of2.fig']);
+% saveas(fig1, ['./Logs/armSupport',logFileID,fileTime,'_1of2.pdf']);
+% saveas(fig1, ['./Logs/armSupport',logFileID,fileTime,'_1of2.fig']);
 
 end
