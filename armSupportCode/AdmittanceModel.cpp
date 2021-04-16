@@ -56,7 +56,7 @@ void AdmittanceModel::SetPosition(float *newXYZ) {
 }
 
 /* Admittance Model Updater  **************************************************/
-void AdmittanceModel::UpdateModel(float *forceXYZ) {
+void AdmittanceModel::UpdateModel(float *forceXYZ, float springF) {
   for (int i = 0; i < 3; i++) {
     xyzInit_M[i]    = 0.0f;
     xyzDotInit_M[i] = xyzDotGoal_M[i];
@@ -75,10 +75,11 @@ void AdmittanceModel::UpdateModel(float *forceXYZ) {
   xyzDotGoal_M[1] = (forceXYZ[1] / _DAMPING_XY) - (_DAMPING_XY / _MASS_XY) * Cy1 * exp(-(_DAMPING_XY / _MASS_XY) * _DELTAT);
 
   /* Coefficents and Solution for Z-Direction */
-  float Cz1 = ((forceXYZ[2]  / _DAMPING_Z) - xyzDotInit_M[2]) * (_MASS_Z / _DAMPING_Z);
+  float Fz = forceXYZ[2] - springF;
+  float Cz1 = ((Fz  / _DAMPING_Z) - xyzDotInit_M[2]) * (_MASS_Z / _DAMPING_Z);
   float Cz2 = xyzInit_M[2] - Cz1;
-  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT) + (forceXYZ[2] / _DAMPING_Z) * _DELTAT + Cz2;
-  xyzDotGoal_M[2] = (forceXYZ[2] / _DAMPING_Z) - (_DAMPING_Z / _MASS_Z) * Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT);
+  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT) + (Fz / _DAMPING_Z) * _DELTAT + Cz2;
+  xyzDotGoal_M[2] = (Fz / _DAMPING_Z) - (_DAMPING_Z / _MASS_Z) * Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT);
 }
 
 /* Admittance Model Get Functions   *******************************************/

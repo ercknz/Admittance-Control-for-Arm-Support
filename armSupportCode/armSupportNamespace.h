@@ -76,6 +76,12 @@ extern const float L1_LINK;      // length of 4bar linkage
 extern const float A2_LINK;      // 4bar linkage to elbow
 extern const float L2_LINK;      // elbow to sensor
 extern const float LINK_OFFSET;  // elbow to sensor offset
+/* Spring Dynamics */
+extern const int    SPRING_KS; // N/m
+extern const float  SPRING_LO; // unstretched spring length in m = 5"
+extern const float  SPRING_LI; // initial stretch lenght in m = 6.3"
+extern const float  SPRING_SIDE_A; // in m
+extern const float  SPRING_SIDE_B; // in m
 }
 
 #endif // ARM_SUPPORT_NS_H

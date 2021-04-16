@@ -28,10 +28,12 @@ class RobotControl {
     float *   GetGoalQDot();
     float *   GetGoalPos();
     float *   GetGoalVel();
+    float     GetSpringForce();
     
   private:
     void  fKine();
     void  iKine(float *xyz, float *xyzDot);
+    void  springForce();
     void  ReadMotors(dynamixel::GroupSyncRead &syncReadPacket);
     int   WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
 
@@ -41,6 +43,7 @@ class RobotControl {
     const double _Q2_LIMIT;
     const double _Q4_MIN,    _Q4_MAX;
     const double _INNER_R,   _Z_LIMIT;
+    const float  _SPRING_Li, _BETAi, _SPRING_Fi;
     float J_M[3][3] = {{0.0f}};
     int32_t qPresCts_M[3],  qDotPresCts_M[3];
     float   qPres_M[3],     qDotPres_M[3];
@@ -48,6 +51,7 @@ class RobotControl {
     int32_t qCts_M[3],      qDotCts_M[3];
     float   q_M[3],         qDot_M[3];
     float   xyz_M[3],       xyzDot_M[3];
+    float   springF;
     uint8_t dxl_error = 0;
 };
 
