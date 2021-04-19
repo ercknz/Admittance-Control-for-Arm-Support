@@ -1,4 +1,3 @@
-function serialToCSV(timeInSecs, logFileID)
 %% Serial to CSV script
 % This code takes in the serial data being sent from the dynamixel board to
 % logs it to a csv file. 
@@ -6,8 +5,10 @@ function serialToCSV(timeInSecs, logFileID)
 % Script by erick nunez
 
 %% Clean workspace
-close all; delete(instrfindall);
+clear; clc; close all; delete(instrfindall);
 %% CSV file
+timeInSecs = 30;
+logFileID = 'test';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
@@ -38,6 +39,66 @@ dt = 0.008;
 numFrames = timeInSecs/dt; % seconds*(1frame/secs)=frames
 rawData = nan(numFrames,packetLen);
 data = nan(numFrames,writePacketLen);
+
+%% Open Serial Port
+disp('........opening port...........');
+s1 = serialport('COM28',BaudRate);
+
+%% start main collection loop
+totalTime = 0; i = 1;
+while(totalTime < timeInSecs )
+    if i == 1000 && ~dataSent
+        write(s1,writePacket,'uint8');
+        dataSent = true;
+        disp('sending......')
+    end
+    if s1.NumBytesAvailable >= packetLen
+        rawData(i,:) = read(s1,packetLen,'uint8');
+        % Total Time
+        data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
+        % XYZ Global Forces
+        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'))/10000;
+        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'))/10000;
+        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'))/10000;
+        % XYZ Bot Goal
+        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'))/10000;
+        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'))/10000;
+        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'))/10000;
+        % XYZ Dot Bot Goal
+        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'))/10000;
+        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'))/10000;
+        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'))/10000;
+        % Pres Q
+        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'))/10000;
+        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'))/10000;
+        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'))/10000;
+        % Goal Q
+        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'))/10000;
+        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'))/10000;
+        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'))/10000;
+        % Mass/Damping
+        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'))/10000;
+        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'))/10000;
+        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'))/10000;
+        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'))/10000;
+        % Loop time
+        data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
+        % Update plots
+%         set(fPlotX,'XData',data(1:i,1),'YData',data(1:i,2));
+%         set(fPlotY,'XData',data(1:i,1),'YData',data(1:i,3));
+%         set(fPlotZ,'XData',data(1:i,1),'YData',data(1:i,4));
+%         set(lTime,'XData', data(1:i,1),'YData',data(1:i,23));
+%         set(mPlot,'XData',data(1:i,5),'YData',data(1:i,6),'ZData',data(1:i,7),'UData',data(1:i,8),'VData',data(1:i,9),'WData',data(1:i,10));
+        % Loop Data
+        i = i + 1;
+        totalTime = totalTime + dt;
+    end
+end
+data(:,1) = data(:,1)*0.001;
+
+%% post cleanup
+delete(s1);
+disp('.........Serial Connection close...............')
 
 %% plot data
 fig1 = figure;
@@ -90,71 +151,7 @@ tPlotY = plot(data(:,1),data(:,6),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
 tPlotZ = plot(data(:,1),data(:,7),'LineWidth',1.5,'Color',[0.93,0.69,0.13]); 
 legend('X','Y','Z');title('Task Space X-Y'); 
 xlabel('Time (sec)'); ylabel('Position (m)');
-
 set(fig1,'Visible','on');
-
-%% Open Serial Port
-disp('........opening port...........');
-s1 = serialport('COM28',BaudRate);
-
-%% start main collection loop
-totalTime = 0; i = 1;
-while(totalTime < timeInSecs )
-    if i == 1000 && ~dataSent
-        write(s1,writePacket,'uint8');
-        dataSent = true;
-        disp('sending......')
-    end
-    if s1.NumBytesAvailable >= packetLen
-        rawData(i,:) = read(s1,packetLen,'uint8');
-        % Total Time
-        data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
-        % XYZ Global Forces
-        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'))/10000;
-        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'))/10000;
-        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'))/10000;
-        % XYZ Bot Goal
-        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'))/10000;
-        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'))/10000;
-        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'))/10000;
-        % XYZ Dot Bot Goal
-        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'))/10000;
-        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'))/10000;
-        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'))/10000;
-        % Pres Q
-        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'))/10000;
-        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'))/10000;
-        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'))/10000;
-        % Pres Q Dot
-        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'))/10000;
-        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'))/10000;
-        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'))/10000;
-        % Goal Q
-        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'))/10000;
-        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'))/10000;
-        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'))/10000;
-        % Goal Q Dot
-        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'))/10000;
-        data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'))/10000;
-        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/10000;
-        % Loop time
-        data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
-        % Update plots
-        set(fPlotX,'XData',data(1:i,1),'YData',data(1:i,2));
-        set(fPlotY,'XData',data(1:i,1),'YData',data(1:i,3));
-        set(fPlotZ,'XData',data(1:i,1),'YData',data(1:i,4));
-        set(lTime,'XData', data(1:i,1),'YData',data(1:i,23));
-        set(mPlot,'XData',data(1:i,5),'YData',data(1:i,6),'ZData',data(1:i,7),'UData',data(1:i,8),'VData',data(1:i,9),'WData',data(1:i,10));
-        % Loop Data
-        i = i + 1;
-        totalTime = totalTime + dt;
-    end
-end
-data(:,1) = data(:,1)*0.001;
-
-%% post cleanup
-delete(s1);
-disp('.........Serial Connection close...............')
 
 %% write data to file
 disp('Writing file............................')
@@ -164,5 +161,3 @@ disp('Writing file............................')
 % set(fig1, 'PaperOrientation', 'landscape', 'PaperUnits', 'normalized', 'PaperPosition',[0,0,1,1]);
 % saveas(fig1, ['./Logs/armSupport',logFileID,fileTime,'_1of2.pdf']);
 % saveas(fig1, ['./Logs/armSupport',logFileID,fileTime,'_1of2.fig']);
-
-end

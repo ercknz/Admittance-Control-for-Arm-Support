@@ -78,8 +78,8 @@ const float L2_LINK     = 0.520;      // elbow to sensor
 const float LINK_OFFSET = 0.035;      // elbow to sensor offset
 /* Spring Dynamics */
 const int    SPRING_KS      = 8231;     // N/m
-const float  SPRING_LO      = 0.127;    // unstretched spring length in m = 5"
-const float  SPRING_LI      = 0.16002;  // initial stretch lenght in m = 6.3"
+const float  SPRING_X0      = 0.127;    // unstretched spring length in m = 5"
+const float  SPRING_XI      = 0.16002;  // initial stretch lenght in m = 6.3"
 const float  SPRING_SIDE_A  = 0.066;    // in m
 const float  SPRING_SIDE_B  = 0.0365;   // in m
 }

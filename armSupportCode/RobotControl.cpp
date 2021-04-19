@@ -36,7 +36,7 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _Z_LIMIT{abs(L1 * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1/ASR::ELEVATION_RATIO)))},
   _SPRING_Li{sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2))},
   _BETAi{asin(ASR::SPRING_SIDE_A/_SPRING_Li)},
-  _SPRING_Fi{ASR::SPRING_KS * (ASR::SPRING_Li - ASR::SPRING_Lo) * sin(_BETAi)}
+  _SPRING_Fi{ASR::SPRING_KS * (ASR::SPRING_XI - ASR::SPRING_X0) * sin(_BETAi)}
 {
 }
 
@@ -220,12 +220,13 @@ void  RobotControl::fKine() {
   xyzDotPres_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
 }
 
+/******************** Arm Support Spring Force Member Function ************************************************/
 void RobotControl::springForce(){
   /* Calculated Variables */
   float alpha = 90.0 - qPres_M[1];
   float springLength = sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2) - 2 * ASR::SPRING_SIDE_A * ASR::SPRING_SIDE_B * cos(alpha));
   float beta = asin((ASR::SPRING_SIDE_A/springLength) * sin(alpha));
-  springF = ;ASR::SPRING_Ks * (springLength - _SPRING_Li + ASR::SPRING_LI - ASR::SPRING_Lo) * sin(beta - qPres_M[1]) * _SPRING_Fi;
+  springF = ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi;
 }
 
 /******************** Arm Support DXL Torque Enabling Member Function ************************************************/

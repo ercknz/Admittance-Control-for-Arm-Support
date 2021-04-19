@@ -12,13 +12,11 @@ class AdmittanceModel {
   public:
            AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T);
     void   SetPosition(float *newXYZ);
-    void   UpdateModel(float *forceXYZ);
+    void   UpdateModel(float *forceXYZ, float springFz);
     float* GetGoalPos();
     float* GetGoalVel();
-    float  GetMassXY();
-    float  GetMassZ();
-    float  GetDampingXY();
-    float  GetDampingZ();
+    float* GetMass();
+    float* GetDamping();
     void   SetMassXY(float newMxy);
     void   SetMassZ(float newMz);
     void   SetDampingXY(float newBxy);

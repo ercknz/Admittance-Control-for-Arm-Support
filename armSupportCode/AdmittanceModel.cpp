@@ -56,7 +56,7 @@ void AdmittanceModel::SetPosition(float *newXYZ) {
 }
 
 /* Admittance Model Updater  **************************************************/
-void AdmittanceModel::UpdateModel(float *forceXYZ, float springF) {
+void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz) {
   for (int i = 0; i < 3; i++) {
     xyzInit_M[i]    = 0.0f;
     xyzDotInit_M[i] = xyzDotGoal_M[i];
@@ -75,7 +75,7 @@ void AdmittanceModel::UpdateModel(float *forceXYZ, float springF) {
   xyzDotGoal_M[1] = (forceXYZ[1] / _DAMPING_XY) - (_DAMPING_XY / _MASS_XY) * Cy1 * exp(-(_DAMPING_XY / _MASS_XY) * _DELTAT);
 
   /* Coefficents and Solution for Z-Direction */
-  float Fz = forceXYZ[2] - springF;
+  float Fz = forceXYZ[2] - springFz;
   float Cz1 = ((Fz  / _DAMPING_Z) - xyzDotInit_M[2]) * (_MASS_Z / _DAMPING_Z);
   float Cz2 = xyzInit_M[2] - Cz1;
   xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING_Z / _MASS_Z) * _DELTAT) + (Fz / _DAMPING_Z) * _DELTAT + Cz2;
@@ -91,20 +91,18 @@ float* AdmittanceModel::GetGoalVel() {
   return xyzDotGoal_M;
 }
 
-float  AdmittanceModel::GetMassXY(){
-  return _MASS_XY;
+float*  AdmittanceModel::GetMass(){
+  static float massArray[2];
+  massArray[0] = _MASS_XY;
+  massArray[1] = _MASS_Z;
+  return massArray;
 }
 
-float  AdmittanceModel::GetMassZ(){
-  return _MASS_Z;
-}
-
-float  AdmittanceModel::GetDampingXY(){
-  return _DAMPING_XY;
-}
-
-float  AdmittanceModel::GetDampingZ(){
-  return _DAMPING_Z;
+float*  AdmittanceModel::GetDamping(){
+  static float dampingArray[2];
+  dampingArray[0] = _DAMPING_XY;
+  dampingArray[1] = _DAMPING_Z;
+  return dampingArray;
 }
 
 /* Admittance Model Setter Functions ******************************************/
@@ -117,7 +115,7 @@ void AdmittanceModel::SetMassXY(float newMxy){
 }
 
 void AdmittanceModel::SetMassZ(float newMz){
-  if (newMxy > 0.1){
+  if (newMz > 0.1){
     _MASS_Z = newMz;
   } else {
     _MASS_Z = 0.1;

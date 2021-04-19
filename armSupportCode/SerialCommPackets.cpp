@@ -197,34 +197,17 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  /* Test stuff !!!!!!!! */
-  if (_SEND_MXY && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDot_bytes = floatToBytes(Model.GetMassXY());
-    for (int16_t i = dataPosition; i < dataPosition + 4; i++) {
+  if (_SEND_MASS && slotsFilled < _MAX_DATA_SLOTS) {
+    byte * GoalQDot_bytes = floatArrayToBytes(Model.GetMass());
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GoalQDot_bytes[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_MZ && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDot_bytes = floatToBytes(Model.GetMassZ());
-    for (int16_t i = dataPosition; i < dataPosition + 4; i++) {
-      dataPacket[i] = GoalQDot_bytes[i - dataPosition];
-    }
-    slotsFilled += 1;
-    dataPosition += byteLen;
-  }
-  if (_SEND_BXY && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDot_bytes = floatToBytes(Model.GetDampingXY());
-    for (int16_t i = dataPosition; i < dataPosition + 4; i++) {
-      dataPacket[i] = GoalQDot_bytes[i - dataPosition];
-    }
-    slotsFilled += 1;
-    dataPosition += byteLen;
-  }
-  if (_SEND_BZ && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDot_bytes = floatToBytes(Model.GetDampingZ());
-    for (int16_t i = dataPosition; i < dataPosition + 4; i++) {
+  if (_SEND_DAMPING && slotsFilled < _MAX_DATA_SLOTS) {
+    byte * GoalQDot_bytes = floatArrayToBytes(Model.GetDamping());
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
       dataPacket[i] = GoalQDot_bytes[i - dataPosition];
     }
     slotsFilled += 1;

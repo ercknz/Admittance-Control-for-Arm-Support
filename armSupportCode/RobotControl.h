@@ -43,7 +43,7 @@ class RobotControl {
     const double _Q2_LIMIT;
     const double _Q4_MIN,    _Q4_MAX;
     const double _INNER_R,   _Z_LIMIT;
-    const float  _SPRING_Li, _BETAi, _SPRING_Fi;
+    const double _SPRING_Li, _BETAi, _SPRING_Fi;
     float J_M[3][3] = {{0.0f}};
     int32_t qPresCts_M[3],  qDotPresCts_M[3];
     float   qPres_M[3],     qDotPres_M[3];
