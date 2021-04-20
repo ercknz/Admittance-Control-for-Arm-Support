@@ -197,18 +197,26 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_MASS && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDot_bytes = floatArrayToBytes(Model.GetMass());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
-      dataPacket[i] = GoalQDot_bytes[i - dataPosition];
+  if (slotsFilled < _MAX_DATA_SLOTS) {
+    byte * springF_bytes = floatToBytes(Robot.GetSpringForce());
+    for (int16_t i = dataPosition; i < dataPosition + 4; i++) {
+      dataPacket[i] = springF_bytes[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
   }
-  if (_SEND_DAMPING && slotsFilled < _MAX_DATA_SLOTS) {
-    byte * GoalQDot_bytes = floatArrayToBytes(Model.GetDamping());
+//  if (_SEND_MASSDAMPING && slotsFilled < _MAX_DATA_SLOTS) {
+//    byte * Mass_bytes = floatArrayToBytes(Model.GetMass());
+//    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+//      dataPacket[i] = Mass_bytes[i - dataPosition];
+//    }
+//    slotsFilled += 1;
+//    dataPosition += byteLen;
+//  }
+  if (_SEND_MASSDAMPING && slotsFilled < _MAX_DATA_SLOTS) {
+    byte * Damping_bytes = floatArrayToBytes(Model.GetDamping());
     for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
-      dataPacket[i] = GoalQDot_bytes[i - dataPosition];
+      dataPacket[i] = Damping_bytes[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
@@ -250,9 +258,13 @@ void SerialPackets::ReadPackets() {
     tempHeader[i] = RXPacket[i];
   }
   if (SumCheck == CHECKSUM) {
-    if (memcmp(_CONFIGHEADER, tempHeader, sizeof(_CONFIGHEADER)) == 0) ConfigPacketRX(RXPacket);
-    if (memcmp(_MODHEADER,    tempHeader, sizeof(_MODHEADER))    == 0) ModifierPacketRX(RXPacket);
-
+    if (memcmp(_CONFIGHEADER, tempHeader, sizeof(_CONFIGHEADER)) == 0) {
+      SendFlagResets();
+      ConfigPacketRX(RXPacket);
+    }
+    if (memcmp(_MODHEADER, tempHeader, sizeof(_MODHEADER)) == 0) {
+      ModifierPacketRX(RXPacket);
+    }
   } else {
     while (SerialPort_M->available()) {
       SerialPort_M->read();
@@ -262,6 +274,7 @@ void SerialPackets::ReadPackets() {
 
 /* Configuration RX Packet  ***************************************************/
 void SerialPackets::ConfigPacketRX(byte * RxPacket) {
+  if (RxPacket[4])  _SEND_MASSDAMPING   = true;
   if (RxPacket[5])  _SEND_RAWF          = true;
   if (RxPacket[6])  _SEND_GLOBALF       = true;
   if (RxPacket[7])  _SEND_XYZGOAL       = true;
@@ -278,6 +291,26 @@ void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[18]) _SEND_GOALQDOTCTS   = true;
   if (RxPacket[19]) _SEND_GOALQ         = true;
   if (RxPacket[20]) _SEND_GOALQDOT      = true;
+}
+
+void SerialPackets::SendFlagResets(){
+  _SEND_MASSDAMPING   = false;
+  _SEND_RAWF          = false;
+  _SEND_GLOBALF       = false;
+  _SEND_XYZGOAL       = false;
+  _SEND_XYZDOTGOAL    = false;
+  _SEND_XYZBOTGOAL    = false;
+  _SEND_XYZDOTBOTGOAL = false;
+  _SEND_PRESQCTS      = false;
+  _SEND_PRESQDOTCTS   = false;
+  _SEND_PRESQ         = false;
+  _SEND_PRESQDOT      = false;
+  _SEND_PRESPOS       = false;
+  _SEND_PRESVEL       = false;
+  _SEND_GOALQCTS      = false;
+  _SEND_GOALQDOTCTS   = false;
+  _SEND_GOALQ         = false;
+  _SEND_GOALQDOT      = false;
 }
 
 /* Modifier RX Packet  ********************************************************/

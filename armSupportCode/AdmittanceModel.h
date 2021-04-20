@@ -24,7 +24,7 @@ class AdmittanceModel {
 
   private:
     const float _GRAVITY, _DELTAT;
-    float _MASS_XY, _MASS_Z, _DAMPING_XY, _DAMPING_Z;
+    float _MASS[2], _DAMPING[2];    // [xy, z]
 
     float xyzGoal_M[3]    = {0.0f};
     float xyzDotGoal_M[3] = {0.0f};

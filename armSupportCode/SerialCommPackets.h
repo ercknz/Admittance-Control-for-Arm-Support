@@ -39,6 +39,7 @@ class SerialPackets {
 
     void ConfigPacketRX(byte * RxPacket);
     void ModifierPacketRX(byte * RxPacket);
+    void SendFlagResets();
 
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = true;
@@ -56,8 +57,7 @@ class SerialPackets {
     bool _SEND_GOALQDOTCTS    = false;
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = false;
-    bool _SEND_MASS           = true;
-    bool _SEND_DAMPING        = true;
+    bool _SEND_MASSDAMPING    = true;
 
     bool _NEW_MASS_XY    = false;
     bool _NEW_MASS_Z     = false;

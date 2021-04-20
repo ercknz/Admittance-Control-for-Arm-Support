@@ -15,7 +15,6 @@
 
 #include <DynamixelSDK.h>
 #include <Arduino.h>
-#include <math.h>
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
 
