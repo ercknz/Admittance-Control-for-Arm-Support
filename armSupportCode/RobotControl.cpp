@@ -225,7 +225,7 @@ void RobotControl::springForce(){
   float alpha = 90.0 - qPres_M[1];
   float springLength = sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2) - 2 * ASR::SPRING_SIDE_A * ASR::SPRING_SIDE_B * cos(alpha));
   float beta = asin((ASR::SPRING_SIDE_A/springLength) * sin(alpha));
-  springF = ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi;
+  springF = scalingFactor * (ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi);
 }
 
 /******************** Arm Support DXL Torque Enabling Member Function ************************************************/

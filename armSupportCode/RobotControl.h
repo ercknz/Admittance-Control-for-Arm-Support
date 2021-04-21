@@ -52,6 +52,7 @@ class RobotControl {
     float   q_M[3],         qDot_M[3];
     float   xyz_M[3],       xyzDot_M[3];
     float   springF;
+    const float scalingFactor = 0.07;
     uint8_t dxl_error = 0;
 };
 

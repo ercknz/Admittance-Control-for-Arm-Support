@@ -73,11 +73,11 @@ void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz) {
   xyzDotGoal_M[1] = (forceXYZ[1] / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
 
   /* Coefficents and Solution for Z-Direction */
-  float Fz = forceXYZ[2] - springFz;
-  float Cz1 = ((forceXYZ[2]  / _DAMPING[1]) - xyzDotInit_M[2]) * (_MASS[1] / _DAMPING[1]);
+  float Fz = forceXYZ[2] + springFz;
+  float Cz1 = ((Fz  / _DAMPING[1]) - xyzDotInit_M[2]) * (_MASS[1] / _DAMPING[1]);
   float Cz2 = xyzInit_M[2] - Cz1;
-  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT) + (forceXYZ[2] / _DAMPING[1]) * _DELTAT + Cz2;
-  xyzDotGoal_M[2] = (forceXYZ[2] / _DAMPING[1]) - (_DAMPING[1] / _MASS[1]) * Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT);
+  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT) + (Fz / _DAMPING[1]) * _DELTAT + Cz2;
+  xyzDotGoal_M[2] = (Fz / _DAMPING[1]) - (_DAMPING[1] / _MASS[1]) * Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT);
 }
 
 /* Admittance Model Get Functions   *******************************************/
