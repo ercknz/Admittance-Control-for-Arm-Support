@@ -37,6 +37,7 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _BETAi{asin(ASR::SPRING_SIDE_A/_SPRING_Li)},
   _SPRING_Fi{ASR::SPRING_KS * (ASR::SPRING_XI - ASR::SPRING_X0) * sin(_BETAi)}
 {
+  scalingFactor_M = ASR::SPRING_FORCE_SCALING_FACTOR;
 }
 
 /******************** Arm Support Get Member functions  ***********************************************************************/
@@ -89,7 +90,7 @@ float* RobotControl::GetGoalVel(){
 }
 
 float RobotControl::GetSpringForce(){
-  return springF;
+  return springF_M;
 }
 
 /******************** Arm Support Motors Reading/Writing  ***********************************************************************/
@@ -219,13 +220,17 @@ void  RobotControl::fKine() {
   xyzDotPres_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
 }
 
-/******************** Arm Support Spring Force Member Function ************************************************/
+/******************** Arm Support Spring Force Member Functions ************************************************/
 void RobotControl::springForce(){
   /* Calculated Variables */
   float alpha = 90.0 - qPres_M[1];
   float springLength = sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2) - 2 * ASR::SPRING_SIDE_A * ASR::SPRING_SIDE_B * cos(alpha));
   float beta = asin((ASR::SPRING_SIDE_A/springLength) * sin(alpha));
-  springF = scalingFactor * (ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi);
+  springF_M = scalingFactor_M * (ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi);
+}
+
+void RobotControl::SetScalingFactor(float newScalingFactor){
+  scalingFactor_M = newScalingFactor;
 }
 
 /******************** Arm Support DXL Torque Enabling Member Function ************************************************/

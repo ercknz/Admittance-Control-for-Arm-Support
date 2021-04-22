@@ -29,6 +29,7 @@ class RobotControl {
     float *   GetGoalPos();
     float *   GetGoalVel();
     float     GetSpringForce();
+    void      SetScalingFactor(float newScalingFactor);
     
   private:
     void  fKine();
@@ -51,8 +52,8 @@ class RobotControl {
     int32_t qCts_M[3],      qDotCts_M[3];
     float   q_M[3],         qDot_M[3];
     float   xyz_M[3],       xyzDot_M[3];
-    float   springF;
-    const float scalingFactor = 0.07;
+    float   springF_M;
+    float   scalingFactor_M;
     uint8_t dxl_error = 0;
 };
 

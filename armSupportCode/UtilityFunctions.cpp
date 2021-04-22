@@ -19,8 +19,8 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 
 /* Float Array to Byte Array Function  ****************************************/
 byte * floatArrayToBytes(float * floatValues) {
-  int32_t int32Data[3];
-  for (int16_t i = 0; i < 3; i++) {
+  int32_t int32Data[sizeof(floatValues)/4];
+  for (int16_t i = 0; i < sizeof(floatValues)/4; i++) {
     int32Data[i] = (int32_t)(floatValues[i] * 10000.0);
   }
   byte * bytesOut = int32ArrayToBytes(int32Data);
@@ -40,8 +40,8 @@ byte * floatToBytes(float floatValue){
 
 /* Int32 Array to Byte Array Function  ****************************************/
 byte * int32ArrayToBytes(int32_t * int32Values) {
-  static byte bytesOut[12];
-  for (int16_t i = 0; i < 3; i++) {
+  static byte bytesOut[sizeof(int32Values)];
+  for (int16_t i = 0; i < sizeof(int32Values)/4; i++) {
     bytesOut[4 * i]     = DXL_LOBYTE(DXL_LOWORD(int32Values[i]));
     bytesOut[4 * i + 1] = DXL_HIBYTE(DXL_LOWORD(int32Values[i]));
     bytesOut[4 * i + 2] = DXL_LOBYTE(DXL_HIWORD(int32Values[i]));

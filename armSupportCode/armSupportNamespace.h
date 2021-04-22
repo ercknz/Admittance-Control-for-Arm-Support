@@ -82,6 +82,7 @@ extern const float  SPRING_X0; // unstretched spring length in m = 5"
 extern const float  SPRING_XI; // initial stretch lenght in m = 6.3"
 extern const float  SPRING_SIDE_A; // in m
 extern const float  SPRING_SIDE_B; // in m
+extern float SPRING_FORCE_SCALING_FACTOR;
 }
 
 #endif // ARM_SUPPORT_NS_H

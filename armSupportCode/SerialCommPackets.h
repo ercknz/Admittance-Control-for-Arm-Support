@@ -22,17 +22,19 @@ class SerialPackets {
     bool ModifyMassZ();
     bool ModifyDampingXY();
     bool ModifyDampingZ();
+    bool ModifyScalingFactor();
     float GetNewMassXY();
     float GetNewMassZ();
     float GetNewDampingXY();
     float GetNewDampingZ();
+    float GetNewScalingFactor();
 
   private:
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
-    const int16_t _TX_PKT_LEN     = 98;
-    const int16_t _RX_PKT_LEN     = 23;
-    const int16_t _MAX_DATA_SLOTS = 7;
+    const int16_t _TX_PKT_LEN = 98;
+    const int16_t _RX_PKT_LEN = 26;
+    const int16_t _MAX_TX_DATA_SLOTS = 21;
     const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};
     const byte  _MODHEADER[4]     = {150, 10, 10, 96};
     const byte  _WRITEHEADER[4]   = {170, 8, 69, 0};
@@ -57,13 +59,18 @@ class SerialPackets {
     bool _SEND_GOALQDOTCTS    = false;
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = false;
-    bool _SEND_MASSDAMPING    = true;
+    bool _SEND_MASS           = true;
+    bool _SEND_DAMPING        = true;
+    bool _SEND_SPRING_F       = true;
 
-    bool _NEW_MASS_XY    = false;
-    bool _NEW_MASS_Z     = false;
-    bool _NEW_DAMPING_XY = false;
-    bool _NEW_DAMPING_Z  = false;
-    float newMassXY_M, newMassZ_M, newDampingXY_M, newDampingZ_M;
+    bool _NEW_MASS_XY         = false;
+    bool _NEW_MASS_Z          = false;
+    bool _NEW_DAMPING_XY      = false;
+    bool _NEW_DAMPING_Z       = false;
+    bool _NEW_SCALING_FACTOR  = false;
+    float newMassXY_M,    newMassZ_M;
+    float newDampingXY_M, newDampingZ_M;
+    float newScalingFactor_M;
 };
 
 #endif // SERIAL_PACKETS_H

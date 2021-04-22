@@ -7,8 +7,8 @@
 %% Clean workspace
 clear; clc; close all; delete(instrfindall);
 %% CSV file
-timeInSecs = 30;
-logFileID = 'TEST';
+timeInSecs = 60;
+logFileID = '_AM_TEST_DAMPING';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)

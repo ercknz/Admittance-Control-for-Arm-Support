@@ -95,6 +95,9 @@ void loop() {
       if (pcComm.ModifyDampingZ()) {
         AdmitModel.SetDampingZ(pcComm.GetNewDampingZ());
       }
+      if (pcComm.ModifyScalingFactor()){
+        ArmSupportRobot.SetScalingFactor(pcComm.GetNewScalingFactor());
+      }
     }
 
     /* Calibration button checker */

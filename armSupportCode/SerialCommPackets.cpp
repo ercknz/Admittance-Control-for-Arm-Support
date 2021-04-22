@@ -35,6 +35,9 @@ bool SerialPackets::ModifyDampingXY(){
 bool SerialPackets::ModifyDampingZ(){
   return _NEW_DAMPING_Z;
 }
+bool SerialPackets::ModifyScalingFactor(){
+  return _NEW_SCALING_FACTOR;
+}
 float SerialPackets::GetNewMassXY(){
   _NEW_MASS_XY = false;
   return newMassXY_M;
@@ -51,6 +54,10 @@ float SerialPackets::GetNewDampingZ(){
   _NEW_DAMPING_Z = false;
   return newDampingZ_M;
 }
+float SerialPackets::GetNewScalingFactor(){
+  _NEW_SCALING_FACTOR = false;
+  return newScalingFactor_M;
+}
 
 /* Serial Packet Writer  ******************************************************/
 void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
@@ -58,7 +65,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
   int16_t slotsFilled   = 0;
   int16_t dataPosition  = 8;
   uint16_t packetSum    = 0;
-  int16_t byteLen       = 12;
+  int16_t byteLen       = 4;
   /* header Bytes ------------------------------------------------------------*/
   for (int16_t i = 0; i < 4; i++) {
     dataPacket[i] = _WRITEHEADER[i];
@@ -69,154 +76,154 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
   dataPacket[6] = DXL_LOBYTE(DXL_HIWORD(totalTime));
   dataPacket[7] = DXL_HIBYTE(DXL_HIWORD(totalTime));
   /* buildling dataPacket ----------------------------------------------------*/
-  if (_SEND_RAWF && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_RAWF && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * RawF_bytes = floatArrayToBytes(Sensor.GetRawF());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = RawF_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_GLOBALF && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GLOBALF && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * GlobalF_bytes = floatArrayToBytes(Sensor.GetGlobalF());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = GlobalF_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_XYZGOAL && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZGOAL && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * xyzGoal_bytes = floatArrayToBytes(Model.GetGoalPos());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = xyzGoal_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_XYZDOTGOAL && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZDOTGOAL && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * xyzDotGoal_bytes = floatArrayToBytes(Model.GetGoalVel());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = xyzDotGoal_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_XYZBOTGOAL && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZBOTGOAL && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * xyzBotGoal_bytes = floatArrayToBytes(Robot.GetGoalPos());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = xyzBotGoal_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_XYZDOTBOTGOAL && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_XYZDOTBOTGOAL && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * xyzDotBotGoal_bytes = floatArrayToBytes(Robot.GetGoalVel());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = xyzDotBotGoal_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESQCTS && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQCTS && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * PresQCts_bytes = int32ArrayToBytes(Robot.GetPresQCts());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = PresQCts_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESQDOTCTS && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQDOTCTS && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * PresQDotCts_bytes = int32ArrayToBytes(Robot.GetPresQDotCts());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = PresQDotCts_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESQ && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQ && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * PresQ_bytes = floatArrayToBytes(Robot.GetPresQ());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = PresQ_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESQDOT && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESQDOT && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * PresQDot_bytes = floatArrayToBytes(Robot.GetPresQDot());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = PresQDot_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESPOS && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESPOS && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * PresPos_bytes = floatArrayToBytes(Robot.GetPresPos());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = PresPos_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESVEL && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_PRESVEL && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * PresVel_bytes = floatArrayToBytes(Robot.GetPresVel());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = PresVel_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_GOALQCTS && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQCTS && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * GoalQCts_bytes = int32ArrayToBytes(Robot.GetGoalQCts());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = GoalQCts_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_GOALQDOTCTS && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQDOTCTS && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * GoalQDotCts_bytes = int32ArrayToBytes(Robot.GetGoalQDotCts());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = GoalQDotCts_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_GOALQ && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQ && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * GoalQ_bytes = floatArrayToBytes(Robot.GetGoalQ());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = GoalQ_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (_SEND_GOALQDOT && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_GOALQDOT && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * GoalQDot_bytes = floatArrayToBytes(Robot.GetGoalQDot());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = GoalQDot_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
   }
-  if (slotsFilled < _MAX_DATA_SLOTS) {
-    byte * springF_bytes = floatToBytes(Robot.GetSpringForce());
-    for (int16_t i = dataPosition; i < dataPosition + 4; i++) {
-      dataPacket[i] = springF_bytes[i - dataPosition];
+  if (_SEND_MASS && slotsFilled < _MAX_TX_DATA_SLOTS) {
+    byte * Mass_bytes = floatArrayToBytes(Model.GetMass());
+    for (int16_t i = dataPosition; i < dataPosition + (2 * byteLen); i++) {
+      dataPacket[i] = Mass_bytes[i - dataPosition];
     }
-    slotsFilled += 1;
-    dataPosition += byteLen;
+    slotsFilled += 2;
+    dataPosition += (2 * byteLen);
   }
-//  if (_SEND_MASSDAMPING && slotsFilled < _MAX_DATA_SLOTS) {
-//    byte * Mass_bytes = floatArrayToBytes(Model.GetMass());
-//    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
-//      dataPacket[i] = Mass_bytes[i - dataPosition];
-//    }
-//    slotsFilled += 1;
-//    dataPosition += byteLen;
-//  }
-  if (_SEND_MASSDAMPING && slotsFilled < _MAX_DATA_SLOTS) {
+  if (_SEND_DAMPING && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * Damping_bytes = floatArrayToBytes(Model.GetDamping());
-    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+    for (int16_t i = dataPosition; i < dataPosition + (2 * byteLen); i++) {
       dataPacket[i] = Damping_bytes[i - dataPosition];
+    }
+    slotsFilled += 2;
+    dataPosition += (2* byteLen);
+  }
+  if (_SEND_SPRING_F && slotsFilled < _MAX_TX_DATA_SLOTS) {
+    byte * springF_bytes = floatToBytes(Robot.GetSpringForce());
+    for (int16_t i = dataPosition; i < dataPosition + byteLen; i++) {
+      dataPacket[i] = springF_bytes[i - dataPosition];
     }
     slotsFilled += 1;
     dataPosition += byteLen;
@@ -274,7 +281,6 @@ void SerialPackets::ReadPackets() {
 
 /* Configuration RX Packet  ***************************************************/
 void SerialPackets::ConfigPacketRX(byte * RxPacket) {
-  if (RxPacket[4])  _SEND_MASSDAMPING   = true;
   if (RxPacket[5])  _SEND_RAWF          = true;
   if (RxPacket[6])  _SEND_GLOBALF       = true;
   if (RxPacket[7])  _SEND_XYZGOAL       = true;
@@ -291,10 +297,12 @@ void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[18]) _SEND_GOALQDOTCTS   = true;
   if (RxPacket[19]) _SEND_GOALQ         = true;
   if (RxPacket[20]) _SEND_GOALQDOT      = true;
+  if (RxPacket[21]) _SEND_MASS          = true;
+  if (RxPacket[22]) _SEND_DAMPING       = true;
+  if (RxPacket[23]) _SEND_SPRING_F      = true;
 }
 
 void SerialPackets::SendFlagResets(){
-  _SEND_MASSDAMPING   = false;
   _SEND_RAWF          = false;
   _SEND_GLOBALF       = false;
   _SEND_XYZGOAL       = false;
@@ -311,15 +319,18 @@ void SerialPackets::SendFlagResets(){
   _SEND_GOALQDOTCTS   = false;
   _SEND_GOALQ         = false;
   _SEND_GOALQDOT      = false;
+  _SEND_MASS          = false;
+  _SEND_DAMPING       = false;
+  _SEND_SPRING_F      = false;
 }
 
 /* Modifier RX Packet  ********************************************************/
 void SerialPackets::ModifierPacketRX(byte * RxPacket) {
-  /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ */
+  /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor */
   byte mask = 1;
   byte bitArray[8];
-  if (RxPacket[4] < 16) {
-    for (int16_t i = 0; i < 4; i++){
+  if (RxPacket[4] < 32) {
+    for (int16_t i = 0; i < 5; i++){
       bitArray[i] = (RxPacket[4] & (mask << i)) != 0;
     }
     if (bitArray[0] == 1){
@@ -337,6 +348,10 @@ void SerialPackets::ModifierPacketRX(byte * RxPacket) {
     if (bitArray[3] == 1){
       _NEW_DAMPING_Z = true;
       newDampingZ_M = bytesToFloat(RxPacket[17], RxPacket[18], RxPacket[19], RxPacket[20]);
+    }
+    if (bitArray[4] == 1){
+      _NEW_SCALING_FACTOR = true;
+      newScalingFactor_M = bytesToFloat(RxPacket[21], RxPacket[22], RxPacket[23], RxPacket[24]);
     }
   }
 }
