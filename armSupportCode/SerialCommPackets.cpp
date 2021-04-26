@@ -23,40 +23,55 @@ SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
 bool SerialPackets::DataAvailable() {
   return SerialPort_M->available();
 }
-bool SerialPackets::ModifyMassXY(){
+bool SerialPackets::ModifyMassXY() {
   return _NEW_MASS_XY;
 }
-bool SerialPackets::ModifyMassZ(){
+bool SerialPackets::ModifyMassZ() {
   return _NEW_MASS_Z;
 }
-bool SerialPackets::ModifyDampingXY(){
+bool SerialPackets::ModifyDampingXY() {
   return _NEW_DAMPING_XY;
 }
-bool SerialPackets::ModifyDampingZ(){
+bool SerialPackets::ModifyDampingZ() {
   return _NEW_DAMPING_Z;
 }
-bool SerialPackets::ModifyScalingFactor(){
+bool SerialPackets::ModifyScalingFactor() {
   return _NEW_SCALING_FACTOR;
 }
-float SerialPackets::GetNewMassXY(){
+float SerialPackets::GetNewMassXY() {
   _NEW_MASS_XY = false;
   return newMassXY_M;
 }
-float SerialPackets::GetNewMassZ(){
+float SerialPackets::GetNewMassZ() {
   _NEW_MASS_Z = false;
   return newMassZ_M;
 }
-float SerialPackets::GetNewDampingXY(){
+float SerialPackets::GetNewDampingXY() {
   _NEW_DAMPING_XY = false;
   return newDampingXY_M;
 }
-float SerialPackets::GetNewDampingZ(){
+float SerialPackets::GetNewDampingZ() {
   _NEW_DAMPING_Z = false;
   return newDampingZ_M;
 }
-float SerialPackets::GetNewScalingFactor(){
+float SerialPackets::GetNewScalingFactor() {
   _NEW_SCALING_FACTOR = false;
   return newScalingFactor_M;
+}
+float * SerialPackets::GetExternalForces(){
+  if (~_NEW_EXT_FORCE_X) {
+    ExtForces_M[0] = 0.0f;
+  }
+  if (~_NEW_EXT_FORCE_Y) {
+    ExtForces_M[1] = 0.0f;
+  }
+  if (~_NEW_EXT_FORCE_Z) {
+    ExtForces_M[2] - 0.0f;
+  }
+  _NEW_EXT_FORCE_X = false;
+  _NEW_EXT_FORCE_Y = false;
+  _NEW_EXT_FORCE_Z = false;
+  return ExtForces_M;
 }
 
 /* Serial Packet Writer  ******************************************************/
@@ -218,7 +233,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
       dataPacket[i] = Damping_bytes[i - dataPosition];
     }
     slotsFilled += 2;
-    dataPosition += (2* byteLen);
+    dataPosition += (2 * byteLen);
   }
   if (_SEND_SPRING_F && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * springF_bytes = floatToBytes(Robot.GetSpringForce());
@@ -256,7 +271,7 @@ void SerialPackets::ReadPackets() {
   for (int16_t i = 0; i < _RX_PKT_LEN; i++) {
     RXPacket[i] = SerialPort_M->read();
   }
-  CHECKSUM = bytesToCounts(RXPacket[_RX_PKT_LEN-2], RXPacket[_RX_PKT_LEN-1]);
+  CHECKSUM = bytesToCounts(RXPacket[_RX_PKT_LEN - 2], RXPacket[_RX_PKT_LEN - 1]);
   SumCheck = 0;
   for (int16_t i = 0; i < _RX_PKT_LEN - 2; i++) {
     SumCheck += RXPacket[i];
@@ -302,7 +317,7 @@ void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[23]) _SEND_SPRING_F      = true;
 }
 
-void SerialPackets::SendFlagResets(){
+void SerialPackets::SendFlagResets() {
   _SEND_RAWF          = false;
   _SEND_GLOBALF       = false;
   _SEND_XYZGOAL       = false;
@@ -329,29 +344,39 @@ void SerialPackets::ModifierPacketRX(byte * RxPacket) {
   /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor */
   byte mask = 1;
   byte bitArray[8];
-  if (RxPacket[4] < 32) {
-    for (int16_t i = 0; i < 5; i++){
-      bitArray[i] = (RxPacket[4] & (mask << i)) != 0;
-    }
-    if (bitArray[0] == 1){
-      _NEW_MASS_XY = true;
-      newMassXY_M = bytesToFloat(RxPacket[5], RxPacket[6], RxPacket[7], RxPacket[8]);
-    }
-    if (bitArray[1] == 1){
-      _NEW_MASS_Z = true;
-      newMassZ_M = bytesToFloat(RxPacket[9], RxPacket[10], RxPacket[11], RxPacket[12]);
-    }
-    if (bitArray[2] == 1){
-      _NEW_DAMPING_XY = true;
-      newDampingXY_M = bytesToFloat(RxPacket[13], RxPacket[14], RxPacket[15], RxPacket[16]);
-    }
-    if (bitArray[3] == 1){
-      _NEW_DAMPING_Z = true;
-      newDampingZ_M = bytesToFloat(RxPacket[17], RxPacket[18], RxPacket[19], RxPacket[20]);
-    }
-    if (bitArray[4] == 1){
-      _NEW_SCALING_FACTOR = true;
-      newScalingFactor_M = bytesToFloat(RxPacket[21], RxPacket[22], RxPacket[23], RxPacket[24]);
-    }
+  for (int16_t i = 0; i < 8; i++) {
+    bitArray[i] = (RxPacket[4] & (mask << i)) != 0;
+  }
+  if (bitArray[0] == 1) {
+    _NEW_MASS_XY = true;
+    newMassXY_M = bytesToFloat(RxPacket[5], RxPacket[6], RxPacket[7], RxPacket[8]);
+  }
+  if (bitArray[1] == 1) {
+    _NEW_MASS_Z = true;
+    newMassZ_M = bytesToFloat(RxPacket[9], RxPacket[10], RxPacket[11], RxPacket[12]);
+  }
+  if (bitArray[2] == 1) {
+    _NEW_DAMPING_XY = true;
+    newDampingXY_M = bytesToFloat(RxPacket[13], RxPacket[14], RxPacket[15], RxPacket[16]);
+  }
+  if (bitArray[3] == 1) {
+    _NEW_DAMPING_Z = true;
+    newDampingZ_M = bytesToFloat(RxPacket[17], RxPacket[18], RxPacket[19], RxPacket[20]);
+  }
+  if (bitArray[4] == 1) {
+    _NEW_SCALING_FACTOR = true;
+    newScalingFactor_M = bytesToFloat(RxPacket[21], RxPacket[22], RxPacket[23], RxPacket[24]);
+  }
+  if (bitArray[5] == 1) {
+    _NEW_EXT_FORCE_X = true;
+    ExtForces_M[0] = bytesToFloat(RxPacket[25], RxPacket[26], RxPacket[27], RxPacket[28]);
+  }
+  if (bitArray[6] == 1) {
+    _NEW_EXT_FORCE_Y = true;
+    ExtForces_M[1] = bytesToFloat(RxPacket[29], RxPacket[30], RxPacket[31], RxPacket[32]);
+  }
+  if (bitArray[7] == 1) {
+    _NEW_EXT_FORCE_Z = true;
+    ExtForces_M[2] = bytesToFloat(RxPacket[33], RxPacket[34], RxPacket[35], RxPacket[36]);
   }
 }

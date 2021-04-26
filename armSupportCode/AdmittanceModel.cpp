@@ -54,26 +54,28 @@ void AdmittanceModel::SetPosition(float *newXYZ) {
 }
 
 /* Admittance Model Updater  **************************************************/
-void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz) {
+void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *externalFxyz) {
   for (int i = 0; i < 3; i++) {
     xyzInit_M[i]    = 0.0f;
     xyzDotInit_M[i] = xyzDotGoal_M[i];
   }
 
   /* Coefficents and Solution for X-Direction */
-  float Cx1 = ((forceXYZ[0] / _DAMPING[0]) - xyzDotInit_M[0]) * (_MASS[0] / _DAMPING[0]);
+  float Fx = forceXYZ[0] + externalFxyz[0];
+  float Cx1 = ((Fx / _DAMPING[0]) - xyzDotInit_M[0]) * (_MASS[0] / _DAMPING[0]);
   float Cx2 = xyzInit_M[0] - Cx1;
-  xyzGoal_M[0]    = Cx1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT) + (forceXYZ[0] / _DAMPING[0]) * _DELTAT + Cx2;
-  xyzDotGoal_M[0] = (forceXYZ[0] / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cx1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
+  xyzGoal_M[0]    = Cx1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT) + (Fx / _DAMPING[0]) * _DELTAT + Cx2;
+  xyzDotGoal_M[0] = (Fx / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cx1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
 
   /* Coefficents and Solution for Y-Direction */
-  float Cy1 = ((forceXYZ[1] / _DAMPING[0]) - xyzDotInit_M[1]) * (_MASS[0] / _DAMPING[0]);
+  float Fy = forceXYZ[1] + externalFxyz[1];
+  float Cy1 = ((Fy / _DAMPING[0]) - xyzDotInit_M[1]) * (_MASS[0] / _DAMPING[0]);
   float Cy2 = xyzInit_M[1] - Cy1;
-  xyzGoal_M[1]    = Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT) + (forceXYZ[1] / _DAMPING[0]) * _DELTAT + Cy2;
-  xyzDotGoal_M[1] = (forceXYZ[1] / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
+  xyzGoal_M[1]    = Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT) + (Fy / _DAMPING[0]) * _DELTAT + Cy2;
+  xyzDotGoal_M[1] = (Fy / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
 
   /* Coefficents and Solution for Z-Direction */
-  float Fz = forceXYZ[2] + springFz;
+  float Fz = forceXYZ[2] + springFz + externalFxyz[2];
   float Cz1 = ((Fz  / _DAMPING[1]) - xyzDotInit_M[2]) * (_MASS[1] / _DAMPING[1]);
   float Cz2 = xyzInit_M[2] - Cz1;
   xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT) + (Fz / _DAMPING[1]) * _DELTAT + Cz2;

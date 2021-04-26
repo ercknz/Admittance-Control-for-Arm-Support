@@ -114,7 +114,7 @@ void loop() {
       ArmSupportRobot.ReadRobot(syncReadPacket);
       presQ = ArmSupportRobot.GetPresQ();
       OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
-      AdmitModel.UpdateModel(OptoForceSensor.GetGlobalF(), ArmSupportRobot.GetSpringForce());
+      AdmitModel.UpdateModel(OptoForceSensor.GetGlobalF(), ArmSupportRobot.GetSpringForce(),pcComm.GetExternalForces());
       xyzGoal = AdmitModel.GetGoalPos();
       xyzDotGoal = AdmitModel.GetGoalVel();
       ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncWritePacket);

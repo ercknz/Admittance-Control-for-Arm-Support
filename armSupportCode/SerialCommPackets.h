@@ -28,12 +28,13 @@ class SerialPackets {
     float GetNewDampingXY();
     float GetNewDampingZ();
     float GetNewScalingFactor();
+    float *GetExternalForces();
 
   private:
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
     const int16_t _TX_PKT_LEN = 98;
-    const int16_t _RX_PKT_LEN = 26;
+    const int16_t _RX_PKT_LEN = 39;
     const int16_t _MAX_TX_DATA_SLOTS = 21;
     const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};
     const byte  _MODHEADER[4]     = {150, 10, 10, 96};
@@ -68,9 +69,13 @@ class SerialPackets {
     bool _NEW_DAMPING_XY      = false;
     bool _NEW_DAMPING_Z       = false;
     bool _NEW_SCALING_FACTOR  = false;
+    bool _NEW_EXT_FORCE_X     = false;
+    bool _NEW_EXT_FORCE_Y     = false;
+    bool _NEW_EXT_FORCE_Z     = false;
     float newMassXY_M,    newMassZ_M;
     float newDampingXY_M, newDampingZ_M;
     float newScalingFactor_M;
+    float ExtForces_M[3] = {0.0f};
 };
 
 #endif // SERIAL_PACKETS_H
