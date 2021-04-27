@@ -7,8 +7,8 @@
 %% Clean workspace
 clear; clc; close all; delete(instrfindall);
 %% CSV file
-timeInSecs = 60;
-logFileID = '_AM_TEST_DAMPING';
+timeInSecs = 30;
+logFileID = '_EN_TEST_Ex10';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
@@ -16,29 +16,29 @@ pause(2)
 %% Modify mass and damping setup
 Mxy = 1.0; % kg
 Mz = 1.0; % kg
-Bxy1 = 5.0; %
-Bxy2 = 10.0;
-Bz = 1.0; %
-newMxy = typecast(int32(Mxy*10000),'uint8');
-newMz = typecast(int32(Mz*10000),'uint8');
-newBxy1 = typecast(int32(Bxy1*10000),'uint8');
-newBxy2 = typecast(int32(Bxy2*10000),'uint8');
-newBz = typecast(int32(Bz*10000),'uint8');
+Bxy = 5.0; % N*(sec/m)
+Bz = 1.0; % N*(sec/m)
+scalingFactor = 0.10;
+eFx = 0.0; % N
+eFy = 0.0; % N
+eFz = 0.0; % N
+bytesMxy = typecast(int32(Mxy*10000),'uint8');
+bytesMz = typecast(int32(Mz*10000),'uint8');
+bytesBxy1 = typecast(int32(Bxy*10000),'uint8');
+bytesBz = typecast(int32(Bz*10000),'uint8');
+bytesFactor = typecast(int32(scalingFactor*10000),'uint8');
+bytesFx = typecast(int32(eFx*10000),'uint8');
+bytesFy = typecast(int32(eFy*10000),'uint8');
+bytesFz = typecast(int32(eFz*10000),'uint8');
 header = uint8([150, 10, 10, 96]);
-modByte = uint8(4);
-writePacket1 = [header,modByte,newMxy,newMz,newBxy1,newBz];
-checkSum = sum(writePacket1);
+modByte = uint8(16);
+writePacket = [header,modByte,bytesMxy,bytesMz,bytesBxy1,bytesBz,bytesFactor,bytesFx,bytesFy,bytesFz];
+checkSum = sum(writePacket);
 csHi = uint8(floor(checkSum/256));
 csLo = uint8(mod(checkSum,256));
-writePacket1 = [writePacket1,csHi,csLo];
-writePacket2 = [header,modByte,newMxy,newMz,newBxy2,newBz];
-checkSum = sum(writePacket2);
-csHi = uint8(floor(checkSum/256));
-csLo = uint8(mod(checkSum,256));
-writePacket2 = [writePacket2,csHi,csLo];
-writePacketLen = length(writePacket2);
-inlt05 = true;
-ingt05 = false;
+writePacket = [writePacket,csHi,csLo];
+writePacketLen = length(writePacket);
+packetSent = false;
 
 %% Sets up and open serial object
 BaudRate = 115200;
@@ -46,7 +46,7 @@ packetLen = 98;
 dt = 0.008;
 numFrames = timeInSecs/dt; % seconds*(1frame/secs)=frames
 rawData = nan(numFrames,packetLen);
-data = nan(numFrames,writePacketLen);
+data = nan(numFrames,23);
 
 %% Open Serial Port
 disp('........opening port...........');
@@ -55,17 +55,10 @@ s1 = serialport('COM24',BaudRate);
 %% start main collection loop
 totalTime = 0; i = 1;
 while(totalTime < timeInSecs )
-    if i > 1
-        if data(i-1,5) < 0.5 && ~inlt05
-            inlt05 = true; ingt05 = false;
-            write(s1,writePacket1,'uint8');
-            disp('.....sending 1')
-        end
-        if data(i-1,5) > 0.5 && ~ingt05
-            inlt05 = false; ingt05 = true;
-            write(s1,writePacket2,'uint8');
-            disp('.....sending 2')
-        end
+    if ~packetSent && i > 1
+        packetSent = true;
+        write(s1,writePacket,'uint8');
+        disp('.....sending config')
     end
     if s1.NumBytesAvailable >= packetLen
         rawData(i,:) = read(s1,packetLen,'uint8');
@@ -94,8 +87,11 @@ while(totalTime < timeInSecs )
         % Spring Force and Damping
         data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'))/10000;
         data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'))/10000;
+        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'))/10000;
         data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'))/10000;
+        % Other Data
         data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'))/10000;
+        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/10000;
         % Loop time
         data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
         % Loop Data
@@ -134,14 +130,14 @@ q3PosGoal = plot(data(:,1),data(:,16),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
 legend({'Pres','Goal'},'Location','best');title('Elbow Position');
 legend('boxoff'); xlabel('Time (sec)');ylabel('Angle (rad)');
 
-subplot(4,6,[19,21])
-yyaxis left
-dampingPlot = plot(data(:,1),data(:,20),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
-hold on; grid on; xlim([0,timeInSecs]); ylim([Bxy1-5,Bxy2+5]); ylabel('Damping XY');
-yyaxis right
-dampingPlotY = plot(data(:,1),data(:,5),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
-legend('Damping','X');title('Damping Regions');
-xlabel('Time (sec)'); ylabel('X (m)')
+% subplot(4,6,[19,21])
+% yyaxis left
+% dampingPlot = plot(data(:,1),data(:,20),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
+% hold on; grid on; xlim([0,timeInSecs]); ylim([Bxy-5,Bxy2+5]); ylabel('Damping XY');
+% yyaxis right
+% dampingPlotY = plot(data(:,1),data(:,5),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
+% legend('Damping','X');title('Damping Regions');
+% xlabel('Time (sec)'); ylabel('X (m)')
 
 subplot(4,6,[4,12])
 fPlotX = plot(data(:,1),data(:,2),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
@@ -155,7 +151,7 @@ subplot(4,6,[7,15])
 yyaxis left
 zPlotU = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
 hold on; grid on; xlim([0,timeInSecs]);
-zPlotS = plot(data(:,1),data(:,17),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
+zPlotS = plot(data(:,1),data(:,21),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
 ylabel('Force (N)');
 yyaxis right
 q2PosPres2 = plot(data(:,1),data(:,12),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
