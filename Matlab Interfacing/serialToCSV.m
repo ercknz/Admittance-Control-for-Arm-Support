@@ -8,7 +8,7 @@
 clear; clc; close all; delete(instrfindall);
 %% CSV file
 timeInSecs = 30;
-logFileID = '_EN_TEST_Ex10';
+logFileID = '_QQ_TEST_Ex10';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
@@ -18,8 +18,8 @@ Mxy = 1.0; % kg
 Mz = 1.0; % kg
 Bxy = 5.0; % N*(sec/m)
 Bz = 1.0; % N*(sec/m)
-scalingFactor = 0.10;
-eFx = 0.0; % N
+scalingFactor = 0.25;
+eFx = 0.0; % N 
 eFy = 0.0; % N
 eFz = 0.0; % N
 bytesMxy = typecast(int32(Mxy*10000),'uint8');
