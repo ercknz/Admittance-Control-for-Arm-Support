@@ -5,12 +5,17 @@ using System.IO.Ports;
 
 public class ArmSupportComm : MonoBehaviour
 {
-    public string comPort;
-    public int baudRate;
+    public string comPort = "Com24";
+    public int baudRate = 115200;
 
-    private int rxPacketLen;
+    const private int rxPacketLen = 98;
+    const private int txPacketLen = 35;
+    private byte[] rxHeader = {};
+    private byte[] configHeader = {};
+    private byte[] modHeader = {};
 
-    private float dt;
+
+    private float dt = 0.008f;
 
 
     // Start is called before the first frame update
@@ -24,4 +29,13 @@ public class ArmSupportComm : MonoBehaviour
     {
         
     }
+
+    short ByteArrayToInt16(){
+
+    }
+
+    float ByteArrayToFloat(){
+
+    }
+
 }
