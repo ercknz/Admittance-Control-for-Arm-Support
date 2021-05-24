@@ -36,6 +36,14 @@ public class ArmSupportComm : MonoBehaviour
         
     }
 
+    private SerialPort InitializeArmSupportComm(){
+
+    }
+
+    private void ReadArmSupportComm(){
+
+    }
+
     private void SetPos(){
 
     }
@@ -45,12 +53,12 @@ public class ArmSupportComm : MonoBehaviour
     }
 
     private ushort ByteArrayToUint16(byte hiByte, byte loByte){
-        return hiByte * 256 + loByte;
+        ushort outVal = hiByte * 256 + loByte;
+        return outVal;
     }
 
     private float ByteArrayToFloat(byte byte1, byte byte2, byte byte3, byte byte4){
         int32_t inInt = ((byte4 & 0xFF) << 24 | (byte3 & 0xFF) << 16 | (byte2 & 0xFF) << 8 | (byte1 & 0xFF));
         return (float)(inInt / 10000.0f);
     }
-
 }
