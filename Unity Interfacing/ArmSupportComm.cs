@@ -7,16 +7,16 @@ public class ArmSupportComm : MonoBehaviour
 {
     public string comPort = "Com24";
     public int baudRate = 115200;
-    private SerialPort ArmSupportSerialPort;
+    private SerialPort ArmSupport;
 
-    const private int rxPacketLen = 98;
-    const private int txPacketLen = 39;
+    private const int rxPacketLen = 98;
+    private const int txPacketLen = 39;
     private byte[] rxHeader     = {170, 8, 69, 0};
     private byte[] modHeader    = {150, 10, 10, 96};
     private byte[] configHeader = {150, 0, 69, 8};
     private byte[] rxBuffer;
 
-    private float dt = 0.008f;
+    //private float dt = 0.008f;
 
     private float X;
     private float Y;
@@ -33,11 +33,11 @@ public class ArmSupportComm : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ArmSupportComm = new SerialPort();
-        ArmSupportComm.PortName = comPort;
-        ArmSupportComm.BaudRate = baudRate;
-        ArmSupportComm.ReadTimeout = 500;
-        ArmSupportComm.Open();
+        ArmSupport = new SerialPort();
+        ArmSupport.PortName = comPort;
+        ArmSupport.BaudRate = baudRate;
+        ArmSupport.ReadTimeout = 500;
+        ArmSupport.Open();
     }
 
     // Update is called once per frame
@@ -47,8 +47,8 @@ public class ArmSupportComm : MonoBehaviour
     }
 
     private void ReadArmSupportComm(){
-        while (ByteToRead < rxPacketLen ){}
-        ArmSupportComm.Read(rxBuffer, 0, rxPacketLen);
+        while (ArmSupport.BytesToRead < rxPacketLen ){}
+        ArmSupport.Read(rxBuffer, 0, rxPacketLen);
         if (rxBuffer[0] == rxHeader[0] && rxBuffer[1] == rxHeader[1] && rxBuffer[2] == rxHeader[2] && rxBuffer[3] == rxHeader[3]){
             ushort cSum = 0;
             for (int i = 0; i < rxPacketLen - 2; i++){
@@ -78,10 +78,16 @@ public class ArmSupportComm : MonoBehaviour
         }
     }
 
-    public void GetArmSupportPosition(out xValue, out yValue, out zValue){
-        xValue = X;
-        yValue = Y;
-        zValue = Z;
+    public float  GetX(){
+        return X;
+    }
+
+    public float  GetY(){
+        return Y;
+    }
+
+    public float  GetZ(){
+        return Z;
     }
 
     private void SetVel(){
@@ -89,7 +95,7 @@ public class ArmSupportComm : MonoBehaviour
     }
 
     private ushort ByteArrayToUint16(byte hiByte, byte loByte){
-        ushort outVal = hiByte * 256 + loByte;
+        ushort outVal = (ushort)(hiByte * 256 + loByte);
         return outVal;
     }
 
