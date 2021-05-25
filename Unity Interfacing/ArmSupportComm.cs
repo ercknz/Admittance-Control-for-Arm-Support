@@ -11,28 +11,25 @@ public class ArmSupportComm : MonoBehaviour
 
     private const int rxPacketLen = 98;
     private const int txPacketLen = 39;
-    private byte[] rxHeader     = {170, 8, 69, 0};
-    private byte[] modHeader    = {150, 10, 10, 96};
-    private byte[] configHeader = {150, 0, 69, 8};
-    private byte[] rxBuffer;
+    private byte[] rxHeader = { 170, 8, 69, 0 };
+    private byte[] modHeader = { 150, 10, 10, 96 };
+    private byte[] configHeader = { 150, 0, 69, 8 };
+    private byte[] rxBuffer = new byte[rxPacketLen];
+    private byte[] txBuffer = new byte[txPacketLen];
 
     //private float dt = 0.008f;
 
-    private float X;
-    private float Y;
-    private float Z;
-    private float U;
-    private float V;
-    private float W;
+    private Vector3 GlobalForceVector;
+    private Vector3 PositionVector;
+    private Vector3 InitialPositionVector;
+    private Vector3 VelocityVector;
 
     private bool initialPositionSet = false;
-    private float initialX;
-    private float initialY;
-    private float initialZ;
+
+    public Transform target;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start(){
         ArmSupport = new SerialPort();
         ArmSupport.PortName = comPort;
         ArmSupport.BaudRate = baudRate;
@@ -41,9 +38,11 @@ public class ArmSupportComm : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        ReadArmSupportComm();
+    void Update(){
+        if (ArmSupport.IsOpen){
+            ReadArmSupportComm();
+            target.transform.Translate(PositionVector.x, PositionVector.z, PositionVector.y);
+        }
     }
 
     private void ReadArmSupportComm(){
@@ -60,7 +59,7 @@ public class ArmSupportComm : MonoBehaviour
                 float xVal = ByteArrayToFloat(rxBuffer[20], rxBuffer[21], rxBuffer[22], rxBuffer[23]);
                 float yVal = ByteArrayToFloat(rxBuffer[24], rxBuffer[25], rxBuffer[26], rxBuffer[27]);
                 float zVal = ByteArrayToFloat(rxBuffer[28], rxBuffer[29], rxBuffer[30], rxBuffer[31]);
-                SetPos(xVal, yVal, zVal);
+                SetPosition(xVal, yVal, zVal);
             }
         }
     }
@@ -68,26 +67,10 @@ public class ArmSupportComm : MonoBehaviour
     private void SetPosition(float xPos, float yPos, float zPos){
         if (!initialPositionSet){
             initialPositionSet = true;
-            initialX = xPos;
-            initialY = yPos;
-            initialZ = zPos;
+            InitialPositionVector = new Vector3(xPos, yPos, zPos);
         } else {
-            X = initialX - xPos;
-            Y = initialY - yPos;
-            Z = initialZ - zPos;
+            PositionVector = new Vector3(xPos - InitialPositionVector.x, yPos - InitialPositionVector.y, zPos - InitialPositionVector.z);
         }
-    }
-
-    public float  GetX(){
-        return X;
-    }
-
-    public float  GetY(){
-        return Y;
-    }
-
-    public float  GetZ(){
-        return Z;
     }
 
     private void SetVel(){
@@ -100,7 +83,7 @@ public class ArmSupportComm : MonoBehaviour
     }
 
     private float ByteArrayToFloat(byte byte1, byte byte2, byte byte3, byte byte4){
-        int32_t inInt = ((byte4 & 0xFF) << 24 | (byte3 & 0xFF) << 16 | (byte2 & 0xFF) << 8 | (byte1 & 0xFF));
+        int inInt = ((byte4 & 0xFF) << 24 | (byte3 & 0xFF) << 16 | (byte2 & 0xFF) << 8 | (byte1 & 0xFF));
         return (float)(inInt / 10000.0f);
     }
 }
