@@ -5,7 +5,7 @@ using System.IO.Ports;
 
 public class ArmSupportComm : MonoBehaviour
 {
-    public string comPort = "Com24";
+    public string comPort = "COM24";
     public int baudRate = 115200;
     private SerialPort ArmSupport;
 
@@ -34,19 +34,21 @@ public class ArmSupportComm : MonoBehaviour
         ArmSupport.PortName = comPort;
         ArmSupport.BaudRate = baudRate;
         ArmSupport.ReadTimeout = 500;
+        ArmSupport.DtrEnable = true;
         ArmSupport.Open();
     }
 
     // Update is called once per frame
     void Update(){
         if (ArmSupport.IsOpen){
+            Debug.Log(ArmSupport.BytesToRead);
             ReadArmSupportComm();
             target.transform.Translate(PositionVector.x, PositionVector.z, PositionVector.y);
         }
     }
 
     private void ReadArmSupportComm(){
-        while (ArmSupport.BytesToRead < rxPacketLen ){}
+        while (ArmSupport.BytesToRead < rxPacketLen) { }
         ArmSupport.Read(rxBuffer, 0, rxPacketLen);
         if (rxBuffer[0] == rxHeader[0] && rxBuffer[1] == rxHeader[1] && rxBuffer[2] == rxHeader[2] && rxBuffer[3] == rxHeader[3]){
             ushort cSum = 0;
