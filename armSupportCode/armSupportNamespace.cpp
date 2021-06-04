@@ -11,12 +11,13 @@ namespace ASR
 {
 /************************ Constants ************************/
 /* Dynamixel Communication Parameters */
-const float   PROTOCOL_VERSION = 2.0;
-const int     SENSOR_BAUDRATE  = 1000000;
-const int     SERIAL_BAUDRATE  = 115200;
-const int     MOTOR_BAUDRATE   = 1000000;
-const char   *DEVICEPORT       = "3";
-const uint8_t CAL_BUTTON_PIN   = 17;
+const float   PROTOCOL_VERSION  = 2.0;
+const int     SENSOR_BAUDRATE   = 1000000;
+const int     SERIAL_BAUDRATE   = 115200;
+const int     MOTOR_BAUDRATE    = 1000000;
+const char   *DEVICEPORT        = "3";
+const uint8_t CAL_BUTTON_PIN    = 17;
+const uint8_t TORQUE_SWITCH_PIN = 0;
 /* Dynamixel Motor Parameters */
 const uint8_t ID_SHOULDER       = 3;
 const uint8_t ID_SHLDR_SLAVE    = 13;

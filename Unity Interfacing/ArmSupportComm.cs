@@ -5,8 +5,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.IO;
 using System.IO.Ports;
 using System.Threading;
+
 
 public class ArmSupportComm : MonoBehaviour
 {
@@ -31,18 +33,25 @@ public class ArmSupportComm : MonoBehaviour
 
     //private const float dt = 0.008f;
 
-    private float elapsedTime;
-    private Vector3 GlobalForceVector;
-    private Vector3 PositionVector;
-    private Vector3 InitialPositionVector;
-    private Vector3 VelocityVector;
-    JointSpace presQ = new JointSpace();
-    
-    struct JointSpace{
+    struct ArmSupportData{
+        public float elapsedTime;
+        public float Fx;
+        public float Fy;
+        public float Fz;
+        public float X;
+        public float Y;
+        public float Z;
+        public float U;
+        public float V;
+        public float W;
         public float Q1;
         public float Q2;
         public float Q4;
     }
+
+    private Vector3 InitialPositionVector;
+    ArmSupportData presData = new ArmSupportData();
+    static List<ArmSupportData> allData;
 
     private bool initialPositionSet = false;
 
@@ -76,19 +85,20 @@ public class ArmSupportComm : MonoBehaviour
         FrameUpdater.Start();
 
         SendArmSupportModifier();
+        allData = new List<ArmSupportData>();
     }
 
     // Update is called once per frame
     void Update(){
         if (ArmSupport.IsOpen){
-            Debug.Log("Time: " + elapsedTime + " JointSpace -> Q1=" + presQ.Q1 + " Q2=" + presQ.Q2 + " Q4=" + presQ.Q4);
-            target.transform.position = new Vector3(PositionVector.x * scalingFactor, 0 * scalingFactor, PositionVector.z * scalingFactor);
+            Debug.Log("Time: " + presData.elapsedTime + " JointSpace -> Q1=" + presData.Q1 + " Q2=" + presData.Q2 + " Q4=" + presData.Q4);
+            target.transform.position = new Vector3(presData.X * scalingFactor, presData.Y * scalingFactor, presData.Z * scalingFactor);
         }
-        
     }
 
     private void OnApplicationQuit(){
         ArmSupport.Close();
+        SaveArmSupportData();
     }
 
     private void ReadArmSupportComm(){
@@ -108,14 +118,13 @@ public class ArmSupportComm : MonoBehaviour
                     ushort packetCS = ByteArrayToUint16(rxBuffer[rxPacketLen - 2], rxBuffer[rxPacketLen - 1]);
                     if (cSum == packetCS){
                         // Elasped Time
-                        elapsedTime = 0.001f * ByteArrayToUInt32(rxBuffer[4], rxBuffer[5], rxBuffer[6], rxBuffer[7]);
+                        presData.elapsedTime = 0.001f * ByteArrayToUInt32(rxBuffer[4], rxBuffer[5], rxBuffer[6], rxBuffer[7]);
 
                         // Global Forces (note: Unity.Y = Robot.Z)
-                        float xForceVal = ByteArrayToFloat(rxBuffer[8], rxBuffer[9], rxBuffer[10], rxBuffer[11]);
-                        float yForceVal = ByteArrayToFloat(rxBuffer[16], rxBuffer[17], rxBuffer[18], rxBuffer[19]);
-                        float zForceVal = ByteArrayToFloat(rxBuffer[12], rxBuffer[13], rxBuffer[14], rxBuffer[15]);
-                        FixRotationalOffset(ref xForceVal, ref zForceVal);
-                        GlobalForceVector = new Vector3(xForceVal, yForceVal, zForceVal);
+                        presData.Fx = ByteArrayToFloat(rxBuffer[8], rxBuffer[9], rxBuffer[10], rxBuffer[11]);
+                        presData.Fy = ByteArrayToFloat(rxBuffer[16], rxBuffer[17], rxBuffer[18], rxBuffer[19]);
+                        presData.Fz = ByteArrayToFloat(rxBuffer[12], rxBuffer[13], rxBuffer[14], rxBuffer[15]);
+                        FixRotationalOffset(ref presData.Fx, ref presData.Fz);
 
                         // End effector Position Data (note: Unity.Y = Robot.Z)
                         float xPosVal = ByteArrayToFloat(rxBuffer[20], rxBuffer[21], rxBuffer[22], rxBuffer[23]);
@@ -125,16 +134,18 @@ public class ArmSupportComm : MonoBehaviour
                         SetPosition(xPosVal, yPosVal, zPosVal);
 
                         // End Effector Velocity Data (Note: Unity.Y = Robot.Z)
-                        float xVelVal = ByteArrayToFloat(rxBuffer[32], rxBuffer[33], rxBuffer[34], rxBuffer[35]);
-                        float yVelVal = ByteArrayToFloat(rxBuffer[40], rxBuffer[41], rxBuffer[42], rxBuffer[43]);
-                        float zVelVal = ByteArrayToFloat(rxBuffer[36], rxBuffer[37], rxBuffer[38], rxBuffer[39]);
-                        FixRotationalOffset(ref xVelVal, ref zVelVal);
-                        VelocityVector = new Vector3(xVelVal, yVelVal, zVelVal);
+                        presData.U = ByteArrayToFloat(rxBuffer[32], rxBuffer[33], rxBuffer[34], rxBuffer[35]);
+                        presData.V = ByteArrayToFloat(rxBuffer[40], rxBuffer[41], rxBuffer[42], rxBuffer[43]);
+                        presData.W = ByteArrayToFloat(rxBuffer[36], rxBuffer[37], rxBuffer[38], rxBuffer[39]);
+                        FixRotationalOffset(ref presData.U, ref presData.W);
 
                         // JointSpace of robot
-                        presQ.Q1 = ByteArrayToFloat(rxBuffer[44], rxBuffer[45], rxBuffer[46], rxBuffer[47]);
-                        presQ.Q2 = ByteArrayToFloat(rxBuffer[48], rxBuffer[49], rxBuffer[50], rxBuffer[51]);
-                        presQ.Q4 = ByteArrayToFloat(rxBuffer[52], rxBuffer[53], rxBuffer[54], rxBuffer[55]);
+                        presData.Q1 = ByteArrayToFloat(rxBuffer[44], rxBuffer[45], rxBuffer[46], rxBuffer[47]);
+                        presData.Q2 = ByteArrayToFloat(rxBuffer[48], rxBuffer[49], rxBuffer[50], rxBuffer[51]);
+                        presData.Q4 = ByteArrayToFloat(rxBuffer[52], rxBuffer[53], rxBuffer[54], rxBuffer[55]);
+
+                        // Save data
+                        allData.Add(presData);
                     }
                 }
             } catch (InvalidOperationException){
@@ -163,11 +174,26 @@ public class ArmSupportComm : MonoBehaviour
         }
         txBuffer[txPacketLen - 2] = (byte)(checkSum / 256);
         txBuffer[txPacketLen - 1] = (byte)(checkSum % 256);
-        Debug.Log("Initial Modifier Packet: " + String.Join(" ", new List<byte>(txBuffer).ConvertAll(i => i.ToString()).ToArray()));
+        // Debug.Log("Initial Modifier Packet: " + String.Join(" ", new List<byte>(txBuffer).ConvertAll(i => i.ToString()).ToArray()));
+        if (ArmSupport.IsOpen){
+            ArmSupport.Write(txBuffer, 0, txPacketLen);
+        }
     }
 
     private void SaveArmSupportData(){
-
+        string LogFileName = "./DataLogs/ArmSupportUnityLog_3" + ".csv";
+        using (StreamWriter sw = new StreamWriter(LogFileName)){
+            string LogFileHeader = "Time,Fx,Fy,Fz,Px,Py,Pz,Vx,Vy,Vz,Q1,Q2,Q4";
+            sw.WriteLine(LogFileHeader);
+            foreach (var asFrame in allData){
+                string NewLogFileLine = asFrame.elapsedTime + "," 
+                                        + asFrame.Fx + "," + asFrame.Fy + "," + asFrame.Fz + "," 
+                                        + asFrame.X + "," + asFrame.Y + "," + asFrame.Z + "," 
+                                        + asFrame.U + "," + asFrame.V + "," + asFrame.W + "," 
+                                        + asFrame.Q1 + "," + asFrame.Q2 + "," + asFrame.Q4;
+                sw.WriteLine(NewLogFileLine);
+            }
+        }
     }
 
     private void SetPosition(float xPos, float yPos, float zPos){
@@ -175,7 +201,9 @@ public class ArmSupportComm : MonoBehaviour
             initialPositionSet = true;
             InitialPositionVector = new Vector3(xPos, yPos, zPos);
         } else {
-            PositionVector = new Vector3(xPos - InitialPositionVector.x, yPos - InitialPositionVector.y, zPos - InitialPositionVector.z);
+            presData.X = xPos - InitialPositionVector.x;
+            presData.Y = yPos - InitialPositionVector.y;
+            presData.Z = zPos - InitialPositionVector.z;
         }
     }
 

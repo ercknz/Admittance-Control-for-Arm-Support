@@ -33,8 +33,9 @@ SerialPackets   pcComm          = SerialPackets(&Serial, ASR::SERIAL_BAUDRATE);
 void setup() {
   /* Wait for Serial Comm */
   while (!Serial);
-  /* Seutp user calibration buttons */
+  /* Set pin modes */
   pinMode(ASR::CAL_BUTTON_PIN, INPUT_PULLDOWN);
+  pinMode(ASR::TORQUE_SWITCH_PIN, INPUT);
   /* Setup port and packet handlers */
   portHandler   = dynamixel::PortHandler::getPortHandler(ASR::DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(ASR::PROTOCOL_VERSION);
@@ -64,8 +65,12 @@ void loop() {
   addParamResult = syncReadPacket.addParam(ASR::ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ASR::ID_ELBOW);
   addParamResult = syncReadPacket.addParam(ASR::ID_ELEVATION);
-
-  ArmSupportRobot.EnableTorque(portHandler, packetHandler, ENABLE);   // Toggle torque for troubleshooting
+  //Serial.println("Torque check");
+  //Serial.println(digitalRead(ASR::TORQUE_SWITCH_PIN));
+  if (digitalRead(ASR::TORQUE_SWITCH_PIN == HIGH){
+    ArmSupportRobot.EnableTorque(portHandler, packetHandler, ENABLE);
+  }
+  ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);
   delay(100);
 
   /* Initialize Model */
@@ -122,6 +127,7 @@ void loop() {
       /* Outgoing Data */
       loopTime = millis() - startLoop;
       pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+      //Serial.println(digitalRead(ASR::TORQUE_SWITCH_PIN));
     }
   }
   if (!Serial) {

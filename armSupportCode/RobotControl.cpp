@@ -222,6 +222,11 @@ void  RobotControl::fKine() {
 
 /******************** Arm Support Spring Force Member Functions ************************************************/
 void RobotControl::springForce(){
+  // find the apporpriate scalingfactor
+  // +angle and +force
+  // +angle and -force
+  // -angle and -force
+  // -angle and +force
   /* Calculated Variables */
   float alpha = 90.0 - qPres_M[1];
   float springLength = sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2) - 2 * ASR::SPRING_SIDE_A * ASR::SPRING_SIDE_B * cos(alpha));
