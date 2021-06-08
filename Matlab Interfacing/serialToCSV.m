@@ -8,31 +8,31 @@
 clear; clc; close all; delete(instrfindall);
 %% CSV file
 timeInSecs = 30;
-logFileID = '_QQ_TEST_Ex10';
+logFileID = '_EN_100B3_';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
 
 %% Modify mass and damping setup
-Mxy = 1.0; % kg
-Mz = 1.0; % kg
-Bxy = 5.0; % N*(sec/m)
-Bz = 1.0; % N*(sec/m)
-scalingFactor = 0.25;
+Mxy = 0.0; % kg
+Mz = 0.0; % kg
+Bxy = 0.0; % N*(sec/m)
+Bz = 3.0; % N*(sec/m)
+scalingFactor = 1.0;
 eFx = 0.0; % N 
 eFy = 0.0; % N
 eFz = 0.0; % N
 bytesMxy = typecast(int32(Mxy*10000),'uint8');
 bytesMz = typecast(int32(Mz*10000),'uint8');
-bytesBxy1 = typecast(int32(Bxy*10000),'uint8');
+bytesBxy = typecast(int32(Bxy*10000),'uint8');
 bytesBz = typecast(int32(Bz*10000),'uint8');
 bytesFactor = typecast(int32(scalingFactor*10000),'uint8');
 bytesFx = typecast(int32(eFx*10000),'uint8');
 bytesFy = typecast(int32(eFy*10000),'uint8');
 bytesFz = typecast(int32(eFz*10000),'uint8');
 configHeader = uint8([150, 10, 10, 96]);
-modByte = uint8(16);
-writePacket = [configHeader,modByte,bytesMxy,bytesMz,bytesBxy1,bytesBz,bytesFactor,bytesFx,bytesFy,bytesFz];
+modByte = uint8(24);
+writePacket = [configHeader,modByte,bytesMxy,bytesMz,bytesBxy,bytesBz,bytesFactor,bytesFx,bytesFy,bytesFz];
 checkSum = sum(writePacket);
 csHi = uint8(floor(checkSum/256));
 csLo = uint8(mod(checkSum,256));
@@ -50,7 +50,7 @@ data = nan(numFrames,23);
 
 %% Open Serial Port
 disp('........opening port...........');
-s1 = serialport('COM24',BaudRate);
+s1 = serialport('COM28',BaudRate);
 
 %% start main collection loop
 totalTime = 0; i = 1;
@@ -65,33 +65,35 @@ while(totalTime < timeInSecs )
         % Total Time
         data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
         % XYZ Global Forces
-        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'))/10000;
-        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'))/10000;
-        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'))/10000;
+        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'));
+        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'));
+        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'));
         % XYZ Bot Goal
-        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'))/10000;
-        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'))/10000;
-        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'))/10000;
+        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'));
+        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'));
+        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'));
         % XYZ Dot Bot Goal
-        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'))/10000;
-        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'))/10000;
-        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'))/10000;
+        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'));
+        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'));
+        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'));
         % Pres Q
-        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'))/10000;
-        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'))/10000;
-        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'))/10000;
+        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'));
+        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'));
+        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'));
         % Goal Q
-        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'))/10000;
-        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'))/10000;
-        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'))/10000;
-        % Spring Force and Damping
-        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'))/10000;
-        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'))/10000;
-        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'))/10000;
-        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'))/10000;
-        % Other Data
-        data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'))/10000;
-        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'))/10000;
+        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'));
+        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'));
+        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'));
+        % MassXY and Z
+        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'));
+        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'));
+        % Damping XY and Z
+        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'));
+        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'));
+        % Spring Force
+        data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'));
+        % Other data
+        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'));
         % Loop time
         data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
         % Loop Data
@@ -100,6 +102,7 @@ while(totalTime < timeInSecs )
     end
 end
 data(:,1) = data(:,1)*0.001;
+data(:,2:22) = data(:,2:22)./10000;
 
 %% post cleanup
 delete(s1);

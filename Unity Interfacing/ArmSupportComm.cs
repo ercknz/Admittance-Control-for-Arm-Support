@@ -12,7 +12,7 @@ using System.Threading;
 
 public class ArmSupportComm : MonoBehaviour
 {
-    public string comPort = "COM24";
+    public string comPort = "COM28";
     public int baudRate = 115200;
     private SerialPort ArmSupport;
 
@@ -28,13 +28,13 @@ public class ArmSupportComm : MonoBehaviour
     public float MassXY = 1.5f;
     public float MassZ = 1.5f;
     public float DampingXY = 5.0f;
-    public float DampingZ = 4.5f;
-    public float SpringCompRatio = 0.05f;
+    public float DampingZ = 3.0f;
+    public float SpringCompRatio = 1.0f;
 
     //private const float dt = 0.008f;
 
     struct ArmSupportData{
-        public float elapsedTime;
+        public float elapsedT;
         public float Fx;
         public float Fy;
         public float Fz;
@@ -44,14 +44,24 @@ public class ArmSupportComm : MonoBehaviour
         public float U;
         public float V;
         public float W;
-        public float Q1;
-        public float Q2;
-        public float Q4;
+        public float pQ1;
+        public float pQ2;
+        public float pQ4;
+        public float gQ1;
+        public float gQ2;
+        public float gQ4;
+        public float Mxy;
+        public float Mz;
+        public float Bxy;
+        public float Bz;
+        public float springF;
+        public float loopT;
     }
 
     private Vector3 InitialPositionVector;
     ArmSupportData presData = new ArmSupportData();
     static List<ArmSupportData> allData;
+    static DateTime dt = new DateTime();
 
     private bool initialPositionSet = false;
 
@@ -70,10 +80,13 @@ public class ArmSupportComm : MonoBehaviour
             BaudRate = baudRate,
             ReadTimeout = 500,
             DtrEnable = true,
+            RtsEnable = true,
         };
+
+        dt = DateTime.Now;
         ArmSupport.Open();
         if (ArmSupport.IsOpen){
-            Console.WriteLine("Arm Support Port Successfully Opened.");
+            Debug.Log("Arm Support Port Successfully Opened.");
         } else {
             throw new ArgumentException("Arm Support Not Connected");
         }
@@ -91,7 +104,7 @@ public class ArmSupportComm : MonoBehaviour
     // Update is called once per frame
     void Update(){
         if (ArmSupport.IsOpen){
-            Debug.Log("Time: " + presData.elapsedTime + " JointSpace -> Q1=" + presData.Q1 + " Q2=" + presData.Q2 + " Q4=" + presData.Q4);
+            Debug.Log("Time: " + presData.elapsedT + " Mass Position -> X=" + presData.X + " Y=" + presData.Y + " Z=" + presData.Z);
             target.transform.position = new Vector3(presData.X * scalingFactor, presData.Y * scalingFactor, presData.Z * scalingFactor);
         }
     }
@@ -118,7 +131,7 @@ public class ArmSupportComm : MonoBehaviour
                     ushort packetCS = ByteArrayToUint16(rxBuffer[rxPacketLen - 2], rxBuffer[rxPacketLen - 1]);
                     if (cSum == packetCS){
                         // Elasped Time
-                        presData.elapsedTime = 0.001f * ByteArrayToUInt32(rxBuffer[4], rxBuffer[5], rxBuffer[6], rxBuffer[7]);
+                        presData.elapsedT = 0.001f * ByteArrayToUInt32(rxBuffer[4], rxBuffer[5], rxBuffer[6], rxBuffer[7]);
 
                         // Global Forces (note: Unity.Y = Robot.Z)
                         presData.Fx = ByteArrayToFloat(rxBuffer[8], rxBuffer[9], rxBuffer[10], rxBuffer[11]);
@@ -139,10 +152,29 @@ public class ArmSupportComm : MonoBehaviour
                         presData.W = ByteArrayToFloat(rxBuffer[36], rxBuffer[37], rxBuffer[38], rxBuffer[39]);
                         FixRotationalOffset(ref presData.U, ref presData.W);
 
-                        // JointSpace of robot
-                        presData.Q1 = ByteArrayToFloat(rxBuffer[44], rxBuffer[45], rxBuffer[46], rxBuffer[47]);
-                        presData.Q2 = ByteArrayToFloat(rxBuffer[48], rxBuffer[49], rxBuffer[50], rxBuffer[51]);
-                        presData.Q4 = ByteArrayToFloat(rxBuffer[52], rxBuffer[53], rxBuffer[54], rxBuffer[55]);
+                        // Present JointSpace of robot
+                        presData.pQ1 = ByteArrayToFloat(rxBuffer[44], rxBuffer[45], rxBuffer[46], rxBuffer[47]);
+                        presData.pQ2 = ByteArrayToFloat(rxBuffer[48], rxBuffer[49], rxBuffer[50], rxBuffer[51]);
+                        presData.pQ4 = ByteArrayToFloat(rxBuffer[52], rxBuffer[53], rxBuffer[54], rxBuffer[55]);
+
+                        // Goal JointSpace of robot
+                        presData.gQ1 = ByteArrayToFloat(rxBuffer[56], rxBuffer[57], rxBuffer[58], rxBuffer[59]);
+                        presData.gQ2 = ByteArrayToFloat(rxBuffer[60], rxBuffer[61], rxBuffer[62], rxBuffer[63]);
+                        presData.gQ4 = ByteArrayToFloat(rxBuffer[64], rxBuffer[65], rxBuffer[66], rxBuffer[67]);
+
+                        // Mass XY and Z
+                        presData.Mxy = ByteArrayToFloat(rxBuffer[68], rxBuffer[69], rxBuffer[70], rxBuffer[71]);
+                        presData.Mz  = ByteArrayToFloat(rxBuffer[72], rxBuffer[73], rxBuffer[74], rxBuffer[75]);
+
+                        // Damping XY and Z
+                        presData.Bxy = ByteArrayToFloat(rxBuffer[76], rxBuffer[77], rxBuffer[78], rxBuffer[79]);
+                        presData.Bz  = ByteArrayToFloat(rxBuffer[80], rxBuffer[81], rxBuffer[82], rxBuffer[83]);
+
+                        // Spring Force
+                        presData.springF = ByteArrayToFloat(rxBuffer[84], rxBuffer[85], rxBuffer[86], rxBuffer[87]);
+
+                        // Loop Time
+                        presData.loopT = ByteArrayToUInt32(rxBuffer[92], rxBuffer[93], rxBuffer[94], rxBuffer[95]);
 
                         // Save data
                         allData.Add(presData);
@@ -157,7 +189,7 @@ public class ArmSupportComm : MonoBehaviour
     private void SendArmSupportModifier(){
         Array.Clear(txBuffer, 0, txPacketLen);
         modifierHeader.CopyTo(txBuffer, 0);
-        txBuffer[4] = 16;
+        txBuffer[4] = 24;
         byte[] BytesMxy = FloatToByteArray(MassXY);
         BytesMxy.CopyTo(txBuffer, 5);
         byte[] BytesMz = FloatToByteArray(MassZ);
@@ -176,21 +208,25 @@ public class ArmSupportComm : MonoBehaviour
         txBuffer[txPacketLen - 1] = (byte)(checkSum % 256);
         // Debug.Log("Initial Modifier Packet: " + String.Join(" ", new List<byte>(txBuffer).ConvertAll(i => i.ToString()).ToArray()));
         if (ArmSupport.IsOpen){
+            Debug.Log("Sending Initial Configuration");
             ArmSupport.Write(txBuffer, 0, txPacketLen);
         }
     }
 
     private void SaveArmSupportData(){
-        string LogFileName = "./DataLogs/ArmSupportUnityLog_3" + ".csv";
+        string LogFileName = "./DataLogs/ArmSupportUnityLog_" + dt.ToString("MMddyy-HHmm") + ".csv";
         using (StreamWriter sw = new StreamWriter(LogFileName)){
-            string LogFileHeader = "Time,Fx,Fy,Fz,Px,Py,Pz,Vx,Vy,Vz,Q1,Q2,Q4";
+            string LogFileHeader = "Time,Fx,Fy,Fz,Px,Py,Pz,Vx,Vy,Vz,pQ1,pQ2,pQ4,gQ1,gQ2,gQ4,Mxy,Mz,Bxy,Bz,Fs,Loop";
             sw.WriteLine(LogFileHeader);
             foreach (var asFrame in allData){
-                string NewLogFileLine = asFrame.elapsedTime + "," 
-                                        + asFrame.Fx + "," + asFrame.Fy + "," + asFrame.Fz + "," 
-                                        + asFrame.X + "," + asFrame.Y + "," + asFrame.Z + "," 
-                                        + asFrame.U + "," + asFrame.V + "," + asFrame.W + "," 
-                                        + asFrame.Q1 + "," + asFrame.Q2 + "," + asFrame.Q4;
+                string NewLogFileLine = asFrame.elapsedT + ","
+                                        + asFrame.Fx + "," + asFrame.Fy + "," + asFrame.Fz + ","
+                                        + asFrame.X + "," + asFrame.Y + "," + asFrame.Z + ","
+                                        + asFrame.U + "," + asFrame.V + "," + asFrame.W + ","
+                                        + asFrame.pQ1 + "," + asFrame.pQ2 + "," + asFrame.pQ4 + ","
+                                        + asFrame.gQ1 + "," + asFrame.gQ2 + "," + asFrame.gQ4 + ","
+                                        + asFrame.Mxy + "," + asFrame.Mz + "," + asFrame.Bxy + "," + asFrame.Bz + ","
+                                        + asFrame.springF + "," + asFrame.loopT;
                 sw.WriteLine(NewLogFileLine);
             }
         }

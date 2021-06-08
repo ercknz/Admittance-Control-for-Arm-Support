@@ -97,7 +97,6 @@ float RobotControl::GetSpringForce(){
 void RobotControl::ReadRobot(dynamixel::GroupSyncRead &syncReadPacket){
   ReadMotors(syncReadPacket);
   fKine();
-  springForce();
 }
 
 void RobotControl::WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket){
@@ -186,8 +185,6 @@ void RobotControl::iKine(float *dXYZ, float *XYZDot) {
   qDotCts_M[0] = abs(qDot_M[0] * (60.0 / (2.0 * PI)) / ASR::RPM_PER_COUNT);
   qDotCts_M[1] = abs(qDot_M[1] * (60.0 / (2.0 * PI)) / ASR::RPM_PER_COUNT) * ASR::ELEVATION_RATIO;
   qDotCts_M[2] = abs(qDot_M[2] * (60.0 / (2.0 * PI)) / ASR::RPM_PER_COUNT);
-
-
 }
 
 /******************** Arm Support Forward Kinematics Member Function ************************************************/
@@ -221,17 +218,29 @@ void  RobotControl::fKine() {
 }
 
 /******************** Arm Support Spring Force Member Functions ************************************************/
-void RobotControl::springForce(){
-  // find the apporpriate scalingfactor
-  // +angle and +force
-  // +angle and -force
-  // -angle and -force
-  // -angle and +force
+void RobotControl::CalculateSpringForce(float *forces){
   /* Calculated Variables */
+  float maxCompensation = 0.25;
+  float phaseCompensation;
+  if (qPres_M[1] > 0.0){
+    if (forces[2] > 0.0) {
+      phaseCompensation = maxCompensation * 0.20;
+    } else {
+      phaseCompensation = maxCompensation * 0.40;
+    }
+  } else if (qPres_M[1] < 0.0) {
+    if (forces[2] < 0.0) {
+      phaseCompensation = maxCompensation * 0.20;
+    } else {
+      phaseCompensation = maxCompensation * 0.40;
+    }
+  } else {
+    phaseCompensation = 0.0;
+  }
   float alpha = 90.0 - qPres_M[1];
   float springLength = sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2) - 2 * ASR::SPRING_SIDE_A * ASR::SPRING_SIDE_B * cos(alpha));
   float beta = asin((ASR::SPRING_SIDE_A/springLength) * sin(alpha));
-  springF_M = scalingFactor_M * (ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi);
+  springF_M = scalingFactor_M * phaseCompensation *(ASR::SPRING_KS * (springLength - _SPRING_Li + ASR::SPRING_XI - ASR::SPRING_X0) * sin(beta - qPres_M[1]) - _SPRING_Fi);
 }
 
 void RobotControl::SetScalingFactor(float newScalingFactor){
@@ -291,7 +300,6 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
 /******************** Arm Support DXL Write Member Function ************************************************/
 int  RobotControl::WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket) {
   int dxlCommResult;
-  //uint8_t elbowParam[8], shoulderParam[8], elevateParam[8];
   uint8_t elbowParam[4], shoulderParam[4], elevateParam[4];
 
   /* Shoulder Goal Position Packet */

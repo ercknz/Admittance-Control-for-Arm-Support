@@ -35,7 +35,7 @@ void setup() {
   while (!Serial);
   /* Set pin modes */
   pinMode(ASR::CAL_BUTTON_PIN, INPUT_PULLDOWN);
-  pinMode(ASR::TORQUE_SWITCH_PIN, INPUT);
+  pinMode(ASR::TORQUE_SWITCH_PIN, INPUT_PULLUP);
   /* Setup port and packet handlers */
   portHandler   = dynamixel::PortHandler::getPortHandler(ASR::DEVICEPORT);
   packetHandler = dynamixel::PacketHandler::getPacketHandler(ASR::PROTOCOL_VERSION);
@@ -59,18 +59,19 @@ void loop() {
   /* Sets up dynamixel read/write packet parameters */
   int  goalReturn;
   bool addParamResult = false;
-  //dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ASR::ADDRESS_PROFILE_VELOCITY, ASR::LEN_PROFILE_VELOCITY + ASR::LEN_GOAL_POSITION);
   dynamixel::GroupSyncRead  syncReadPacket(portHandler, packetHandler, ASR::ADDRESS_PRESENT_VELOCITY, ASR::LEN_PRESENT_VELOCITY + ASR::LEN_PRESENT_POSITION);
   dynamixel::GroupSyncWrite syncWritePacket(portHandler, packetHandler, ASR::ADDRESS_GOAL_POSITION, ASR::LEN_GOAL_POSITION);
   addParamResult = syncReadPacket.addParam(ASR::ID_SHOULDER);
   addParamResult = syncReadPacket.addParam(ASR::ID_ELBOW);
   addParamResult = syncReadPacket.addParam(ASR::ID_ELEVATION);
-  //Serial.println("Torque check");
-  //Serial.println(digitalRead(ASR::TORQUE_SWITCH_PIN));
-  if (digitalRead(ASR::TORQUE_SWITCH_PIN == HIGH){
+
+  /* Torque Enable Switch Check */
+  byte switchState = digitalRead(ASR::TORQUE_SWITCH_PIN);
+  if (switchState == LOW) {
     ArmSupportRobot.EnableTorque(portHandler, packetHandler, ENABLE);
+  } else {
+    ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);
   }
-  ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);
   delay(100);
 
   /* Initialize Model */
@@ -84,7 +85,7 @@ void loop() {
   /* Main Loop */
   while (Serial) {
     currentTime = millis();
-    
+
     /* Incoming Data check */
     if (pcComm.DataAvailable()) {
       pcComm.ReadPackets();
@@ -100,7 +101,7 @@ void loop() {
       if (pcComm.ModifyDampingZ()) {
         AdmitModel.SetDampingZ(pcComm.GetNewDampingZ());
       }
-      if (pcComm.ModifyScalingFactor()){
+      if (pcComm.ModifyScalingFactor()) {
         ArmSupportRobot.SetScalingFactor(pcComm.GetNewScalingFactor());
       }
     }
@@ -119,7 +120,8 @@ void loop() {
       ArmSupportRobot.ReadRobot(syncReadPacket);
       presQ = ArmSupportRobot.GetPresQ();
       OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
-      AdmitModel.UpdateModel(OptoForceSensor.GetGlobalF(), ArmSupportRobot.GetSpringForce(),pcComm.GetExternalForces());
+      ArmSupportRobot.CalculateSpringForce(OptoForceSensor.GetGlobalF());
+      AdmitModel.UpdateModel(OptoForceSensor.GetGlobalF(), ArmSupportRobot.GetSpringForce(), pcComm.GetExternalForces());
       xyzGoal = AdmitModel.GetGoalPos();
       xyzDotGoal = AdmitModel.GetGoalVel();
       ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncWritePacket);
@@ -127,7 +129,6 @@ void loop() {
       /* Outgoing Data */
       loopTime = millis() - startLoop;
       pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
-      //Serial.println(digitalRead(ASR::TORQUE_SWITCH_PIN));
     }
   }
   if (!Serial) {

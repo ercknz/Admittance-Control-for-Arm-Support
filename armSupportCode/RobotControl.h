@@ -28,13 +28,13 @@ class RobotControl {
     float *   GetGoalQDot();
     float *   GetGoalPos();
     float *   GetGoalVel();
+    void      CalculateSpringForce(float *forces); 
     float     GetSpringForce();
     void      SetScalingFactor(float newScalingFactor);
     
   private:
     void  fKine();
     void  iKine(float *xyz, float *xyzDot);
-    void  springForce();
     void  ReadMotors(dynamixel::GroupSyncRead &syncReadPacket);
     int   WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
 

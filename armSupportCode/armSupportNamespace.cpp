@@ -17,7 +17,7 @@ const int     SERIAL_BAUDRATE   = 115200;
 const int     MOTOR_BAUDRATE    = 1000000;
 const char   *DEVICEPORT        = "3";
 const uint8_t CAL_BUTTON_PIN    = 17;
-const uint8_t TORQUE_SWITCH_PIN = 0;
+const uint8_t TORQUE_SWITCH_PIN = 1;
 /* Dynamixel Motor Parameters */
 const uint8_t ID_SHOULDER       = 3;
 const uint8_t ID_SHLDR_SLAVE    = 13;
