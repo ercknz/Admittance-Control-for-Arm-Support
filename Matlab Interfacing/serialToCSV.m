@@ -14,9 +14,9 @@ csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
 
 %% Modify mass and damping setup
-Mxy = 0.0; % kg
-Mz = 0.0; % kg
-Bxy = 0.0; % N*(sec/m)
+Mxy = 1.5; % kg
+Mz = 1.5; % kg
+Bxy = 5.0; % N*(sec/m)
 Bz = 3.0; % N*(sec/m)
 scalingFactor = 1.0;
 eFx = 0.0; % N 

@@ -223,17 +223,9 @@ void RobotControl::CalculateSpringForce(float *forces){
   float maxCompensation = 0.25;
   float phaseCompensation;
   if (qPres_M[1] > 0.0){
-    if (forces[2] > 0.0) {
-      phaseCompensation = maxCompensation * 0.20;
-    } else {
-      phaseCompensation = maxCompensation * 0.40;
-    }
+    phaseCompensation = maxCompensation * 0.20;
   } else if (qPres_M[1] < 0.0) {
-    if (forces[2] < 0.0) {
-      phaseCompensation = maxCompensation * 0.20;
-    } else {
-      phaseCompensation = maxCompensation * 0.40;
-    }
+    phaseCompensation = maxCompensation * 0.40;
   } else {
     phaseCompensation = 0.0;
   }

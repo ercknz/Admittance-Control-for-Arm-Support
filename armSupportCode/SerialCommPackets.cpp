@@ -66,7 +66,7 @@ float * SerialPackets::GetExternalForces(){
     ExtForces_M[1] = 0.0f;
   }
   if (~_NEW_EXT_FORCE_Z) {
-    ExtForces_M[2] - 0.0f;
+    ExtForces_M[2] = 0.0f;
   }
   _NEW_EXT_FORCE_X = false;
   _NEW_EXT_FORCE_Y = false;
