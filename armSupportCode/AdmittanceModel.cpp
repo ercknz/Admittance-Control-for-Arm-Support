@@ -39,8 +39,8 @@
 
 /* Admittance Model Constructor  **********************************************/
 AdmittanceModel::AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T)
-  : _MASS{Mxy, Mz},
-    _DAMPING{Bxy, Bz},
+  : mass_M{Mxy, Mz},
+    damping_M{Bxy, Bz},
     _GRAVITY{G},
     _DELTAT{T}
 {
@@ -61,25 +61,25 @@ void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *extern
   }
 
   /* Coefficents and Solution for X-Direction */
-  float Fx = forceXYZ[0] + externalFxyz[0];
-  float Cx1 = ((Fx / _DAMPING[0]) - xyzDotInit_M[0]) * (_MASS[0] / _DAMPING[0]);
+  totalForces_M[0] = forceXYZ[0] + externalFxyz[0];
+  float Cx1 = ((totalForces_M[0] / damping_M[0]) - xyzDotInit_M[0]) * (mass_M[0] / damping_M[0]);
   float Cx2 = xyzInit_M[0] - Cx1;
-  xyzGoal_M[0]    = Cx1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT) + (Fx / _DAMPING[0]) * _DELTAT + Cx2;
-  xyzDotGoal_M[0] = (Fx / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cx1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
+  xyzGoal_M[0]    = Cx1 * exp(-(damping_M[0] / mass_M[0]) * _DELTAT) + (totalForces_M[0] / damping_M[0]) * _DELTAT + Cx2;
+  xyzDotGoal_M[0] = (totalForces_M[0] / damping_M[0]) - (damping_M[0] / mass_M[0]) * Cx1 * exp(-(damping_M[0] / mass_M[0]) * _DELTAT);
 
   /* Coefficents and Solution for Y-Direction */
-  float Fy = forceXYZ[1] + externalFxyz[1];
-  float Cy1 = ((Fy / _DAMPING[0]) - xyzDotInit_M[1]) * (_MASS[0] / _DAMPING[0]);
+  totalForces_M[1] = forceXYZ[1] + externalFxyz[1];
+  float Cy1 = ((totalForces_M[1] / damping_M[0]) - xyzDotInit_M[1]) * (mass_M[0] / damping_M[0]);
   float Cy2 = xyzInit_M[1] - Cy1;
-  xyzGoal_M[1]    = Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT) + (Fy / _DAMPING[0]) * _DELTAT + Cy2;
-  xyzDotGoal_M[1] = (Fy / _DAMPING[0]) - (_DAMPING[0] / _MASS[0]) * Cy1 * exp(-(_DAMPING[0] / _MASS[0]) * _DELTAT);
+  xyzGoal_M[1]    = Cy1 * exp(-(damping_M[0] / mass_M[0]) * _DELTAT) + (totalForces_M[1] / damping_M[0]) * _DELTAT + Cy2;
+  xyzDotGoal_M[1] = (totalForces_M[1] / damping_M[0]) - (damping_M[0] / mass_M[0]) * Cy1 * exp(-(damping_M[0] / mass_M[0]) * _DELTAT);
 
   /* Coefficents and Solution for Z-Direction */
-  float Fz = forceXYZ[2] + springFz + externalFxyz[2];
-  float Cz1 = ((Fz  / _DAMPING[1]) - xyzDotInit_M[2]) * (_MASS[1] / _DAMPING[1]);
+  totalForces_M[2] = forceXYZ[2] + springFz + externalFxyz[2];
+  float Cz1 = ((totalForces_M[2]  / damping_M[1]) - xyzDotInit_M[2]) * (mass_M[1] / damping_M[1]);
   float Cz2 = xyzInit_M[2] - Cz1;
-  xyzGoal_M[2]    = Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT) + (Fz / _DAMPING[1]) * _DELTAT + Cz2;
-  xyzDotGoal_M[2] = (Fz / _DAMPING[1]) - (_DAMPING[1] / _MASS[1]) * Cz1 * exp(-(_DAMPING[1] / _MASS[1]) * _DELTAT);
+  xyzGoal_M[2]    = Cz1 * exp(-(damping_M[1] / mass_M[1]) * _DELTAT) + (totalForces_M[2] / damping_M[1]) * _DELTAT + Cz2;
+  xyzDotGoal_M[2] = (totalForces_M[2] / damping_M[1]) - (damping_M[1] / mass_M[1]) * Cz1 * exp(-(damping_M[1] / mass_M[1]) * _DELTAT);
 }
 
 /* Admittance Model Get Functions   *******************************************/
@@ -92,34 +92,46 @@ float* AdmittanceModel::GetGoalVel() {
 }
 
 float*  AdmittanceModel::GetMass(){
-  return _MASS;
+  return mass_M;
 }
 
 float*  AdmittanceModel::GetDamping(){
-  return _DAMPING;
+  return damping_M;
+}
+
+float* AdmittanceModel::GetTotalForces(){
+  return totalForces_M;
 }
 
 /* Admittance Model Setter Functions ******************************************/
 void AdmittanceModel::SetMassXY(float newMxy){
   if (newMxy > 0.1){
-    _MASS[0] = newMxy;
+    mass_M[0] = newMxy;
   } else {
-    _MASS[0] = 0.1;
+    mass_M[0] = 0.1;
   }
 }
 
 void AdmittanceModel::SetMassZ(float newMz){
   if (newMz > 0.1){
-    _MASS[1] = newMz;
+    mass_M[1] = newMz;
   } else {
-    _MASS[1] = 0.1;
+    mass_M[1] = 0.1;
   }
 }
 
 void AdmittanceModel::SetDampingXY(float newBxy){
-  _DAMPING[0] = abs(newBxy);
+  if (newBxy > 0.1){
+    damping_M[0] = newBxy;
+  } else {
+    damping_M[0] = 0.1;
+  }
 }
 
 void AdmittanceModel::SetDampingZ(float newBz){
-  _DAMPING[1] = abs(newBz);
+  if (newBz > 0.1){
+    damping_M[1] = newBz;
+  } else {
+    damping_M[1] = 0.1;
+  }
 }

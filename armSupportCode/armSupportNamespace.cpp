@@ -83,5 +83,5 @@ const float  SPRING_X0      = 0.127;    // unstretched spring length in m = 5"
 const float  SPRING_XI      = 0.16002;  // initial stretch lenght in m = 6.3"
 const float  SPRING_SIDE_A  = 0.066;    // in m
 const float  SPRING_SIDE_B  = 0.0365;   // in m
-float SPRING_FORCE_SCALING_FACTOR = 0.07;
+float SPRING_FORCE_SCALING_FACTOR = 0.1;
 }

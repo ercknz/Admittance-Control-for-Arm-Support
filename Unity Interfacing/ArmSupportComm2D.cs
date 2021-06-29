@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.IO.Ports;
 using System.Threading;
+using System.Diagnostics;
 
 
 public class ArmSupportComm2D : MonoBehaviour
@@ -20,6 +21,11 @@ public class ArmSupportComm2D : MonoBehaviour
     public int baudRate = 115200;
     private SerialPort ArmSupport;
 
+    private string plane = "horizontal";
+    //private string plane = "vertical";
+    private float workspaceLimitX = 9;
+    private float workspaceLimitY = 5;
+
     private const int rxPacketLen = 98;
     private byte[] rxHeader = { 170, 8, 69, 0 };
     private byte[] rxBuffer = new byte[rxPacketLen];
@@ -31,16 +37,20 @@ public class ArmSupportComm2D : MonoBehaviour
 
     public float MassXY = 1.5f;
     public float MassZ = 1.5f;
-    public float DampingXY = 5.0f;
-    public float DampingZ = 4.0f;
-    public float SpringCompRatio = 1.0f;
+    public float DampingXY = 6.0f;
+    public float DampingZ = 4.5f;
+    public float SpringCompRatio = 0.4f;
     private float extFx = 0.0f;
     private float extFy = 0.0f;
     private float extFz = 0.0f;
+    private float eFxToSend = 0.0f;
+    private float eFyToSend = 0.0f;
+    private float eFzToSend = 0.0f;
 
-    private IEnumerator coroutine;
-    private const float loopTime = 0.008f;
-    private bool SendForces = false;
+    private const long loopTime = 8;
+    private Stopwatch BetweenColisionsTimer = new Stopwatch();
+
+    private int lastStarNum = 0;
 
     struct ArmSupportData{
         public float elapsedT;
@@ -64,10 +74,14 @@ public class ArmSupportComm2D : MonoBehaviour
         public float Bxy;
         public float Bz;
         public float springF;
+        public float totalFx;
+        public float totalFy;
+        public float totalFz;
         public float eFx;
         public float eFy;
         public float eFz;
         public float loopT;
+        public int collidedWithStar;
     }
 
     private Vector3 InitialPositionVector;
@@ -79,7 +93,7 @@ public class ArmSupportComm2D : MonoBehaviour
 
     public Transform target;
 
-    private const float scalingFactor = 30f;
+    private const float scalingFactor = 35f;
     private const float frameOffsetAngle = 2.113f;
 
     private Thread FrameUpdater;
@@ -108,7 +122,7 @@ public class ArmSupportComm2D : MonoBehaviour
 
         ArmSupport.Open();
         if (ArmSupport.IsOpen){
-            Debug.Log("Arm Support Port Successfully Opened.");
+            UnityEngine.Debug.Log("Arm Support Port Successfully Opened.");
         } else {
             throw new ArgumentException("Arm Support Not Connected");
         }
@@ -126,34 +140,39 @@ public class ArmSupportComm2D : MonoBehaviour
     // Update is called once per frame
     void Update(){
         if (ArmSupport.IsOpen){
-            //Debug.Log("Time: " + presData.elapsedT + " Mass Position ->  X = " + presData.X * scalingFactor + "  Y = " + presData.Y * scalingFactor);
-            PosVector = new Vector3(presData.X * scalingFactor, presData.Y * scalingFactor, presData.Z * 0);
-            target.transform.position = PosVector;
+            UpdateCursorPosition(plane);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision) {
+        if (collision.gameObject.name == "SpringRegion") {
+            BetweenColisionsTimer.Reset();
+            BetweenColisionsTimer.Start();
         }
     }
 
     private void OnTriggerStay2D(Collider2D collision) {
         if (collision.gameObject.name == "SpringRegion") {
-            coroutine = WaitToSendForces();
-            StartCoroutine(coroutine);
-            extFx = SpringArmSupport2D.spring1.FSx;
-            extFy = SpringArmSupport2D.spring1.FSy;
-            extFz = 0.0f;
-            FixRotationalOffset(ref extFx, ref extFy, "cw");
+            extFx = eFxToSend = SpringArmSupport2D.spring1.FSx;
+            extFy = eFyToSend = SpringArmSupport2D.spring1.FSy;
+            extFz = eFzToSend = 0.0f;
+            FixRotationalOffset(ref eFxToSend, ref eFyToSend, "cw");
+            UnityEngine.Debug.Log("Spring Force -> eFx=" + extFx + " eFy=" + extFy);
+            if (BetweenColisionsTimer.ElapsedMilliseconds > loopTime) {
+                BetweenColisionsTimer.Stop();
+                SendForceModifier(eFxToSend, eFyToSend, eFzToSend);
+                BetweenColisionsTimer.Reset();
+                BetweenColisionsTimer.Start();
+            }
         }
-    }
-
-    private IEnumerator WaitToSendForces(){
-        yield return new WaitForSecondsRealtime(loopTime);
-        SendForceModifier(extFx, extFy, extFz); 
     }
 
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision.gameObject.name == "SpringRegion") {
-            SendForces = false;
-            extFx = 0.0f;
-            extFy = 0.0f;
-            extFz = 0.0f;
+            BetweenColisionsTimer.Stop();
+            extFx = eFxToSend = 0.0f;
+            extFy = eFyToSend = 0.0f;
+            extFz = eFzToSend = 0.0f;
         }
     }
 
@@ -211,15 +230,20 @@ public class ArmSupportComm2D : MonoBehaviour
                         presData.gQ4 = ByteArrayToFloat(rxBuffer[64], rxBuffer[65], rxBuffer[66], rxBuffer[67]);
 
                         // Mass XY and Z
-                        presData.Mxy = ByteArrayToFloat(rxBuffer[68], rxBuffer[69], rxBuffer[70], rxBuffer[71]);
-                        presData.Mz  = ByteArrayToFloat(rxBuffer[72], rxBuffer[73], rxBuffer[74], rxBuffer[75]);
+                        //presData.Mxy = ByteArrayToFloat(rxBuffer[68], rxBuffer[69], rxBuffer[70], rxBuffer[71]);
+                        //presData.Mz  = ByteArrayToFloat(rxBuffer[72], rxBuffer[73], rxBuffer[74], rxBuffer[75]);
 
                         // Damping XY and Z
-                        presData.Bxy = ByteArrayToFloat(rxBuffer[76], rxBuffer[77], rxBuffer[78], rxBuffer[79]);
-                        presData.Bz  = ByteArrayToFloat(rxBuffer[80], rxBuffer[81], rxBuffer[82], rxBuffer[83]);
+                        presData.Bxy = ByteArrayToFloat(rxBuffer[68], rxBuffer[69], rxBuffer[70], rxBuffer[71]);
+                        presData.Bz  = ByteArrayToFloat(rxBuffer[72], rxBuffer[73], rxBuffer[74], rxBuffer[75]);
 
                         // Spring Force
-                        presData.springF = ByteArrayToFloat(rxBuffer[84], rxBuffer[85], rxBuffer[86], rxBuffer[87]);
+                        presData.springF = ByteArrayToFloat(rxBuffer[76], rxBuffer[77], rxBuffer[78], rxBuffer[79]);
+
+                        // Total Forces
+                        presData.totalFx = ByteArrayToFloat(rxBuffer[80], rxBuffer[81], rxBuffer[82], rxBuffer[83]);
+                        presData.totalFy = ByteArrayToFloat(rxBuffer[84], rxBuffer[85], rxBuffer[86], rxBuffer[87]);
+                        presData.totalFz = ByteArrayToFloat(rxBuffer[88], rxBuffer[89], rxBuffer[90], rxBuffer[91]);
 
                         // External Forces
                         presData.eFx = extFx;
@@ -229,6 +253,13 @@ public class ArmSupportComm2D : MonoBehaviour
                         // Loop Time
                         presData.loopT = ByteArrayToUInt32(rxBuffer[92], rxBuffer[93], rxBuffer[94], rxBuffer[95]);
 
+                        if (lastStarNum < CollisionDetection.starNum) {
+                            lastStarNum += 1;
+                            presData.collidedWithStar = 1;
+                        } else {
+                            presData.collidedWithStar = 0;
+                        }
+
                         // Save data
                         allData.Add(presData);
                     }
@@ -237,6 +268,20 @@ public class ArmSupportComm2D : MonoBehaviour
                 return;
             }
         }
+    }
+
+    private void UpdateCursorPosition(string surface){
+        if (surface == "horizontal") {
+            PosVector = new Vector3(presData.X * scalingFactor, presData.Y * scalingFactor, presData.Z * 0);
+        } else if (surface == "vertical") {
+            PosVector = new Vector3(presData.X * scalingFactor, presData.Z * scalingFactor, presData.Y * 0);
+        }
+        if (PosVector.x > workspaceLimitX) PosVector.x = workspaceLimitX;
+        if (PosVector.x < -workspaceLimitX) PosVector.x = -workspaceLimitX;
+        if (PosVector.y > workspaceLimitY) PosVector.y = workspaceLimitY;
+        if (PosVector.y < -workspaceLimitY) PosVector.y = -workspaceLimitY;
+        UnityEngine.Debug.Log("Time: " + presData.elapsedT + " Mass Position ->  X = " + PosVector.x + "  Y = " + PosVector.y);
+        target.transform.position = PosVector;
     }
 
     private void SendArmSupportModifier(){
@@ -259,11 +304,11 @@ public class ArmSupportComm2D : MonoBehaviour
         }
         txBuffer[txPacketLen - 2] = (byte)(checkSum / 256);
         txBuffer[txPacketLen - 1] = (byte)(checkSum % 256);
-        //Debug.Log("Initial Modifier Packet: " + String.Join(" ", new List<byte>(txBuffer).ConvertAll(i => i.ToString()).ToArray()));
+        //UnityEngine.Debug.Log("Initial Modifier Packet: " + String.Join(" ", new List<byte>(txBuffer).ConvertAll(i => i.ToString()).ToArray()));
         if (ArmSupport.IsOpen){
-            Debug.Log("Sending Initial Configuration");
             try {
                 ArmSupport.Write(txBuffer, 0, txPacketLen);
+                UnityEngine.Debug.Log("Sending Initial Configuration");
             } catch (TimeoutException) {
                 return;
             }
@@ -290,6 +335,7 @@ public class ArmSupportComm2D : MonoBehaviour
         if (ArmSupport.IsOpen) {
             try {
                 ArmSupport.Write(txBuffer, 0, txPacketLen);
+                UnityEngine.Debug.Log("eForce Packet: " + String.Join(" ", new List<byte>(txBuffer).ConvertAll(i => i.ToString()).ToArray()));
             } catch (TimeoutException) {
                 return;
             }
@@ -299,7 +345,7 @@ public class ArmSupportComm2D : MonoBehaviour
     private void SaveArmSupportData(){
         string LogFileName = "./DataLogs/ArmSupportUnityLog_" + dt.ToString("MMddyy-HHmm") + ".csv";
         using (StreamWriter sw = new StreamWriter(LogFileName)){
-            string LogFileHeader = "Time,Fx,Fy,Fz,Px,Py,Pz,Vx,Vy,Vz,pQ1,pQ2,pQ4,gQ1,gQ2,gQ4,Mxy,Mz,Bxy,Bz,Fs,eFx,eFy,eFz,Loop";
+            string LogFileHeader = "Time,Fx,Fy,Fz,Px,Py,Pz,Vx,Vy,Vz,pQ1,pQ2,pQ4,gQ1,gQ2,gQ4,Bxy,Bz,Fs,eFx,eFy,eFz,tFx,tFy,tFz,star,loopT";
             sw.WriteLine(LogFileHeader);
             foreach (var asFrame in allData){
                 string NewLogFileLine = asFrame.elapsedT + ","
@@ -308,8 +354,10 @@ public class ArmSupportComm2D : MonoBehaviour
                                         + asFrame.U + "," + asFrame.V + "," + asFrame.W + ","
                                         + asFrame.pQ1 + "," + asFrame.pQ2 + "," + asFrame.pQ4 + ","
                                         + asFrame.gQ1 + "," + asFrame.gQ2 + "," + asFrame.gQ4 + ","
-                                        + asFrame.Mxy + "," + asFrame.Mz + "," + asFrame.Bxy + "," + asFrame.Bz + ","
+                                        + asFrame.Bxy + "," + asFrame.Bz + ","
                                         + asFrame.springF + "," + asFrame.eFx + "," + asFrame.eFy + "," + asFrame.eFz + ","
+                                        + asFrame.totalFx + "," + asFrame.totalFy + "," + asFrame.totalFz + ","
+                                        + asFrame.collidedWithStar + ","
                                         + asFrame.loopT;
                 sw.WriteLine(NewLogFileLine);
             }
@@ -318,8 +366,10 @@ public class ArmSupportComm2D : MonoBehaviour
 
     private void SetPosition(float xPos, float yPos, float zPos){
         if (!initialPositionSet){
-            initialPositionSet = true;
             InitialPositionVector = new Vector3(xPos, yPos, zPos);
+            if (Math.Abs(InitialPositionVector.x) < 5 && Math.Abs(InitialPositionVector.y) < 5) {
+                initialPositionSet = true;
+            }
         } else {
             presData.X = xPos - InitialPositionVector.x;
             presData.Y = yPos - InitialPositionVector.y;

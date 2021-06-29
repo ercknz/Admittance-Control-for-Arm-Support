@@ -12,11 +12,12 @@ class AdmittanceModel {
   public:
            AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T);
     void   SetPosition(float *newXYZ);
-    void   UpdateModel(float *forceXYZ, float springFz, float *externalF);
+    void   UpdateModel(float *forceXYZ, float springFz, float *externalFxyz);
     float* GetGoalPos();
     float* GetGoalVel();
     float* GetMass();
     float* GetDamping();
+    float* GetTotalForces();
     void   SetMassXY(float newMxy);
     void   SetMassZ(float newMz);
     void   SetDampingXY(float newBxy);
@@ -24,12 +25,14 @@ class AdmittanceModel {
 
   private:
     const float _GRAVITY, _DELTAT;
-    float _MASS[2], _DAMPING[2];    // [xy, z]
 
-    float xyzGoal_M[3]    = {0.0f};
-    float xyzDotGoal_M[3] = {0.0f};
-    float xyzInit_M[3]    = {0.0f};
-    float xyzDotInit_M[3] = {0.0f};
+    float mass_M[2];        // [xy, z]
+    float damping_M[2];     // [xy, z]
+    float xyzGoal_M[3]      = {0.0f};
+    float xyzDotGoal_M[3]   = {0.0f};
+    float xyzInit_M[3]      = {0.0f};
+    float xyzDotInit_M[3]   = {0.0f};
+    float totalForces_M[3]  = {0.0f};
 };
 
 #endif // ADMITTANCE_MODEL_H

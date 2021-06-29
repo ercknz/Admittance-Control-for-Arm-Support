@@ -8,7 +8,7 @@
 clear; clc; close all; delete(instrfindall);
 %% CSV file
 timeInSecs = 30;
-logFileID = '_EN_100B3_';
+logFileID = '_U_100_';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
@@ -17,7 +17,7 @@ pause(2)
 Mxy = 1.5; % kg
 Mz = 1.5; % kg
 Bxy = 5.0; % N*(sec/m)
-Bz = 3.0; % N*(sec/m)
+Bz = 4.5; % N*(sec/m)
 scalingFactor = 1.0;
 eFx = 0.0; % N 
 eFy = 0.0; % N
@@ -31,7 +31,7 @@ bytesFx = typecast(int32(eFx*10000),'uint8');
 bytesFy = typecast(int32(eFy*10000),'uint8');
 bytesFz = typecast(int32(eFz*10000),'uint8');
 configHeader = uint8([150, 10, 10, 96]);
-modByte = uint8(24);
+modByte = uint8(16);
 writePacket = [configHeader,modByte,bytesMxy,bytesMz,bytesBxy,bytesBz,bytesFactor,bytesFx,bytesFy,bytesFz];
 checkSum = sum(writePacket);
 csHi = uint8(floor(checkSum/256));

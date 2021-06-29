@@ -60,9 +60,10 @@ class SerialPackets {
     bool _SEND_GOALQDOTCTS    = false;
     bool _SEND_GOALQ          = true;
     bool _SEND_GOALQDOT       = false;
-    bool _SEND_MASS           = true;
+    bool _SEND_MASS           = false;
     bool _SEND_DAMPING        = true;
     bool _SEND_SPRING_F       = true;
+    bool _SEND_TOTAL_FORCES   = true;
 
     bool _NEW_MASS_XY         = false;
     bool _NEW_MASS_Z          = false;

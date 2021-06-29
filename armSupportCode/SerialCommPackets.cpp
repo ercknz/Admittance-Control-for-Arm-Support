@@ -243,6 +243,14 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 1;
     dataPosition += byteLen;
   }
+  if (_SEND_TOTAL_FORCES && slotsFilled < _MAX_TX_DATA_SLOTS) {
+    byte * totalF_bytes = floatArrayToBytes(Model.GetTotalForces());
+    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
+      dataPacket[i] = totalF_bytes[i - dataPosition];
+    }
+    slotsFilled += 3;
+    dataPosition += (3 * byteLen);
+  }
   /* looptime ----------------------------------------------------------------*/
   dataPacket[_TX_PKT_LEN - 6] = DXL_LOBYTE(DXL_LOWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 5] = DXL_HIBYTE(DXL_LOWORD(loopTime));
@@ -341,7 +349,7 @@ void SerialPackets::SendFlagResets() {
 
 /* Modifier RX Packet  ********************************************************/
 void SerialPackets::ModifierPacketRX(byte * RxPacket) {
-  /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor */
+  /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor [5]:eFx [6]:eFy [7]:eFz */
   byte mask = 1;
   byte bitArray[8];
   for (int16_t i = 0; i < 8; i++) {

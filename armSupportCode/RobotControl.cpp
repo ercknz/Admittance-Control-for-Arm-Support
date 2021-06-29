@@ -220,7 +220,7 @@ void  RobotControl::fKine() {
 /******************** Arm Support Spring Force Member Functions ************************************************/
 void RobotControl::CalculateSpringForce(float *forces){
   /* Calculated Variables */
-  float maxCompensation = 0.25;
+  float maxCompensation = 0.5;
   float phaseCompensation;
   if (qPres_M[1] > 0.0){
     phaseCompensation = maxCompensation * 0.20;
