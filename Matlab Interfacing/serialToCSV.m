@@ -7,18 +7,18 @@
 %% Clean workspace
 clear; clc; close all; delete(instrfindall);
 %% CSV file
-timeInSecs = 30;
-logFileID = '_U_100_';
+timeInSecs = 60;
+logFileID = '_testNewCode_';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
 pause(2)
 
 %% Modify mass and damping setup
-Mxy = 1.5; % kg
-Mz = 1.5; % kg
-Bxy = 5.0; % N*(sec/m)
-Bz = 4.5; % N*(sec/m)
-scalingFactor = 1.0;
+Mxy = 3.0; % kg
+Mz = 10.0; % kg
+Bxy = 70.0; % N*(sec/m)
+Bz = 50.0; % N*(sec/m)
+scalingFactor = 0.2;
 eFx = 0.0; % N 
 eFy = 0.0; % N
 eFz = 0.0; % N
@@ -31,7 +31,7 @@ bytesFx = typecast(int32(eFx*10000),'uint8');
 bytesFy = typecast(int32(eFy*10000),'uint8');
 bytesFz = typecast(int32(eFz*10000),'uint8');
 configHeader = uint8([150, 10, 10, 96]);
-modByte = uint8(16);
+modByte = uint8(31);
 writePacket = [configHeader,modByte,bytesMxy,bytesMz,bytesBxy,bytesBz,bytesFactor,bytesFx,bytesFy,bytesFz];
 checkSum = sum(writePacket);
 csHi = uint8(floor(checkSum/256));
@@ -50,7 +50,7 @@ data = nan(numFrames,23);
 
 %% Open Serial Port
 disp('........opening port...........');
-s1 = serialport('COM28',BaudRate);
+s1 = serialport('COM29',BaudRate);
 
 %% start main collection loop
 totalTime = 0; i = 1;
@@ -84,15 +84,14 @@ while(totalTime < timeInSecs )
         data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'));
         data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'));
         data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'));
-        % MassXY and Z
+        % Damping XY and Z
         data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'));
         data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'));
-        % Damping XY and Z
-        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'));
-        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'));
         % Spring Force
+        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'));
+        % Other Data
+        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'));
         data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'));
-        % Other data
         data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'));
         % Loop time
         data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
@@ -150,22 +149,34 @@ fPlotZ = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
 legend('X','Y','Z');title('Global Forces');
 xlabel('Time (sec)'); ylabel('Force (N)');
 
-subplot(4,6,[7,15])
-yyaxis left
-zPlotU = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
-hold on; grid on; xlim([0,timeInSecs]);
-zPlotS = plot(data(:,1),data(:,21),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
-ylabel('Force (N)');
-yyaxis right
-q2PosPres2 = plot(data(:,1),data(:,12),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
-ylabel('Elevation angle (Rad)');
-legend('Fz','Spring Fz','Q2');title('Vertical Forces');
-xlabel('Time (sec)');
+% subplot(4,6,[7,15])
+% yyaxis left
+% zPlotU = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
+% hold on; grid on; xlim([0,timeInSecs]);
+% zPlotS = plot(data(:,1),data(:,19),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
+% ylabel('Force (N)');
+% yyaxis right
+% q2PosPres2 = plot(data(:,1),data(:,12),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
+% ylabel('Elevation angle (Rad)');
+% legend('Fz','Spring Fz','Q2');title('Vertical Forces');
+% xlabel('Time (sec)');
+
+% subplot(4,6,[16,23])
+% mPlot = quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10));
+% grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]);
+% view(3); title('Mass of Model');
+% xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
 
 subplot(4,6,[16,23])
-mPlot = quiver3(data(:,5),data(:,6),data(:,7),data(:,8),data(:,9),data(:,10));
+rPlot = plot3(data(:,5),data(:,6),data(:,7));
 grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]);
-view(3); title('Mass of Model');
+view(3); title('End of Robot');
+xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
+
+subplot(4,6,[8,15])
+mPlot = plot3(data(:,5),data(:,6),data(:,7));
+grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]);
+view(3); title('End of Robot');
 xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
 
 subplot(4,6,18)

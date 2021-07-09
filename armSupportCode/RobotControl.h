@@ -34,7 +34,7 @@ class RobotControl {
     
   private:
     void  fKine();
-    void  iKine(float *xyz, float *xyzDot);
+    void  iKine(float *modelXYZ, float *modelXYZDot);
     void  ReadMotors(dynamixel::GroupSyncRead &syncReadPacket);
     int   WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket);
 

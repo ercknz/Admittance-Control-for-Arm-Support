@@ -33,9 +33,9 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   _Q4_MAX{(ASR::ELBOW_MAX_POS - ASR::ELBOW_MIN_POS) * ASR::DEGREES_PER_COUNT * (PI / 180.0)},
   _INNER_R{A1 + L1 + A2 - L2},
   _Z_LIMIT{abs(L1 * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1/ASR::ELEVATION_RATIO)))},
-  _SPRING_Li{sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2))},
-  _BETAi{asin(ASR::SPRING_SIDE_A/_SPRING_Li)},
-  _SPRING_Fi{ASR::SPRING_KS * (ASR::SPRING_XI - ASR::SPRING_X0) * sin(_BETAi)}
+  _SPRING_Li{sqrt(pow(ASR::SPRING_SIDE_A,2) + pow(ASR::SPRING_SIDE_B,2) + 2 * ASR::SPRING_SIDE_A * ASR::SPRING_SIDE_B * ASR::COS_SIN_45)},
+  _BETAi{asin((ASR::SPRING_SIDE_A/_SPRING_Li) * - ASR::COS_SIN_45)},
+  _SPRING_Fi{ASR::SPRING_KS * (ASR::SPRING_XI - ASR::SPRING_X0) * sin(_BETAi + ASR::DEG_TO_RAD_45)}
 {
   scalingFactor_M = ASR::SPRING_FORCE_SCALING_FACTOR;
 }
@@ -105,11 +105,16 @@ void RobotControl::WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult,
 }
 
 /******************** Arm Support Inverse Kinematics Member function ************************************************/
-void RobotControl::iKine(float *dXYZ, float *XYZDot) {
+void RobotControl::iKine(float *modelXYZ, float *modelXYZDot) {
+  /*
+    Take Note!!!!!!!
+    xyz_M[3] = {x, y, z}
+    q_M[3] = {q1, q2, q4} = {shoulder, elevation, elbow}
+  */
   float L1_XY, OUTER_R, R, alpha, presR, presAlpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
-    xyz_M[i]    = xyzPres_M[i] +  dXYZ[i];
-    xyzDot_M[i] = XYZDot[i];
+    xyz_M[i]    = modelXYZ[i];
+    xyzDot_M[i] = modelXYZDot[i];
   }
 
   /* Check Z limits */
@@ -222,9 +227,7 @@ void RobotControl::CalculateSpringForce(float *forces){
   /* Calculated Variables */
   float maxCompensation = 0.5;
   float phaseCompensation;
-  if (qPres_M[1] > 0.0){
-    phaseCompensation = maxCompensation * 0.20;
-  } else if (qPres_M[1] < 0.0) {
+  if (forces[2] < 0.0){
     phaseCompensation = maxCompensation * 0.40;
   } else {
     phaseCompensation = 0.0;

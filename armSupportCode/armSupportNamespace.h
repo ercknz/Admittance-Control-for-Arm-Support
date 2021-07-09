@@ -83,6 +83,8 @@ extern const float  SPRING_X0; // unstretched spring length in m = 5"
 extern const float  SPRING_XI; // initial stretch lenght in m = 6.3"
 extern const float  SPRING_SIDE_A; // in m
 extern const float  SPRING_SIDE_B; // in m
+extern const float  COS_SIN_45; // Cos Sin of 45 degrees
+extern const float  DEG_TO_RAD_45; // 45 Degrees to Radians
 extern float SPRING_FORCE_SCALING_FACTOR;
 }
 

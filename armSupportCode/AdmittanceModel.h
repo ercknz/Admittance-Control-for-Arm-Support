@@ -24,7 +24,9 @@ class AdmittanceModel {
     void   SetDampingZ(float newBz);
 
   private:
-    const float _GRAVITY, _DELTAT;
+    const float   _GRAVITY,       _DELTAT;
+    const double  _H_OF_L2,       _A1A2;
+    const double  _INNER_R_LIMIT, _Z_LIMIT;
 
     float mass_M[2];        // [xy, z]
     float damping_M[2];     // [xy, z]

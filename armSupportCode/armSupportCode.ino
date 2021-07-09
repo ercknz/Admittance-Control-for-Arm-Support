@@ -76,10 +76,12 @@ void loop() {
 
   /* Initialize Model */
   float *presQ, *xyzGoal, *xyzDotGoal;
+  OptoForceSensor.SensorConfig();
   previousTime = millis();
   ArmSupportRobot.ReadRobot(syncReadPacket);
   presQ = ArmSupportRobot.GetPresQ();
   OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
+  AdmitModel.SetPosition(ArmSupportRobot.GetPresPos());
   pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
 
   /* Main Loop */

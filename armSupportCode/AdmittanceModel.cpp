@@ -36,27 +36,32 @@
 
 #include <Arduino.h>
 #include "AdmittanceModel.h"
+#include "armSupportNamespace.h"
 
 /* Admittance Model Constructor  **********************************************/
 AdmittanceModel::AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T)
   : mass_M{Mxy, Mz},
     damping_M{Bxy, Bz},
     _GRAVITY{G},
-    _DELTAT{T}
+    _DELTAT{T},
+    _INNER_R_LIMIT{ASR::A1_LINK + ASR::L1_LINK + ASR::A2_LINK - ASR::L2_LINK},
+    _Z_LIMIT{abs(ASR::L1_LINK * sin((ASR::ELEVATION_MAX_POS - ASR::ELEVATION_CENTER) * ASR::DEGREES_PER_COUNT * (PI / 180.0) * (1/ASR::ELEVATION_RATIO)))},
+    _A1A2{ASR::A1_LINK + ASR::A2_LINK},
+    _H_OF_L2{sqrt(pow(ASR::LINK_OFFSET, 2) + pow(ASR::L2_LINK, 2))}
 {
 }
 
 /* Admittance Model Initalizer  ***********************************************/
 void AdmittanceModel::SetPosition(float *newXYZ) {
   for(int i=0; i<3; i++){
-    xyzGoal_M[i]     = newXYZ[i];
+    xyzGoal_M[i] = newXYZ[i];
   }
 }
 
 /* Admittance Model Updater  **************************************************/
 void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *externalFxyz) {
   for (int i = 0; i < 3; i++) {
-    xyzInit_M[i]    = 0.0f;
+    xyzInit_M[i]    = xyzGoal_M[i];
     xyzDotInit_M[i] = xyzDotGoal_M[i];
   }
 
@@ -80,6 +85,24 @@ void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *extern
   float Cz2 = xyzInit_M[2] - Cz1;
   xyzGoal_M[2]    = Cz1 * exp(-(damping_M[1] / mass_M[1]) * _DELTAT) + (totalForces_M[2] / damping_M[1]) * _DELTAT + Cz2;
   xyzDotGoal_M[2] = (totalForces_M[2] / damping_M[1]) - (damping_M[1] / mass_M[1]) * Cz1 * exp(-(damping_M[1] / mass_M[1]) * _DELTAT);
+
+  /* Check TaskSpace Limits */
+  if (xyzGoal_M[2] >  _Z_LIMIT) xyzGoal_M[2] =  _Z_LIMIT;
+  if (xyzGoal_M[2] < -_Z_LIMIT) xyzGoal_M[2] = -_Z_LIMIT;
+  float outerRLimit = _A1A2 + _H_OF_L2 + sqrt(pow(ASR::L1_LINK, 2) - pow(xyzGoal_M[2], 2));
+  float Rxy = sqrt(pow(xyzGoal_M[0],2) + pow(xyzGoal_M[1],2));
+  float alpha   = atan2(xyzGoal_M[1], xyzGoal_M[0]);
+  if (alpha < 1.0f) alpha += 2 * PI;
+  if (Rxy < _INNER_R_LIMIT) {
+    Rxy           = _INNER_R_LIMIT;
+    xyzGoal_M[0]  = _INNER_R_LIMIT * cos(alpha);
+    xyzGoal_M[1]  = _INNER_R_LIMIT * sin(alpha);
+  }
+  if (Rxy > outerRLimit) {
+    Rxy           = outerRLimit;
+    xyzGoal_M[0]  = outerRLimit * cos(alpha);
+    xyzGoal_M[1]  = outerRLimit * sin(alpha);
+  } 
 }
 
 /* Admittance Model Get Functions   *******************************************/

@@ -46,10 +46,10 @@ class SerialPackets {
 
     bool _SEND_RAWF           = false;
     bool _SEND_GLOBALF        = true;
-    bool _SEND_XYZGOAL        = false;
+    bool _SEND_XYZGOAL        = true;
     bool _SEND_XYZDOTGOAL     = false;
     bool _SEND_XYZBOTGOAL     = true;
-    bool _SEND_XYZDOTBOTGOAL  = true;
+    bool _SEND_XYZDOTBOTGOAL  = false;
     bool _SEND_PRESQCTS       = false;
     bool _SEND_PRESQDOTCTS    = false;
     bool _SEND_PRESQ          = true;
