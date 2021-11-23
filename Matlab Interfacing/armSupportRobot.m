@@ -1,4 +1,4 @@
-classdef armSupportComm < handle
+classdef armSupportRobot < handle
     %% Arm Support Communication class
     % This class is setup to recieve data from the robotic arm support in order
     % to log data and interact with virtual objects such as springs and walls.
@@ -10,16 +10,11 @@ classdef armSupportComm < handle
     %--------------------------------------------------------------------------
     properties (Access = public)
         serialObj
-        baudRate = 115200
+        baud
         dt = 0.008
-        portName = 'COM28'
+        port
         rawBytes
         frameData = nan(1,23)
-        fileName    = 'armSupportLog'
-        fileExt     = '.xlsx'
-        folderPath  = './Logs/'
-        configFileExt = '.txt'
-        configFileName = 'armSupportConfig'
         
         modHeader = uint8([150, 10, 10, 96])
         configHeader = unit([150, 0, 69, 8])
@@ -37,30 +32,32 @@ classdef armSupportComm < handle
     % Methods
     %--------------------------------------------------------------------------
     methods
-        function obj = armSupportComm()
+        function obj = armSupportRobot(port, baud)
             obj.rawBytes = nan(1,obj.rxPacketLen);
+            obj.port = port;
+            obj.baud = baud;
         end
         
-        function CommStart(obj)
-            obj.serialObj = serialPort(obj.portName, obj.baudRate);
+        function Start(obj)
+            obj.serialObj = serialPort(obj.port, obj.baud);
             obj.CommOpen = true;
         end
         
-        function CommStop(obj)
+        function Stop(obj)
             instrreset;
             obj.serialObj = nan;
             obj.CommOpen = false;
         end
         
-        function out = IsCommOpen(obj)
+        function out = IsOpen(obj)
             out = obj.CommOpen;
         end
         
-        function numOfBytes = CommBytesAvailable(obj)
+        function numOfBytes = BytesAvailable(obj)
             numOfBytes = obj.serialObj.NumBytesAvailable;
         end
         
-        function CommRead(obj)
+        function ReadFrame(obj)
             while obj.serialObj.NumBytesAvailable < obj.rxPacketLen
                 if ~obj.CommOpen
                     break
@@ -68,6 +65,11 @@ classdef armSupportComm < handle
             end
             if obj.CommOpen
                 obj.rawBytes = read(obj.serialObj,obj.rxPacketLen,'uint8');
+            end
+            tempHeader = obj.rawBytes(1:4);
+            inCS = typecast(uint8(obj.rawBytes(end-1:end)),'uint16');
+            cCS = sum(obj.rawBytes(1:end-2));
+            if (sum(tempHeader == obj.rxHeader)==4) && (inCS == cCS)
                 % Total Time
                 obj.frameData(1) = typecast(uint8(obj.rawBytes(5:8)),'uint32');
                 % XYZ Global Forces
@@ -109,7 +111,7 @@ classdef armSupportComm < handle
             end
         end
         
-        function CommSendMassXY(obj, MassXY)
+        function SendMassXY(obj, MassXY)
             writePacket = uint8(zeros(1,obj.txPacketLen));
             writePacket(1:4) = obj.modHeader;
             writePacket(5) = uint8(1);
@@ -122,7 +124,7 @@ classdef armSupportComm < handle
             end
         end
         
-        function CommSendMassZ(obj, MassZ)
+        function SendMassZ(obj, MassZ)
             writePacket = uint8(zeros(1,obj.txPacketLen));
             writePacket(1:4) = obj.modHeader;
             writePacket(5) = uint8(2);
@@ -135,7 +137,7 @@ classdef armSupportComm < handle
             end
         end
         
-        function CommSendDampingXY(obj, DampingXY)
+        function SendDampingXY(obj, DampingXY)
             writePacket = uint8(zeros(1,obj.txPacketLen));
             writePacket(1:4) = obj.modHeader;
             writePacket(5) = uint8(4);
@@ -148,7 +150,7 @@ classdef armSupportComm < handle
             end
         end
         
-        function CommSendDampingZ(obj, DampingZ)
+        function SendDampingZ(obj, DampingZ)
             writePacket = uint8(zeros(1,obj.txPacketLen));
             writePacket(1:4) = obj.modHeader;
             writePacket(5) = uint8(8);
@@ -161,7 +163,7 @@ classdef armSupportComm < handle
             end
         end
         
-        function CommSendSpring(obj, SpringRatio)
+        function SendSpring(obj, SpringRatio)
             writePacket = uint8(zeros(1,obj.txPacketLen));
             writePacket(1:4) = obj.modHeader;
             writePacket(5) = uint8(16);
@@ -174,13 +176,45 @@ classdef armSupportComm < handle
             end
         end
         
-        function CommSendExtForces(obj, eFx, eFy, eFz)
+        function SendExtForces(obj, eFx, eFy, eFz)
             writePacket = uint8(zeros(1,obj.txPacketLen));
             writePacket(1:4) = obj.modHeader;
             writePacket(5) = uint8(224);
             writePacket(26:29) = typecast(int32(eFx*10000),'uint8');
             writePacket(30:33) = typecast(int32(eFy*10000),'uint8');
             writePacket(34:37) = typecast(int32(eFz*10000),'uint8');
+            checkSum = sum(writePacket);
+            writePacket(end-1) = uint8(floor(checkSum/256));
+            writePacket(end) = uint8(mod(checkSum,256));
+            if obj.CommOpen
+                write(obj.serialObj,writePacket,'uint8');
+            end
+        end
+        
+        function SendModifier(obj, Mxy, Mz, Bxy, Bz, Sprg, eFx, eFy, eFz)
+            writePacket = uint8(zeros(1,obj.txPacketLen));
+            writePacket(1:4) = obj.modHeader;
+            writePacket(5) = uint8(255);
+            writePacket(6:9) = typecast(int32(Mxy*10000),'uint8');
+            writePacket(10:13) = typecast(int32(Mz*10000),'uint8');
+            writePacket(14:17) = typecast(int32(Bxy*10000),'uint8');
+            writePacket(18:21) = typecast(int32(Bz*10000),'uint8');
+            writePacket(22:25) = typecast(int32(Sprg*10000),'uint8');
+            writePacket(26:29) = typecast(int32(eFx*10000),'uint8');
+            writePacket(30:33) = typecast(int32(eFy*10000),'uint8');
+            writePacket(34:37) = typecast(int32(eFz*10000),'uint8');
+            checkSum = sum(writePacket);
+            writePacket(end-1) = uint8(floor(checkSum/256));
+            writePacket(end) = uint8(mod(checkSum,256));
+            if obj.CommOpen
+                write(obj.serialObj,writePacket,'uint8');
+            end
+        end
+        
+        function CommSendConfig(obj)
+            writePacket = uint8(zeros(1,obj.txPacketLen));
+            writePacket(1:4) = obj.configHeader;
+            writePacket(5) = uint8(0);
             checkSum = sum(writePacket);
             writePacket(end-1) = uint8(floor(checkSum/256));
             writePacket(end) = uint8(mod(checkSum,256));
