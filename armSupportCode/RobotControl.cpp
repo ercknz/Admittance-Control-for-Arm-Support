@@ -3,7 +3,7 @@
    functions needed to write and read to the motors
    Refer to github-Dynamixel for more information on dynamixel library.
 
-   Class arrays use the following:
+   Class arrays are used as follows:
    xyz[3]     = {x, y, x}; 
    xyzDot[3]  = {xDot, yDot, zDot};
    q[3]       = {q1(shoulder), q2(elevation), q4(elbow)};
@@ -18,7 +18,9 @@
 #include "RobotControl.h"
 #include "armSupportNamespace.h"
 
-/******************** Arm Support Constructor  ***********************************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support Constructor ----------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 RobotControl::RobotControl(const float A1, const float L1, const float A2, const float L2, const float Offset)
   :_A1A2{A1 + A2},
   _L1{L1},
@@ -40,7 +42,9 @@ RobotControl::RobotControl(const float A1, const float L1, const float A2, const
   scalingFactor_M = ASR::SPRING_FORCE_SCALING_FACTOR;
 }
 
-/******************** Arm Support Get Member functions  ***********************************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support Get Member functions -------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 int32_t* RobotControl::GetPresQCts(){ 
   return qPresCts_M;
 } 
@@ -93,7 +97,9 @@ float RobotControl::GetSpringForce(){
   return springF_M;
 }
 
-/******************** Arm Support Motors Reading/Writing  ***********************************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support Motors Reading/Writing -----------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void RobotControl::ReadRobot(dynamixel::GroupSyncRead &syncReadPacket){
   ReadMotors(syncReadPacket);
   fKine();
@@ -104,10 +110,12 @@ void RobotControl::WriteToRobot(float *xyz, float *xyzDot, bool &addParamResult,
   int returnInt = WriteToMotors(addParamResult, syncWritePacket);
 }
 
-/******************** Arm Support Inverse Kinematics Member function ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support Inverse Kinematics Member function -----------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void RobotControl::iKine(float *modelXYZ, float *modelXYZDot) {
   /*
-    Take Note!!!!!!!
+    TAKE NOTE!
     xyz_M[3] = {x, y, z}
     q_M[3] = {q1, q2, q4} = {shoulder, elevation, elbow}
   */
@@ -192,7 +200,9 @@ void RobotControl::iKine(float *modelXYZ, float *modelXYZDot) {
   qDotCts_M[2] = abs(qDot_M[2] * (60.0 / (2.0 * PI)) / ASR::RPM_PER_COUNT);
 }
 
-/******************** Arm Support Forward Kinematics Member Function ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support Forward Kinematics Member Function -----------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void  RobotControl::fKine() {
   /* Convert from Motor Counts */
   qPres_M[0]      =  (qPresCts_M[0]) * ASR::DEGREES_PER_COUNT * (PI / 180.0);
@@ -222,7 +232,9 @@ void  RobotControl::fKine() {
   xyzDotPres_M[2] = qDotPres_M[0] * J_M[2][0] + qDotPres_M[1] * J_M[2][1] + qDotPres_M[2] * J_M[2][2];
 }
 
-/******************** Arm Support Spring Force Member Functions ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support Spring Force Member Functions ----------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void RobotControl::CalculateSpringForce(float *forces){
   /* Calculated Variables */
   float maxCompensation = 0.5;
@@ -242,16 +254,37 @@ void RobotControl::SetScalingFactor(float newScalingFactor){
   scalingFactor_M = newScalingFactor;
 }
 
-/******************** Arm Support DXL Torque Enabling Member Function ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support DXL Torque Enabling Member Function ----------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void  RobotControl::EnableTorque(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler, uint8_t state) {
+  /* Modes to Select from:
+   *  [5]:  Full Admittance Control (Shoulder, Elbow, and Elevation ENABLED)
+   *  [10]: Planar Admittance Control ONLY (Shoulder and  Elbow ENABLED, Elevation DISABLED)
+   *  [15]: Vertical Admittance Control ONLY (Elevation ENABLED, Shoulder and Elbow DISABLED)
+   *  [20]: Fully Passive (Shoulder, Elbow, and Elevation DISABLED)
+   */
   using namespace ASR;
   int dxlCommResult;
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, state, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, state, &dxl_error);
-  dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, state, &dxl_error);
+  if ((state == 5)||(state == 10)){
+    dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, ENABLE, &dxl_error);
+    dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, ENABLE, &dxl_error);
+  }
+  if ((state == 5)||(state == 15)){
+    dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, ENABLE, &dxl_error);
+  }
+  if ((state == 20)||(state == 10)){
+    dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELEVATION,    ADDRESS_TORQUE_ENABLE, DISABLE, &dxl_error);
+  }
+  if ((state == 20)||(state == 15)){
+    dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_SHOULDER,     ADDRESS_TORQUE_ENABLE, DISABLE, &dxl_error);
+    dxlCommResult = packetHandler->write1ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_TORQUE_ENABLE, DISABLE, &dxl_error);
+  }
 }
 
-/******************** Arm Support DXL Configuration Member Function ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support DXL Configuration Member Function ------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::PacketHandler  *packetHandler) {
   using namespace ASR;
   int dxlCommResult;
@@ -280,7 +313,9 @@ void  RobotControl::MotorConfig(dynamixel::PortHandler *portHandler, dynamixel::
   dxlCommResult = packetHandler->write4ByteTxRx(portHandler, ID_ELBOW,        ADDRESS_PROFILE_VELOCITY, VEL_BASED_PROFILE, &dxl_error);
 }
 
-/******************** Arm Support DXL Read Member Function ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support DXL Read Member Function ---------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
   /* Read Position and Velocity */
   int dxlCommResult = syncReadPacket.txRxPacket();
@@ -292,7 +327,9 @@ void  RobotControl::ReadMotors(dynamixel::GroupSyncRead  &syncReadPacket) {
   qDotPresCts_M[2] = syncReadPacket.getData(ASR::ID_ELBOW,     ASR::ADDRESS_PRESENT_VELOCITY, ASR::LEN_PRESENT_VELOCITY);
 }
 
-/******************** Arm Support DXL Write Member Function ************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Arm Support DXL Write Member Function --------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 int  RobotControl::WriteToMotors(bool &addParamResult, dynamixel::GroupSyncWrite &syncWritePacket) {
   int dxlCommResult;
   uint8_t elbowParam[4], shoulderParam[4], elevateParam[4];

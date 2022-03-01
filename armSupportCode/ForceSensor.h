@@ -18,7 +18,7 @@ class ForceSensor {
     float* GetRawF();
     float* GetGlobalF();
     
-  private:
+  protected:
     void  ReadForceSensor();
     void  FilterForces();
 

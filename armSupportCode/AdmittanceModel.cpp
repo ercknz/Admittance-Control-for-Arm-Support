@@ -38,7 +38,9 @@
 #include "AdmittanceModel.h"
 #include "armSupportNamespace.h"
 
-/* Admittance Model Constructor  **********************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Admittance Model Constructor -----------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 AdmittanceModel::AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const float G, const float T)
   : mass_M{Mxy, Mz},
     damping_M{Bxy, Bz},
@@ -51,14 +53,18 @@ AdmittanceModel::AdmittanceModel(float Mxy, float Mz, float Bxy, float Bz, const
 {
 }
 
-/* Admittance Model Initalizer  ***********************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Admittance Model Initalizer ------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void AdmittanceModel::SetPosition(float *newXYZ) {
   for(int i=0; i<3; i++){
     xyzGoal_M[i] = newXYZ[i];
   }
 }
 
-/* Admittance Model Updater  **************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Admittance Model Updater ---------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *externalFxyz) {
   for (int i = 0; i < 3; i++) {
     xyzInit_M[i]    = xyzGoal_M[i];
@@ -105,7 +111,9 @@ void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *extern
   } 
 }
 
-/* Admittance Model Get Functions   *******************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Admittance Model Get Functions ---------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 float* AdmittanceModel::GetGoalPos() {
   return xyzGoal_M;
 }
@@ -126,7 +134,9 @@ float* AdmittanceModel::GetTotalForces(){
   return totalForces_M;
 }
 
-/* Admittance Model Setter Functions ******************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Admittance Model Setter Functions ------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void AdmittanceModel::SetMassXY(float newMxy){
   if (newMxy > 0.1){
     mass_M[0] = newMxy;

@@ -11,7 +11,9 @@
 #include "SerialCommPackets.h"
 #include "UtilityFunctions.h"
 
-/* Serial Packet Contructor  **************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Serial Packet Contructor  --------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
   : _BAUDRATE{baudrate}
 {
@@ -19,7 +21,9 @@ SerialPackets::SerialPackets(USBSerial *ptrSer, const int baudrate)
   SerialPort_M->begin(_BAUDRATE);
 }
 
-/* Serial Data Getters  *******************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Serial Data Getters --------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 bool SerialPackets::DataAvailable() {
   return SerialPort_M->available();
 }
@@ -58,6 +62,10 @@ float SerialPackets::GetNewScalingFactor() {
   _NEW_SCALING_FACTOR = false;
   return newScalingFactor_M;
 }
+uint8_t SerialPackets::GetNewMode(){
+  _NEW_MODE = false;
+  return newMode_M;
+}
 float * SerialPackets::GetExternalForces(){
   if (~_NEW_EXT_FORCE_X) {
     ExtForces_M[0] = 0.0f;
@@ -74,35 +82,46 @@ float * SerialPackets::GetExternalForces(){
   return ExtForces_M;
 }
 
-/* Serial Packet Writer  ******************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Serial Packet Writer -------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
   byte dataPacket[_TX_PKT_LEN] = {0};
   int16_t slotsFilled   = 0;
-  int16_t dataPosition  = 8;
+  int16_t dataPosition  = 44;
   uint16_t packetSum    = 0;
   int16_t byteLen       = 4;
-  /* header Bytes ------------------------------------------------------------*/
+
+  // Header Bytes 
   for (int16_t i = 0; i < 4; i++) {
     dataPacket[i] = _WRITEHEADER[i];
   }
-  /* totel time --------------------------------------------------------------*/
+
+  // Elapsed Time 
   dataPacket[4] = DXL_LOBYTE(DXL_LOWORD(totalTime));
   dataPacket[5] = DXL_HIBYTE(DXL_LOWORD(totalTime));
   dataPacket[6] = DXL_LOBYTE(DXL_HIWORD(totalTime));
   dataPacket[7] = DXL_HIBYTE(DXL_HIWORD(totalTime));
-  /* buildling dataPacket ----------------------------------------------------*/
+
+  // Global Forces, Positions, and Velocities
+  byte * GlobalF_bytes = floatArrayToBytes(Sensor.GetGlobalF());
+  for (int16_t i = 8; i < 20; i++) {
+    dataPacket[i] = GlobalF_bytes[i - 8];
+  }
+  byte * PresPos_bytes = floatArrayToBytes(Robot.GetPresPos());
+  for (int16_t i = 20; i < 32; i++) {
+    dataPacket[i] = PresPos_bytes[i - 20];
+  }
+  byte * PresVel_bytes = floatArrayToBytes(Robot.GetPresVel());
+  for (int16_t i = 32; i < 44; i++) {
+    dataPacket[i] = PresVel_bytes[i - 32];
+  }
+
+  // Optional Data Slots
   if (_SEND_RAWF && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * RawF_bytes = floatArrayToBytes(Sensor.GetRawF());
     for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
       dataPacket[i] = RawF_bytes[i - dataPosition];
-    }
-    slotsFilled += 3;
-    dataPosition += (3 * byteLen);
-  }
-  if (_SEND_GLOBALF && slotsFilled < _MAX_TX_DATA_SLOTS) {
-    byte * GlobalF_bytes = floatArrayToBytes(Sensor.GetGlobalF());
-    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
-      dataPacket[i] = GlobalF_bytes[i - dataPosition];
     }
     slotsFilled += 3;
     dataPosition += (3 * byteLen);
@@ -171,22 +190,6 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 3;
     dataPosition += (3 * byteLen);
   }
-  if (_SEND_PRESPOS && slotsFilled < _MAX_TX_DATA_SLOTS) {
-    byte * PresPos_bytes = floatArrayToBytes(Robot.GetPresPos());
-    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
-      dataPacket[i] = PresPos_bytes[i - dataPosition];
-    }
-    slotsFilled += 3;
-    dataPosition += (3 * byteLen);
-  }
-  if (_SEND_PRESVEL && slotsFilled < _MAX_TX_DATA_SLOTS) {
-    byte * PresVel_bytes = floatArrayToBytes(Robot.GetPresVel());
-    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
-      dataPacket[i] = PresVel_bytes[i - dataPosition];
-    }
-    slotsFilled += 3;
-    dataPosition += (3 * byteLen);
-  }
   if (_SEND_GOALQCTS && slotsFilled < _MAX_TX_DATA_SLOTS) {
     byte * GoalQCts_bytes = int32ArrayToBytes(Robot.GetGoalQCts());
     for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
@@ -251,25 +254,29 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 3;
     dataPosition += (3 * byteLen);
   }
-  /* looptime ----------------------------------------------------------------*/
+
+  // looptime
   dataPacket[_TX_PKT_LEN - 6] = DXL_LOBYTE(DXL_LOWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 5] = DXL_HIBYTE(DXL_LOWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 4] = DXL_LOBYTE(DXL_HIWORD(loopTime));
   dataPacket[_TX_PKT_LEN - 3] = DXL_HIBYTE(DXL_HIWORD(loopTime));
-  /* check Sum ---------------------------------------------------------------*/
+
+  // check Sum
   for (int16_t i = 0; i < _TX_PKT_LEN - 2; i++) {
     packetSum += dataPacket[i];
   }
   dataPacket[_TX_PKT_LEN - 2] = floor(packetSum / 256);
   dataPacket[_TX_PKT_LEN - 1] = floor(packetSum % 256);
 
-  /* write data packet -------------------------------------------------------*/
+  // write data packet
   for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
     SerialPort_M->write(dataPacket[i]);
   }
 }
 
-/* Serial Packet Reader  ******************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Serial Packet Reader -------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void SerialPackets::ReadPackets() {
   byte RXPacket[_RX_PKT_LEN];
   byte tempHeader[4];
@@ -289,8 +296,13 @@ void SerialPackets::ReadPackets() {
   }
   if (SumCheck == CHECKSUM) {
     if (memcmp(_CONFIGHEADER, tempHeader, sizeof(_CONFIGHEADER)) == 0) {
-      SendFlagResets();
-      ConfigPacketRX(RXPacket);
+      if (RxPacket[4] > 1){
+        _NEW_MODE = true;
+        newMode_M = RxPacket[4];
+      } else {
+        SendFlagResets();
+        ConfigPacketRX(RXPacket);
+      }
     }
     if (memcmp(_MODHEADER, tempHeader, sizeof(_MODHEADER)) == 0) {
       ModifierPacketRX(RXPacket);
@@ -302,32 +314,30 @@ void SerialPackets::ReadPackets() {
   }
 }
 
-/* Configuration RX Packet  ***************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Configuration RX Packet ----------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[5])  _SEND_RAWF          = true;
-  if (RxPacket[6])  _SEND_GLOBALF       = true;
-  if (RxPacket[7])  _SEND_XYZGOAL       = true;
-  if (RxPacket[8])  _SEND_XYZDOTGOAL    = true;
-  if (RxPacket[9])  _SEND_XYZBOTGOAL    = true;
-  if (RxPacket[10]) _SEND_XYZDOTBOTGOAL = true;
-  if (RxPacket[11]) _SEND_PRESQCTS      = true;
-  if (RxPacket[12]) _SEND_PRESQDOTCTS   = true;
-  if (RxPacket[13]) _SEND_PRESQ         = true;
-  if (RxPacket[14]) _SEND_PRESQDOT      = true;
-  if (RxPacket[15]) _SEND_PRESPOS       = true;
-  if (RxPacket[16]) _SEND_PRESVEL       = true;
-  if (RxPacket[17]) _SEND_GOALQCTS      = true;
-  if (RxPacket[18]) _SEND_GOALQDOTCTS   = true;
-  if (RxPacket[19]) _SEND_GOALQ         = true;
-  if (RxPacket[20]) _SEND_GOALQDOT      = true;
-  if (RxPacket[21]) _SEND_MASS          = true;
-  if (RxPacket[22]) _SEND_DAMPING       = true;
-  if (RxPacket[23]) _SEND_SPRING_F      = true;
+  if (RxPacket[6])  _SEND_XYZGOAL       = true;
+  if (RxPacket[7])  _SEND_XYZDOTGOAL    = true;
+  if (RxPacket[8])  _SEND_XYZBOTGOAL    = true;
+  if (RxPacket[9])  _SEND_XYZDOTBOTGOAL = true;
+  if (RxPacket[10]) _SEND_PRESQCTS      = true;
+  if (RxPacket[11]) _SEND_PRESQDOTCTS   = true;
+  if (RxPacket[12]) _SEND_PRESQ         = true;
+  if (RxPacket[13]) _SEND_PRESQDOT      = true;
+  if (RxPacket[14]) _SEND_GOALQCTS      = true;
+  if (RxPacket[15]) _SEND_GOALQDOTCTS   = true;
+  if (RxPacket[16]) _SEND_GOALQ         = true;
+  if (RxPacket[17]) _SEND_GOALQDOT      = true;
+  if (RxPacket[18]) _SEND_MASS          = true;
+  if (RxPacket[19]) _SEND_DAMPING       = true;
+  if (RxPacket[20]) _SEND_SPRING_F      = true;
 }
 
 void SerialPackets::SendFlagResets() {
   _SEND_RAWF          = false;
-  _SEND_GLOBALF       = false;
   _SEND_XYZGOAL       = false;
   _SEND_XYZDOTGOAL    = false;
   _SEND_XYZBOTGOAL    = false;
@@ -336,8 +346,6 @@ void SerialPackets::SendFlagResets() {
   _SEND_PRESQDOTCTS   = false;
   _SEND_PRESQ         = false;
   _SEND_PRESQDOT      = false;
-  _SEND_PRESPOS       = false;
-  _SEND_PRESVEL       = false;
   _SEND_GOALQCTS      = false;
   _SEND_GOALQDOTCTS   = false;
   _SEND_GOALQ         = false;
@@ -347,9 +355,11 @@ void SerialPackets::SendFlagResets() {
   _SEND_SPRING_F      = false;
 }
 
-/* Modifier RX Packet  ********************************************************/
+/* ---------------------------------------------------------------------------------------/
+/ Modifier RX Packet ---------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void SerialPackets::ModifierPacketRX(byte * RxPacket) {
-  /* [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor [5]:eFx [6]:eFy [7]:eFz */
+  // [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor [5]:eFx [6]:eFy [7]:eFz
   byte mask = 1;
   byte bitArray[8];
   for (int16_t i = 0; i < 8; i++) {

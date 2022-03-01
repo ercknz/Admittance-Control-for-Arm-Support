@@ -23,7 +23,7 @@ class AdmittanceModel {
     void   SetDampingXY(float newBxy);
     void   SetDampingZ(float newBz);
 
-  private:
+  protected:
     const float   _GRAVITY,       _DELTAT;
     const double  _H_OF_L2,       _A1A2;
     const double  _INNER_R_LIMIT, _Z_LIMIT;

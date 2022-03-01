@@ -23,19 +23,21 @@ class SerialPackets {
     bool ModifyDampingXY();
     bool ModifyDampingZ();
     bool ModifyScalingFactor();
+    bool ModifyMode();
     float GetNewMassXY();
     float GetNewMassZ();
     float GetNewDampingXY();
     float GetNewDampingZ();
     float GetNewScalingFactor();
-    float *GetExternalForces();
+    uint8_t GetNewMode();
+    float * GetExternalForces();
 
-  private:
+  protected:
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
     const int16_t _TX_PKT_LEN = 98;
     const int16_t _RX_PKT_LEN = 39;
-    const int16_t _MAX_TX_DATA_SLOTS = 21;
+    const int16_t _MAX_TX_DATA_SLOTS = 12;
     const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};
     const byte  _MODHEADER[4]     = {150, 10, 10, 96};
     const byte  _WRITEHEADER[4]   = {170, 8, 69, 0};
@@ -43,9 +45,9 @@ class SerialPackets {
     void ConfigPacketRX(byte * RxPacket);
     void ModifierPacketRX(byte * RxPacket);
     void SendFlagResets();
+    void ModeSelection(byte modeNumber);
 
     bool _SEND_RAWF           = true;
-    bool _SEND_GLOBALF        = true;
     bool _SEND_XYZGOAL        = true;
     bool _SEND_XYZDOTGOAL     = false;
     bool _SEND_XYZBOTGOAL     = true;
@@ -54,8 +56,6 @@ class SerialPackets {
     bool _SEND_PRESQDOTCTS    = false;
     bool _SEND_PRESQ          = true;
     bool _SEND_PRESQDOT       = false;
-    bool _SEND_PRESPOS        = false;
-    bool _SEND_PRESVEL        = false;
     bool _SEND_GOALQCTS       = false;
     bool _SEND_GOALQDOTCTS    = false;
     bool _SEND_GOALQ          = true;
@@ -70,12 +70,14 @@ class SerialPackets {
     bool _NEW_DAMPING_XY      = false;
     bool _NEW_DAMPING_Z       = false;
     bool _NEW_SCALING_FACTOR  = false;
+    bool _NEW_MODE            = false;
     bool _NEW_EXT_FORCE_X     = false;
     bool _NEW_EXT_FORCE_Y     = false;
     bool _NEW_EXT_FORCE_Z     = false;
     float newMassXY_M,    newMassZ_M;
     float newDampingXY_M, newDampingZ_M;
     float newScalingFactor_M;
+    uint8_t newMode_M;
     float ExtForces_M[3] = {0.0f};
 };
 

@@ -9,12 +9,12 @@
 
 int16_t bytesToCounts(byte hByte, byte lByte);
 
+float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4);
+
 byte * floatArrayToBytes(float * floatValues);
 
 byte * floatToBytes(float floatValue);
 
 byte * int32ArrayToBytes(int32_t * int32Values);
-
-float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4);
 
 #endif // UTILITY_FUNCTIONS_H

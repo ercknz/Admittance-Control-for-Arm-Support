@@ -32,7 +32,7 @@ class RobotControl {
     float     GetSpringForce();
     void      SetScalingFactor(float newScalingFactor);
     
-  private:
+  protected:
     void  fKine();
     void  iKine(float *modelXYZ, float *modelXYZDot);
     void  ReadMotors(dynamixel::GroupSyncRead &syncReadPacket);

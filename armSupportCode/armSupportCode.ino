@@ -10,7 +10,9 @@
 
 */
 
-/* Libraries and Headers ///////////////////////////////////////////////////////////////////////////////*/
+/* ---------------------------------------------------------------------------------------/
+/ Libraries and Headers ------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 #include <DynamixelSDK.h>
 #include "armSupportNamespace.h"
 #include "AdmittanceModel.h"
@@ -19,17 +21,26 @@
 #include "UtilityFunctions.h"
 #include "SerialCommPackets.h"
 
-/* DXL port and packets /////////////////////////////////////////////////////////////////////////*/
+
+/* ---------------------------------------------------------------------------------------/
+/ DXL port and packets -------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
-/* Robot Control Objects //////////////////////////////////////////////////////////////////////////*/
+
+/* ---------------------------------------------------------------------------------------/
+/ Robot Control Objects ------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 AdmittanceModel AdmitModel      = AdmittanceModel(ASR::initMassXY, ASR::initMassZ, ASR::initDampingXY, ASR::initDampingZ, ASR::GRAVITY, ASR::MODEL_DT);
 ForceSensor     OptoForceSensor = ForceSensor(&Serial1, ASR::SENSOR_BAUDRATE, ASR::xyzSensitivity, ASR::SENSOR_FILTER_WEIGHT);
 RobotControl    ArmSupportRobot = RobotControl(ASR::A1_LINK, ASR::L1_LINK, ASR::A2_LINK, ASR::L2_LINK, ASR::LINK_OFFSET);
 SerialPackets   pcComm          = SerialPackets(&Serial, ASR::SERIAL_BAUDRATE);
 
-/* Setup function /////////////////////////////////////////////////////////////////////////////////*/
+
+/* ---------------------------------------------------------------------------------------/
+/ Setup function -------------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void setup() {
   /* Wait for Serial Comm */
   while (!Serial);
@@ -45,17 +56,22 @@ void setup() {
   portHandler -> setBaudRate(ASR::MOTOR_BAUDRATE);
 }
 
-/* Main loop function /////////////////////////////////////////////////////////////////////////////////*/
+
+/* ---------------------------------------------------------------------------------------/
+/ Main loop function ---------------------------------------------------------------------/
+/----------------------------------------------------------------------------------------*/
 void loop() {
   /* Calibrate Force Sensor */
   delay(100);
   OptoForceSensor.SensorConfig();
   ArmSupportRobot.MotorConfig(portHandler, packetHandler);
   delay(100);
+
   /* Other Variables needed */
   unsigned long previousTime, currentTime;
   unsigned long totalTime = 0;
   unsigned long loopTime, startLoop;
+  
   /* Sets up dynamixel read/write packet parameters */
   int  goalReturn;
   bool addParamResult = false;
@@ -68,13 +84,13 @@ void loop() {
   /* Torque Enable Switch Check */
   byte switchState = digitalRead(ASR::TORQUE_SWITCH_PIN);
   if (switchState == LOW) {
-    ArmSupportRobot.EnableTorque(portHandler, packetHandler, ENABLE);
+    ArmSupportRobot.EnableTorque(portHandler, packetHandler, ASR::FULL_ADMITTANCE);
   } else {
-    ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);
+    ArmSupportRobot.EnableTorque(portHandler, packetHandler, ASR::FULL_PASSIVE);
   }
   delay(100);
 
-  /* Initialize Model */
+  /* Initialize Robot and Model */
   float *presQ, *xyzGoal, *xyzDotGoal;
   OptoForceSensor.SensorConfig();
   previousTime = millis();
@@ -105,6 +121,9 @@ void loop() {
       }
       if (pcComm.ModifyScalingFactor()) {
         ArmSupportRobot.SetScalingFactor(pcComm.GetNewScalingFactor());
+      }
+      if (pcComm.ModifyMode()){
+        ArmSupportRobot.EnableTorque(pcComm.GetNewMode());
       }
     }
 
