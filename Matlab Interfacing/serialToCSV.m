@@ -7,7 +7,7 @@
 %% Clean workspace
 clear; clc; close all; delete(instrfindall);
 %% CSV file
-timeInSecs = 60;
+timeInSecs = 30;
 logFileID = '_testNewCode_';
 fileTime = datestr(now,'mmddyyHHMM');
 csvFile = ['./Logs/armSupportLog',logFileID,fileTime,'.csv'];
@@ -142,11 +142,19 @@ legend('boxoff'); xlabel('Time (sec)');ylabel('Angle (rad)');
 % xlabel('Time (sec)'); ylabel('X (m)')
 
 subplot(4,6,[4,12])
-fPlotX = plot(data(:,1),data(:,2),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
+fPlotX = plot(data(:,1),data(:,5),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
 hold on; grid on; xlim([0,timeInSecs]);
-fPlotY = plot(data(:,1),data(:,3),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
-fPlotZ = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
+fPlotY = plot(data(:,1),data(:,6),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
+fPlotZ = plot(data(:,1),data(:,7),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
 legend('X','Y','Z');title('Global Forces');
+xlabel('Time (sec)'); ylabel('Force (N)');
+
+subplot(4,6,[7,15])
+rfPlotX = plot(data(:,1),data(:,2),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
+hold on; grid on; xlim([0,timeInSecs]);
+rfPlotY = plot(data(:,1),data(:,3),'LineWidth',1.5,'Color',[0.85,0.33,0.10]);
+rfPlotZ = plot(data(:,1),data(:,4),'LineWidth',1.5,'Color',[0.93,0.69,0.13]);
+legend('X','Y','Z');title('Raw Forces');
 xlabel('Time (sec)'); ylabel('Force (N)');
 
 % subplot(4,6,[7,15])
@@ -173,11 +181,11 @@ grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]);
 view(3); title('End of Robot');
 xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
 
-subplot(4,6,[8,15])
-mPlot = plot3(data(:,5),data(:,6),data(:,7));
-grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]);
-view(3); title('End of Robot');
-xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
+% subplot(4,6,[8,15])
+% mPlot = plot3(data(:,5),data(:,6),data(:,7));
+% grid on; xlim([-1.2,1.2]); ylim([-1.2, 1.2]); zlim([-0.5, 0.5]);
+% view(3); title('End of Robot');
+% xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)')
 
 subplot(4,6,18)
 tPlotX = plot(data(:,1),data(:,5),'LineWidth',1.5,'Color',[0.00,0.45,0.74]);
