@@ -91,12 +91,10 @@ void loop() {
   delay(100);
 
   /* Initialize Robot and Model */
-  float *presQ, *xyzGoal, *xyzDotGoal;
   OptoForceSensor.SensorConfig();
   previousTime = millis();
   ArmSupportRobot.ReadRobot(syncReadPacket);
-  presQ = ArmSupportRobot.GetPresQ();
-  OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
+  OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
   AdmitModel.SetPosition(ArmSupportRobot.GetPresPos());
   pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
 
@@ -139,13 +137,10 @@ void loop() {
 
       /* Control */
       ArmSupportRobot.ReadRobot(syncReadPacket);
-      presQ = ArmSupportRobot.GetPresQ();
-      OptoForceSensor.CalculateGlobalForces(presQ[0], presQ[2]);
+      OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
       ArmSupportRobot.CalculateSpringForce(OptoForceSensor.GetGlobalF());
       AdmitModel.UpdateModel(OptoForceSensor.GetGlobalF(), ArmSupportRobot.GetSpringForce(), pcComm.GetExternalForces());
-      xyzGoal = AdmitModel.GetGoalPos();
-      xyzDotGoal = AdmitModel.GetGoalVel();
-      ArmSupportRobot.WriteToRobot(xyzGoal, xyzDotGoal, addParamResult, syncWritePacket);
+      ArmSupportRobot.WriteToRobot(AdmitModel.GetGoalPos(), AdmitModel.GetGoalVel(), addParamResult, syncWritePacket);
 
       /* Outgoing Data */
       loopTime = millis() - startLoop;
@@ -153,7 +148,7 @@ void loop() {
     }
   }
   if (!Serial) {
-    ArmSupportRobot.EnableTorque(portHandler, packetHandler, DISABLE);
+    ArmSupportRobot.EnableTorque(portHandler, packetHandler, ASR::FULL_PASSIVE);
     while (!Serial);
   }
 }

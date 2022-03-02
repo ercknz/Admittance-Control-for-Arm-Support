@@ -81,15 +81,19 @@ void ForceSensor::SensorConfig() {
 / Force Sensor Calibration ---------------------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
 void ForceSensor::CalibrateSensor() {
+  float newXYZcal[3] = {0.0};
   for (int i = 0; i < 3; i++) {
     _xyzCALIBRATION[i] = 0.0f;
   }
   float samples = 2000.0;
   for (int i = 0; i < samples; i++) {
     ReadForceSensor();
-    for (int i = 0; i < 3; i++) {
-      _xyzCALIBRATION[i] += xyzRaw_M[i] / samples;
+    for (int j = 0; j < 3; j++) {
+      newXYZcal[j] += xyzRaw_M[j] / samples;
     }
+  }
+  for (int i = 0; i < 3; i++) {
+    _xyzCALIBRATION[i] = newXYZcal[i]
   }
 }
 
@@ -158,8 +162,6 @@ void ForceSensor::ReadForceSensor() {
 void ForceSensor::FilterForces() {
   for (int i = 0; i < 3; i++) {
     xyzLastFilt_M[i] = xyzFilt_M[i];
-  }
-  for (int i = 0; i < 3; i++) {
     xyzFilt_M[i] = _FILTERWEIGHT * xyzRaw_M[i] + (1 - _FILTERWEIGHT) * xyzLastFilt_M[i];
   }
 }
@@ -167,9 +169,10 @@ void ForceSensor::FilterForces() {
 /* ---------------------------------------------------------------------------------------/
 / Force Sensor Global Forces -------------------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
-void ForceSensor::CalculateGlobalForces(float q1, float q4) {
+void ForceSensor::CalculateGlobalForces(float *q) {
+  // q[] = [q1, q2, q4]
   ReadForceSensor();
-  xyzGlobal_M[0] = xyzFilt_M[0] * ( sin(q1 + q4)) + xyzFilt_M[1] * (-cos(q1 + q4));
-  xyzGlobal_M[1] = xyzFilt_M[0] * (-cos(q1 + q4)) + xyzFilt_M[1] * (-sin(q1 + q4));
+  xyzGlobal_M[0] = xyzFilt_M[0] * ( sin(q[0] + q[2])) + xyzFilt_M[1] * (-cos(q[0] + q[2]));
+  xyzGlobal_M[1] = xyzFilt_M[0] * (-cos(q[0] + q[2])) + xyzFilt_M[1] * (-sin(q[0] + q[2]));
   xyzGlobal_M[2] = -xyzFilt_M[2];
 }
