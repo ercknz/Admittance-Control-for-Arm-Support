@@ -58,6 +58,13 @@ extern const unsigned char ESC_ASCII_VALUE;
 // Force Sensor Constants
 extern const float xyzSensitivity[3];
 extern const float SENSOR_FILTER_WEIGHT;
+extern const float posX_SM[3];
+extern const float posY_SM[3];
+extern const float posZ_SM[3];
+extern const float negX_SM[3];
+extern const float negY_SM[3];
+extern const float negZ_SM[3];
+
 
 // Dynamixel Parameters for calculations
 extern const float DEGREES_PER_COUNT;

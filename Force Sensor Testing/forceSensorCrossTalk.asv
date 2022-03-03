@@ -79,9 +79,9 @@ nXnYKmatrxI = inv(nXnYKmatrx);
 %                       [  0.0168,  0.0152,  0.5850]
 % 
 % -X and -Y Calculated:
-%                       [   0.0490, -0.0002, -0.0179]
-% [SM] = SensorMatrix = [ -0.00002,  0.0508, -0.0137] (N/cts) 
-%                       [   0.0181,  0.0183, -0.6371]
+%                       [ 0.0490,  -0.0002, -0.0179]
+% [SM] = SensorMatrix = [ -0.00002, -0.0508, 0.0137] (N/cts) 
+%                       [   0.0181, -0.0183, 0.6371]
 %
 % Example to code:
 % if cts = sensor count readings:

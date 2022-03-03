@@ -24,13 +24,20 @@
 #include <Arduino.h>
 #include "UtilityFunctions.h"
 #include "ForceSensor.h"
+#include "armSupportNamespace.h"
 
 /* ---------------------------------------------------------------------------------------/
 / Force Sensor Constructor ---------------------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
-ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float filterWeight)
+ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float filterWeight)
   : _BAUDRATE{baudrate},
-    _xyzSENSITIVITY{xyzSens[0], xyzSens[1], xyzSens[2]},
+    _xyzSENSITIVITY{ASR::xyzSens[0], ASR::xyzSens[1], ASR::xyzSens[2]},
+    _posXsens{ASR::posX_SM[0], ASR::posX_SM[1], ASR::posX_SM[2]};
+    _posYsens{ASR::posY_SM[0], ASR::posY_SM[1], ASR::posY_SM[2]};
+    _posZsens{ASR::posZ_SM[0], ASR::posZ_SM[1], ASR::posZ_SM[2]};
+    _negXsens{ASR::negX_SM[0], ASR::negX_SM[1], ASR::negX_SM[2]};
+    _negYsens{ASR::negY_SM[0], ASR::negY_SM[1], ASR::negY_SM[2]};
+    _negZsens{ASR::negZ_SM[0], ASR::negZ_SM[1], ASR::negZ_SM[2]};
     _FILTERWEIGHT{filterWeight}
 {
   SensorPort_M = ptrSer;
@@ -45,7 +52,7 @@ float* ForceSensor::GetRawF() {
 
 float* ForceSensor::GetGlobalF() {
   return xyzGlobal_M;
-}
+} 
 
 /* ---------------------------------------------------------------------------------------/
 / Force Sensor Configuration ---------------------------------------------------------------/
@@ -139,9 +146,36 @@ void ForceSensor::ReadForceSensor() {
         yCts = bytesToCounts(goodPacket[10], goodPacket[11]);
         zCts = bytesToCounts(goodPacket[12], goodPacket[13]);
 
-        xyzRaw_M[0] = (xCts / _xyzSENSITIVITY[0]) - _xyzCALIBRATION[0];
-        xyzRaw_M[1] = (yCts / _xyzSENSITIVITY[1]) - _xyzCALIBRATION[1];
-        xyzRaw_M[2] = (zCts / _xyzSENSITIVITY[2]) - _xyzCALIBRATION[2];
+        xyzRaw_M[0] = xCts * _xyzSENSITIVITY[0];
+        xyzRaw_M[1] = yCts * _xyzSENSITIVITY[1];
+        xyzRaw_M[2] = zCts * _xyzSENSITIVITY[2];
+
+        /*
+        if (xCts > 0.0) {
+          xyzRaw_M[0] = _posXsens[0] * xCts + _posXsens[1] * yCts + _posXsens[2] * zCts;
+        } else if (xCts < 0.0) {
+          xyzRaw_M[0] = _negXsens[0] * xCts + _negXsens[1] * yCts + _negXsens[2] * zCts;
+        } else {
+          xyzRaw_M[0] = 0.0;
+        }
+        
+        if (yCts > 0.0) {
+          xyzRaw_M[1] = _posYsens[0] * xCts + _posYsens[1] * yCts + _posYsens[2] * zCts;
+        } else if (yCts < 0.0) {
+          xyzRaw_M[1] = _negYsens[0] * xCts + _negYsens[1] * yCts + _negYsens[2] * zCts;
+        } else {
+          xyzRaw_M[1] = 0.0;
+        }
+
+        if (zCts > 0.0) {
+          xyzRaw_M[2] = _posZsens[0] * xCts + _posZsens[1] * yCts + _posZsens[2] * zCts;
+        } else if (zCts < 0.0) {
+          xyzRaw_M[2] = _negZsens[0] * xCts + _negZsens[1] * yCts + _negZsens[2] * zCts;
+        } else {
+          xyzRaw_M[2] = 0.0;
+        }
+        */
+
       } else {
         for (int j = 0; i < 3; i++) {
           xyzRaw_M[j] = xyzLastRaw_M[j];
@@ -162,7 +196,7 @@ void ForceSensor::ReadForceSensor() {
 void ForceSensor::FilterForces() {
   for (int i = 0; i < 3; i++) {
     xyzLastFilt_M[i] = xyzFilt_M[i];
-    xyzFilt_M[i] = _FILTERWEIGHT * xyzRaw_M[i] + (1 - _FILTERWEIGHT) * xyzLastFilt_M[i];
+    xyzFilt_M[i] = _FILTERWEIGHT * (xyzRaw_M[i] - _xyzCALIBRATION[i]) + (1 - _FILTERWEIGHT) * xyzLastFilt_M[i];
   }
 }
 

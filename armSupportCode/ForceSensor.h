@@ -29,6 +29,12 @@ class ForceSensor {
     int16_t     _SENSORSTATUS;
     const byte  _READHEADER[4] = {170, 7, 8, 10};
     const float _xyzSENSITIVITY[3];
+    const float _posXsens[3];
+    const float _posYsens[3];
+    const float _posZsens[3];
+    const float _negXsens[3];
+    const float _negYsens[3];
+    const float _negZsens[3];
     const float _FILTERWEIGHT;
     float xyzRaw_M[3]     = {0.0f};
     float xyzLastRaw_M[3] = {0.0f};

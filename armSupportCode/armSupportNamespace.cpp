@@ -51,13 +51,19 @@ const uint8_t       EXT_POS_CONTROL       = 4;
 const uint16_t      LEN_GOAL_POSITION     = 4;
 const uint16_t      LEN_PROFILE_VELOCITY  = 4;
 const uint16_t      LEN_PRESENT_POSITION  = 4;
-const uint16_t      LEN_PRESENT_VELOCITY  = 4;
+const uint16_t      LEN_PRESENT_VELOCITY  = 4; 
 const int           VEL_BASED_PROFILE     = 0;
 const unsigned char ESC_ASCII_VALUE       = 0x1b;
 
 // Force Sensor Constants
-const float xyzSensitivity[3] = {20.180, 20.250, 1.610};
+const float xyzSens[3] = {0.0496, 0.0494, 0.6231};
 const float SENSOR_FILTER_WEIGHT = 0.05;
+const float posX_SM[3] = {0.0474, -0.0042, -0.0581};
+const float posY_SM[3] = {-0.0018, 0.0464, -0.0530};
+const float posZ_SM[3] = {0.0168, 0.0152, 0.5850};
+const float negX_SM[3] = {-0.0490, -0.0042, -0.0581};
+const float negY_SM[3] = {-0.0018, 0.0464, -0.0530};
+const float negZ_SM[3] = {0.0168, 0.0152, 0.5850};
 
 // Dynamixel Parameters for calculations
 const float DEGREES_PER_COUNT = 0.088;
@@ -65,11 +71,11 @@ const float RPM_PER_COUNT     = 0.229;
 
 // Dynamixel Motor Limits
 const int ELBOW_MIN_POS     = 1200;
-const int ELBOW_MAX_POS     = 3128;
-const int SHOULDER_MIN_POS  = 710;
-const int SHOULDER_MAX_POS  = 3520;
-const int ELEVATION_MIN_POS = 1170;
-const int ELEVATION_MAX_POS = 3520;
+const int ELBOW_MAX_POS     = 3130;
+const int SHOULDER_MIN_POS  = 776;
+const int SHOULDER_MAX_POS  = 3677;
+const int ELEVATION_MIN_POS = 1137;
+const int ELEVATION_MAX_POS = 3487;
 const int ELEVATION_CENTER  = (ELEVATION_MAX_POS + ELEVATION_MIN_POS) / 2;
 const float ELEVATION_RATIO = 2.2978;
 const int VEL_MAX_LIMIT     = 100;
@@ -77,7 +83,7 @@ const int VEL_MAX_LIMIT     = 100;
 // Admitance Control Constants and initial Values
 const float LOOP_DT        = 8;        // Milliseconds
 const float MODEL_DT       = 0.008;    // Secs
-const float GRAVITY        = 9.80665;  // m/sec^2
+const float GRAVITY        = 9.8067;  // m/sec^2
 float initMassXY    = 1.5f;     // kg
 float initDampingXY = 5.0f;     // N*(sec/m)
 float initMassZ     = 1.5f;     // kg
