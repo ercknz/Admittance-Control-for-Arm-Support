@@ -35,9 +35,9 @@ class SerialPackets {
   protected:
     const int   _BAUDRATE;
     USBSerial * SerialPort_M;
-    const int16_t _TX_PKT_LEN = 98;
+    const int16_t _TX_PKT_LEN = 146;
     const int16_t _RX_PKT_LEN = 39;
-    const int16_t _MAX_TX_DATA_SLOTS = 12;
+    const int16_t _MAX_TX_DATA_SLOTS = 24;
     const byte  _CONFIGHEADER[4]  = {150, 0, 69, 8};
     const byte  _MODHEADER[4]     = {150, 10, 10, 96};
     const byte  _WRITEHEADER[4]   = {170, 8, 69, 0};

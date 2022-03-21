@@ -42,6 +42,9 @@ bool SerialPackets::ModifyDampingZ() {
 bool SerialPackets::ModifyScalingFactor() {
   return _NEW_SCALING_FACTOR;
 }
+bool SerialPackets::ModifyMode(){
+  return _NEW_MODE;
+}
 float SerialPackets::GetNewMassXY() {
   _NEW_MASS_XY = false;
   return newMassXY_M;
@@ -296,9 +299,9 @@ void SerialPackets::ReadPackets() {
   }
   if (SumCheck == CHECKSUM) {
     if (memcmp(_CONFIGHEADER, tempHeader, sizeof(_CONFIGHEADER)) == 0) {
-      if (RxPacket[4] > 1){
+      if (RXPacket[4] > 1){
         _NEW_MODE = true;
-        newMode_M = RxPacket[4];
+        newMode_M = RXPacket[4];
       } else {
         SendFlagResets();
         ConfigPacketRX(RXPacket);

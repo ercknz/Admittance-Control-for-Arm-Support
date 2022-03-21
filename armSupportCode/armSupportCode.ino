@@ -20,6 +20,7 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 #include "SerialCommPackets.h"
+#include "imuWrapper.h"
 
 
 /* ---------------------------------------------------------------------------------------/
@@ -28,15 +29,14 @@
 dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
-
 /* ---------------------------------------------------------------------------------------/
 / Robot Control Objects ------------------------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
 AdmittanceModel AdmitModel      = AdmittanceModel(ASR::initMassXY, ASR::initMassZ, ASR::initDampingXY, ASR::initDampingZ, ASR::GRAVITY, ASR::MODEL_DT);
-ForceSensor     OptoForceSensor = ForceSensor(&Serial1, ASR::SENSOR_BAUDRATE, ASR::xyzSensitivity, ASR::SENSOR_FILTER_WEIGHT);
+ForceSensor     OptoForceSensor = ForceSensor(&Serial1, ASR::SENSOR_BAUDRATE, ASR::SENSOR_FILTER_WEIGHT);
 RobotControl    ArmSupportRobot = RobotControl(ASR::A1_LINK, ASR::L1_LINK, ASR::A2_LINK, ASR::L2_LINK, ASR::LINK_OFFSET);
 SerialPackets   pcComm          = SerialPackets(&Serial, ASR::SERIAL_BAUDRATE);
-
+imuWrapper      imuSensor       = imuWrapper();
 
 /* ---------------------------------------------------------------------------------------/
 / Setup function -------------------------------------------------------------------------/
@@ -121,7 +121,7 @@ void loop() {
         ArmSupportRobot.SetScalingFactor(pcComm.GetNewScalingFactor());
       }
       if (pcComm.ModifyMode()){
-        ArmSupportRobot.EnableTorque(pcComm.GetNewMode());
+        ArmSupportRobot.EnableTorque(portHandler, packetHandler, pcComm.GetNewMode());
       }
     }
 

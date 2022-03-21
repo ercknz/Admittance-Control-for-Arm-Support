@@ -26,7 +26,7 @@ public class ArmSupportComm2D : MonoBehaviour
     private float workspaceLimitX = 9;
     private float workspaceLimitY = 5;
 
-    private const int rxPacketLen = 98;
+    private const int rxPacketLen = 146;
     private byte[] rxHeader = { 170, 8, 69, 0 };
     private byte[] rxBuffer = new byte[rxPacketLen];
 

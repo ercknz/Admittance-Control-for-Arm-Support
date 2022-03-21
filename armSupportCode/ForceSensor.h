@@ -11,7 +11,7 @@
 
 class ForceSensor {
   public:
-          ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float xyzSens[3], const float filterWeight);
+          ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float filterWeight);
     void  SensorConfig();
     void  CalibrateSensor();
     void  CalculateGlobalForces(float *q);

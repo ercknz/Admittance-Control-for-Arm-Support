@@ -56,7 +56,7 @@ extern const int           VEL_BASED_PROFILE;
 extern const unsigned char ESC_ASCII_VALUE;
 
 // Force Sensor Constants
-extern const float xyzSensitivity[3];
+extern const float xyzSens[3];
 extern const float SENSOR_FILTER_WEIGHT;
 extern const float posX_SM[3];
 extern const float posY_SM[3];

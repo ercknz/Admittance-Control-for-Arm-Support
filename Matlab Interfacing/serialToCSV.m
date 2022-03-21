@@ -42,7 +42,7 @@ packetSent = false;
 
 %% Sets up and open serial object
 BaudRate = 115200;
-packetLen = 98;
+packetLen = 146;
 dt = 0.008;
 numFrames = timeInSecs/dt; % seconds*(1frame/secs)=frames
 rawData = nan(numFrames,packetLen);

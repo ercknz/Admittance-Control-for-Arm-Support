@@ -21,7 +21,7 @@ classdef armSupportRobot < handle
         txPacketLen = 39
         
         rxHeader = uint8([170, 8, 69, 0])
-        rxPacketLen = 98
+        rxPacketLen = 146
     end
     
     properties (Access = private)

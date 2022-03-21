@@ -32,12 +32,12 @@
 ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float filterWeight)
   : _BAUDRATE{baudrate},
     _xyzSENSITIVITY{ASR::xyzSens[0], ASR::xyzSens[1], ASR::xyzSens[2]},
-    _posXsens{ASR::posX_SM[0], ASR::posX_SM[1], ASR::posX_SM[2]};
-    _posYsens{ASR::posY_SM[0], ASR::posY_SM[1], ASR::posY_SM[2]};
-    _posZsens{ASR::posZ_SM[0], ASR::posZ_SM[1], ASR::posZ_SM[2]};
-    _negXsens{ASR::negX_SM[0], ASR::negX_SM[1], ASR::negX_SM[2]};
-    _negYsens{ASR::negY_SM[0], ASR::negY_SM[1], ASR::negY_SM[2]};
-    _negZsens{ASR::negZ_SM[0], ASR::negZ_SM[1], ASR::negZ_SM[2]};
+    _posXsens{ASR::posX_SM[0], ASR::posX_SM[1], ASR::posX_SM[2]},
+    _posYsens{ASR::posY_SM[0], ASR::posY_SM[1], ASR::posY_SM[2]},
+    _posZsens{ASR::posZ_SM[0], ASR::posZ_SM[1], ASR::posZ_SM[2]},
+    _negXsens{ASR::negX_SM[0], ASR::negX_SM[1], ASR::negX_SM[2]},
+    _negYsens{ASR::negY_SM[0], ASR::negY_SM[1], ASR::negY_SM[2]},
+    _negZsens{ASR::negZ_SM[0], ASR::negZ_SM[1], ASR::negZ_SM[2]},
     _FILTERWEIGHT{filterWeight}
 {
   SensorPort_M = ptrSer;
@@ -100,7 +100,7 @@ void ForceSensor::CalibrateSensor() {
     }
   }
   for (int i = 0; i < 3; i++) {
-    _xyzCALIBRATION[i] = newXYZcal[i]
+    _xyzCALIBRATION[i] = newXYZcal[i];
   }
 }
 
