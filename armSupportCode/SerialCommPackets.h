@@ -11,6 +11,7 @@
 #include "ForceSensor.h"
 #include "AdmittanceModel.h"
 #include "RobotControl.h"
+#include "IMUWrapper.h"
 
 class SerialPackets {
   public:
@@ -18,6 +19,7 @@ class SerialPackets {
     bool DataAvailable();
     void ReadPackets();
     void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
+    // void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, IMUWrapper &BNO, unsigned long &loopTime);
     bool ModifyMassXY();
     bool ModifyMassZ();
     bool ModifyDampingXY();
@@ -48,22 +50,23 @@ class SerialPackets {
     void ModeSelection(byte modeNumber);
 
     bool _SEND_RAWF           = true;
-    bool _SEND_XYZGOAL        = true;
+    bool _SEND_XYZGOAL        = false;
     bool _SEND_XYZDOTGOAL     = false;
-    bool _SEND_XYZBOTGOAL     = true;
+    bool _SEND_XYZBOTGOAL     = false;
     bool _SEND_XYZDOTBOTGOAL  = false;
     bool _SEND_PRESQCTS       = false;
     bool _SEND_PRESQDOTCTS    = false;
     bool _SEND_PRESQ          = true;
-    bool _SEND_PRESQDOT       = false;
+    bool _SEND_PRESQDOT       = true;
     bool _SEND_GOALQCTS       = false;
     bool _SEND_GOALQDOTCTS    = false;
     bool _SEND_GOALQ          = true;
-    bool _SEND_GOALQDOT       = false;
-    bool _SEND_MASS           = false;
-    bool _SEND_DAMPING        = false;
-    bool _SEND_SPRING_F       = false;
-    bool _SEND_TOTAL_FORCES   = true;
+    bool _SEND_GOALQDOT       = true;
+    bool _SEND_MASS           = true;
+    bool _SEND_DAMPING        = true;
+    bool _SEND_SPRING_F       = true;
+    bool _SEND_TOTAL_FORCES   = false;
+    bool _SEND_ORIENTATION    = true;
 
     bool _NEW_MASS_XY         = false;
     bool _NEW_MASS_Z          = false;

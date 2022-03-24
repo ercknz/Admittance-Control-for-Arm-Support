@@ -20,7 +20,7 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 #include "SerialCommPackets.h"
-#include "imuWrapper.h"
+#include "IMUWrapper.h"
 
 
 /* ---------------------------------------------------------------------------------------/
@@ -36,7 +36,7 @@ AdmittanceModel AdmitModel      = AdmittanceModel(ASR::initMassXY, ASR::initMass
 ForceSensor     OptoForceSensor = ForceSensor(&Serial1, ASR::SENSOR_BAUDRATE, ASR::SENSOR_FILTER_WEIGHT);
 RobotControl    ArmSupportRobot = RobotControl(ASR::A1_LINK, ASR::L1_LINK, ASR::A2_LINK, ASR::L2_LINK, ASR::LINK_OFFSET);
 SerialPackets   pcComm          = SerialPackets(&Serial, ASR::SERIAL_BAUDRATE);
-imuWrapper      imuSensor       = imuWrapper();
+IMUWrapper      bno             = IMUWrapper(&Serial2, ASR::SERIAL_BAUDRATE);
 
 /* ---------------------------------------------------------------------------------------/
 / Setup function -------------------------------------------------------------------------/
@@ -97,6 +97,7 @@ void loop() {
   OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
   AdmitModel.SetPosition(ArmSupportRobot.GetPresPos());
   pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+  // pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, bno, loopTime);
 
   /* Main Loop */
   while (Serial) {
@@ -145,6 +146,7 @@ void loop() {
       /* Outgoing Data */
       loopTime = millis() - startLoop;
       pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
+      // pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, bno, loopTime);
     }
   }
   if (!Serial) {

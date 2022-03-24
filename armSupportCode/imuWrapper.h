@@ -9,12 +9,22 @@
 
 #include <Arduino.h>
 
-class imuWrapper {
+class IMUWrapper {
   public:
-    imuWrapper();
+           IMUWrapper(HardwareSerial *ptrSer, const int baudrate);
+    float* GetOrientation();
+    byte*  GetOrientationBytes();
+    void   UpdateOrientation();
     
   protected:
+    HardwareSerial *m_SensorPort;
+    const int   _BAUDRATE;
+    const byte  _READHEADER[4] = {220, 10, 150, 50};
 
+    float m_orientation[3] = { 0.0f };
+    byte  m_orientationBytes[12];
+    byte  m_lastOrientationBytes[12] = { 0 };
+    
 };
 
 #endif //IMU_WRAPPER_H

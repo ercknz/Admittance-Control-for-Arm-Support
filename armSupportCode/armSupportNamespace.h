@@ -20,6 +20,8 @@ extern const int     MOTOR_BAUDRATE;
 extern const char   *DEVICEPORT;
 extern const uint8_t CAL_BUTTON_PIN;
 extern const uint8_t TORQUE_SWITCH_PIN;
+extern const uint8_t IMU_CLK_PIN;
+extern const uint8_t IMU_DATA_PIN;
 
 // Dynamixel Motor Parameters
 extern const uint8_t ID_SHOULDER;
@@ -64,7 +66,6 @@ extern const float posZ_SM[3];
 extern const float negX_SM[3];
 extern const float negY_SM[3];
 extern const float negZ_SM[3];
-
 
 // Dynamixel Parameters for calculations
 extern const float DEGREES_PER_COUNT;

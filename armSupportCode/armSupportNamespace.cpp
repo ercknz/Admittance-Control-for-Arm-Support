@@ -18,8 +18,10 @@ const int     SENSOR_BAUDRATE   = 1000000;
 const int     SERIAL_BAUDRATE   = 115200;
 const int     MOTOR_BAUDRATE    = 1000000;
 const char   *DEVICEPORT        = "3";
-const uint8_t CAL_BUTTON_PIN    = 17;
+const uint8_t CAL_BUTTON_PIN    = 23;
 const uint8_t TORQUE_SWITCH_PIN = 1;
+const uint8_t IMU_CLK_PIN       = 24;
+const uint8_t IMU_DATA_PIN      = 25;
 
 // Dynamixel Motor Parameters
 const uint8_t ID_SHOULDER       = 3;
