@@ -6,82 +6,54 @@ clear; clc;
 close all;
 
 %% Import data
-negXRaw = readmatrix('negX922kg_SENSOR_1_16_01_22.txt');
-negYRaw = readmatrix('negY922kg_SENSOR_1_15_58_54.txt');
-posXRaw = readmatrix('PosX922kg_SENSOR_1_15_55_47.txt');
-posYRaw = readmatrix('posY922kg_SENSOR_1_15_52_17.txt');
-tensionRaw = readmatrix('tension922kg_SENSOR_1_15_46_02.txt');
+meanXYZ.x1 = (mean(readmatrix('posX1_SENSOR_1_16_02_47.txt')));
+meanXYZ.x2 = (mean(readmatrix('posX2_SENSOR_1_16_02_57.txt')));
+meanXYZ.x3 = -(mean(readmatrix('negX1_SENSOR_1_16_08_24.txt')));
+meanXYZ.x4 = -(mean(readmatrix('negX2_SENSOR_1_16_08_33.txt')));
+meanXYZ.y1 = (mean(readmatrix('posY1_SENSOR_1_16_05_41.txt')));
+meanXYZ.y2 = (mean(readmatrix('posY2_SENSOR_1_16_05_51.txt')));
+meanXYZ.y3 = -(mean(readmatrix('negY1_SENSOR_1_15_59_28.txt')));
+meanXYZ.y4 = -(mean(readmatrix('negY2_SENSOR_1_15_59_48.txt')));
+meanXYZ.z1 = (mean(readmatrix('posZ1_SENSOR_1_16_14_01.txt')));
+meanXYZ.z2 = (mean(readmatrix('posZ2_SENSOR_1_16_14_14.txt')));
+meanXYZ.z3 = -(mean(readmatrix('negZ1_SENSOR_1_16_18_46.txt')));
+meanXYZ.z4 = -(mean(readmatrix('negZ2_SENSOR_1_16_18_56.txt')));
+meanXYZ.z5 = -(mean(readmatrix('negZ3_SENSOR_1_16_21_13.txt')));
+meanXYZ.z6 = -(mean(readmatrix('negZ4_SENSOR_1_16_22_21.txt')));
 
 %% Variables
 totalLoad = 9.22*9.81; % 90.4482 N
+totalM = 4 * 4 * 6;
+num = 0;
+invM = zeros(3,3,totalM);
 
-%% +X,+Y,Z Matrix
-pXpYCntMeans = [mean(posXRaw(:,3)), mean(posXRaw(:,4)), mean(posXRaw(:,5));...
-                mean(posYRaw(:,3)), mean(posYRaw(:,4)), mean(posYRaw(:,5));...
-                mean(tensionRaw(:,3)), mean(tensionRaw(:,4)), mean(tensionRaw(:,5))];
-         
-pXpYPerformanceMatrix = [(pXpYCntMeans(1,:)/pXpYCntMeans(1,1))*100;...
-                         (pXpYCntMeans(2,:)/pXpYCntMeans(2,2))*100;...
-                         (pXpYCntMeans(3,:)/pXpYCntMeans(3,3))*100];
-
-pXpYKmatrx = pXpYCntMeans/totalLoad;
-
-pXpYKmatrxI = inv(pXpYKmatrx);
-
-%% +X,-Y,Z Matrix
-% pXnYCntMeans = [mean(posXRaw(:,3)), mean(posXRaw(:,4)), mean(posXRaw(:,5));...
-%                 mean(negYRaw(:,3)), mean(negYRaw(:,4)), mean(negYRaw(:,5));...
-%                 mean(tensionRaw(:,3)), mean(tensionRaw(:,4)), mean(tensionRaw(:,5))];
-%          
-% pXnYPerformanceMatrix = [(pXnYCntMeans(1,:)/pXnYCntMeans(1,1))*100;...
-%                          (pXnYCntMeans(2,:)/pXnYCntMeans(2,2))*100;...
-%                          (pXnYCntMeans(3,:)/pXnYCntMeans(3,3))*100];
-% 
-% pXnYKmatrx = pXnYCntMeans/totalLoad;
-% 
-% pXnYKmatrxI = inv(pXnYKmatrx);
-
-%% -X,-Y,Z Matrix
-nXnYCntMeans = [mean(negXRaw(:,3)), mean(negXRaw(:,4)), mean(negXRaw(:,5));...
-                mean(negYRaw(:,3)), mean(negYRaw(:,4)), mean(negYRaw(:,5));...
-                mean(tensionRaw(:,3)), mean(tensionRaw(:,4)), mean(tensionRaw(:,5))];
-         
-nXnYPerformanceMatrix = [(nXnYCntMeans(1,:)/nXnYCntMeans(1,1))*100;...
-                         (nXnYCntMeans(2,:)/nXnYCntMeans(2,2))*100;...
-                         (nXnYCntMeans(3,:)/nXnYCntMeans(3,3))*100];
-
-nXnYKmatrx = nXnYCntMeans/-totalLoad;
-
-nXnYKmatrxI = inv(nXnYKmatrx);
-
-%% -X,-Y,Z Matrix
-% nXpYCntMeans = [mean(negXRaw(:,3)), mean(negXRaw(:,4)), mean(negXRaw(:,5));...
-%                 mean(posYRaw(:,3)), mean(posYRaw(:,4)), mean(posYRaw(:,5));...
-%                 mean(tensionRaw(:,3)), mean(tensionRaw(:,4)), mean(tensionRaw(:,5))];
-%          
-% nXpYPerformanceMatrix = [(nXpYCntMeans(1,:)/nXpYCntMeans(1,1))*100;...
-%                          (nXpYCntMeans(2,:)/nXpYCntMeans(2,2))*100;...
-%                          (nXpYCntMeans(3,:)/nXpYCntMeans(3,3))*100];
-% 
-% nXpYKmatrx = nXpYCntMeans/totalLoad;
-% 
-% nXpYKmatrxI = inv(nXpYKmatrx);
+%% Find sensitivity matrx
+for z = 1:6
+   for x = 1:4
+      for y = 1:4
+          num = num + 1;
+          temp = [meanXYZ.(['x',num2str(x)]); meanXYZ.(['y',num2str(y)]); meanXYZ.(['z',num2str(z)])]/totalLoad;
+          invM(:,:,num) = inv(temp);
+      end
+   end
+end
+meanInvM = [mean(invM(1,1,:)), mean(invM(1,2,:)), mean(invM(1,3,:));
+            mean(invM(2,1,:)), mean(invM(2,2,:)), mean(invM(2,3,:));
+            mean(invM(3,1,:)), mean(invM(3,2,:)), mean(invM(3,3,:))];
+stdInvM = [std(invM(1,1,:)), std(invM(1,2,:)), std(invM(1,3,:));
+           std(invM(2,1,:)), std(invM(2,2,:)), std(invM(2,3,:));
+           std(invM(3,1,:)), std(invM(3,2,:)), std(invM(3,3,:))];
 
 %% Inverse Matrix Found
-% Factory:
+% Factory [M]:
 %                       [   0.0496,  0.0000,  0.0000]
 % [SM] = SenseMatrix  = [   0.0000,  0.0494,  0.0000] (N/cts)
 %                       [   0.0000,  0.0000,  0.6231]
 %
-% +X and +Y Calculated:
-%                       [  0.0474, -0.0042, -0.0581]
-% [SM] = SensorMatrix = [ -0.0018,  0.0464, -0.0530] (N/cts) 
-%                       [  0.0168,  0.0152,  0.5850]
-% 
-% -X and -Y Calculated:
-%                       [   0.0490, -0.0002, -0.0179]
-% [SM] = SensorMatrix = [ -0.00002,  0.0508, -0.0137] (N/cts) 
-%                       [   0.0181,  0.0183, -0.6371]
+% Calculated [M]:
+%                       [  0.0526, -0.0011, -0.0287]
+% [SM] = SensorMatrix = [  0.0002,  0.0531, -0.0286] (N/cts) 
+%                       [ -0.0264, -0.0103,  0.7597]
 %
 % Example to code:
 % if cts = sensor count readings:
