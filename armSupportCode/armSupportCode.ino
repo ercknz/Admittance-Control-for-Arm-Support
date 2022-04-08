@@ -93,6 +93,7 @@ void loop() {
   /* Initialize Robot and Model */
   OptoForceSensor.SensorConfig();
   previousTime = millis();
+  bno.UpdateOrientation();
   ArmSupportRobot.ReadRobot(syncReadPacket);
   OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
   AdmitModel.SetPosition(ArmSupportRobot.GetPresPos());
@@ -136,6 +137,7 @@ void loop() {
       previousTime = currentTime;
 
       /* Control */
+      bno.UpdateOrientation();
       ArmSupportRobot.ReadRobot(syncReadPacket);
       OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
       ArmSupportRobot.CalculateSpringForce(OptoForceSensor.GetGlobalF());

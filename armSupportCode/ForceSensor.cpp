@@ -120,7 +120,7 @@ void ForceSensor::ReadForceSensor() {
   while (SensorPort_M->available()) {
     SensorPort_M->read();
   }
-  while (SensorPort_M->available() < 32) {} // Reads 2xpacket length incase of a packet shift
+  while (SensorPort_M->available() < 32); // Reads 2xpacket length incase of a packet shift
   for (int i = 0; i < 32; i++) {
     rawPacket[i] = SensorPort_M->read();
   }

@@ -18,8 +18,7 @@ class SerialPackets {
          SerialPackets(USBSerial *ptrSer, const int baudrate);
     bool DataAvailable();
     void ReadPackets();
-    void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
-    // void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, IMUWrapper &BNO, unsigned long &loopTime);
+    void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, IMUWrapper &BNO, unsigned long &loopTime);
     bool ModifyMassXY();
     bool ModifyMassZ();
     bool ModifyDampingXY();

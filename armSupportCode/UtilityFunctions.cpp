@@ -1,4 +1,7 @@
 /* Utility functions used with the arm support robot.
+   
+   For serial communication, data is multipled by 1000.0 to get intergers.
+   Then data is divided by 1000.0 to get actual value.
 
    Created 10/28/2020
    by Erick Nunez
@@ -20,7 +23,7 @@ int16_t bytesToCounts(byte hByte, byte lByte) {
 /----------------------------------------------------------------------------------------*/
 float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4) {
   int32_t inInt = ((byte4 & 0xFF) << 24 | (byte3 & 0xFF) << 16 | (byte2 & 0xFF) << 8 | (byte1 & 0xFF));
-  float outFloat = (inInt / 10000.0);
+  float outFloat = (inInt / 1000.0);
   return outFloat;
 }
 
@@ -30,7 +33,7 @@ float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4) {
 byte * floatArrayToBytes(float * floatValues) {
   int32_t int32Data[3];
   for (int16_t i = 0; i < 3; i++) {
-    int32Data[i] = (int32_t)(floatValues[i] * 10000.0);
+    int32Data[i] = (int32_t)(floatValues[i] * 1000.0);
   }
   byte * bytesOut = int32ArrayToBytes(int32Data);
   return bytesOut;
@@ -40,7 +43,7 @@ byte * floatArrayToBytes(float * floatValues) {
 / Single Float to Byte Array Function ----------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
 byte * floatToBytes(float floatValue){
-  int32_t int32Data = (int32_t)(floatValue * 10000.0);
+  int32_t int32Data = (int32_t)(floatValue * 1000.0);
   static byte bytesOut[4];
   bytesOut[0] = DXL_LOBYTE(DXL_LOWORD(int32Data));
   bytesOut[1] = DXL_HIBYTE(DXL_LOWORD(int32Data));
