@@ -11,14 +11,13 @@
 #include "ForceSensor.h"
 #include "AdmittanceModel.h"
 #include "RobotControl.h"
-#include "IMUWrapper.h"
 
 class SerialPackets {
   public:
          SerialPackets(USBSerial *ptrSer, const int baudrate);
     bool DataAvailable();
     void ReadPackets();
-    void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, IMUWrapper &BNO, unsigned long &loopTime);
+    void WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime);
     bool ModifyMassXY();
     bool ModifyMassZ();
     bool ModifyDampingXY();
@@ -65,7 +64,6 @@ class SerialPackets {
     bool _SEND_DAMPING        = true;
     bool _SEND_SPRING_F       = true;
     bool _SEND_TOTAL_FORCES   = false;
-    bool _SEND_ORIENTATION    = true;
 
     bool _NEW_MASS_XY         = false;
     bool _NEW_MASS_Z          = false;

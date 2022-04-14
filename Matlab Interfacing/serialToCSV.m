@@ -19,18 +19,19 @@ Mz = 10.0; % kg
 Bxy = 70.0; % N*(sec/m)
 Bz = 50.0; % N*(sec/m)
 scalingFactor = 0.2;
-eFx = 0.0; % N 
+eFx = 0.0; % N
 eFy = 0.0; % N
 eFz = 0.0; % N
-bytesMxy = typecast(int32(Mxy*10000),'uint8');
-bytesMz = typecast(int32(Mz*10000),'uint8');
-bytesBxy = typecast(int32(Bxy*10000),'uint8');
-bytesBz = typecast(int32(Bz*10000),'uint8');
-bytesFactor = typecast(int32(scalingFactor*10000),'uint8');
-bytesFx = typecast(int32(eFx*10000),'uint8');
-bytesFy = typecast(int32(eFy*10000),'uint8');
-bytesFz = typecast(int32(eFz*10000),'uint8');
+bytesMxy = typecast(int32(Mxy*1000),'uint8');
+bytesMz = typecast(int32(Mz*1000),'uint8');
+bytesBxy = typecast(int32(Bxy*1000),'uint8');
+bytesBz = typecast(int32(Bz*1000),'uint8');
+bytesFactor = typecast(int32(scalingFactor*1000),'uint8');
+bytesFx = typecast(int32(eFx*1000),'uint8');
+bytesFy = typecast(int32(eFy*1000),'uint8');
+bytesFz = typecast(int32(eFz*1000),'uint8');
 configHeader = uint8([150, 10, 10, 96]);
+rxHeader = uint8([170, 8, 69, 0]);
 modByte = uint8(31);
 writePacket = [configHeader,modByte,bytesMxy,bytesMz,bytesBxy,bytesBz,bytesFactor,bytesFx,bytesFy,bytesFz];
 checkSum = sum(writePacket);
@@ -46,7 +47,7 @@ packetLen = 146;
 dt = 0.008;
 numFrames = timeInSecs/dt; % seconds*(1frame/secs)=frames
 rawData = nan(numFrames,packetLen);
-data = nan(numFrames,23);
+data = nan(numFrames,35);
 
 %% Open Serial Port
 disp('........opening port...........');
@@ -55,53 +56,34 @@ s1 = serialport('COM29',BaudRate);
 %% start main collection loop
 totalTime = 0; i = 1;
 while(totalTime < timeInSecs )
-    if ~packetSent && i > 1
-        packetSent = true;
-        write(s1,writePacket,'uint8');
-        disp('.....sending config')
+    %     if ~packetSent && i > 1
+    %         packetSent = true;
+    %         write(s1,writePacket,'uint8');
+    %         disp('.....sending config')
+    %     end
+    while s1.NumBytesAvailable < packetLen
+        % Waiting for bytes
     end
-    if s1.NumBytesAvailable >= packetLen
-        rawData(i,:) = read(s1,packetLen,'uint8');
-        % Total Time
-        data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
-        % XYZ Global Forces
-        data(i,2) = double(typecast(uint8(rawData(i,9:12)),'int32'));
-        data(i,3) = double(typecast(uint8(rawData(i,13:16)),'int32'));
-        data(i,4) = double(typecast(uint8(rawData(i,17:20)),'int32'));
-        % XYZ Bot Goal
-        data(i,5) = double(typecast(uint8(rawData(i,21:24)),'int32'));
-        data(i,6) = double(typecast(uint8(rawData(i,25:28)),'int32'));
-        data(i,7) = double(typecast(uint8(rawData(i,29:32)),'int32'));
-        % XYZ Dot Bot Goal
-        data(i,8) = double(typecast(uint8(rawData(i,33:36)),'int32'));
-        data(i,9) = double(typecast(uint8(rawData(i,37:40)),'int32'));
-        data(i,10) = double(typecast(uint8(rawData(i,41:44)),'int32'));
-        % Pres Q
-        data(i,11) = double(typecast(uint8(rawData(i,45:48)),'int32'));
-        data(i,12) = double(typecast(uint8(rawData(i,49:52)),'int32'));
-        data(i,13) = double(typecast(uint8(rawData(i,53:56)),'int32'));
-        % Goal Q
-        data(i,14) = double(typecast(uint8(rawData(i,57:60)),'int32'));
-        data(i,15) = double(typecast(uint8(rawData(i,61:64)),'int32'));
-        data(i,16) = double(typecast(uint8(rawData(i,65:68)),'int32'));
-        % Damping XY and Z
-        data(i,17) = double(typecast(uint8(rawData(i,69:72)),'int32'));
-        data(i,18) = double(typecast(uint8(rawData(i,73:76)),'int32'));
-        % Spring Force
-        data(i,19) = double(typecast(uint8(rawData(i,77:80)),'int32'));
-        % Other Data
-        data(i,20) = double(typecast(uint8(rawData(i,81:84)),'int32'));
-        data(i,21) = double(typecast(uint8(rawData(i,85:88)),'int32'));
-        data(i,22) = double(typecast(uint8(rawData(i,89:92)),'int32'));
-        % Loop time
-        data(i,23) = typecast(uint8(rawData(i,93:96)),'uint32');
-        % Loop Data
-        i = i + 1;
-        totalTime = totalTime + dt;
+    readBuffer = read(s1,packetLen,'uint8');
+    tempHeader = readBuffer(1:4);
+    inCS = readBuffer(end-1)* 256 + readBuffer(end);
+    cCS = sum(readBuffer(1:end-2));
+    if (sum(tempHeader == rxHeader)==4) && (inCS == cCS)
+        rawData(i,:) = readBuffer;
     end
+    % Loop Data
+    i = i + 1;
+    totalTime = totalTime + dt;
 end
-data(:,1) = data(:,1)*0.001;
-data(:,2:22) = data(:,2:22)./10000;
+
+for i = 1:numFrames
+    data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
+    for j = 2:34
+        data(i,j) = 0.001 * double(typecast(uint8(rawData(i,4*j+1:4*j+4)),'int32'));
+    end
+    data(i,35) = typecast(uint8(rawData(i,141:144)),'uint32');
+end
+data(:,1) = data(:,1) ./ 1000;
 
 %% post cleanup
 delete(s1);

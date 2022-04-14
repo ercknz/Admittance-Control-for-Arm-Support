@@ -16,13 +16,10 @@ namespace ASR
 extern const float   PROTOCOL_VERSION;
 extern const int     SENSOR_BAUDRATE;
 extern const int     SERIAL_BAUDRATE;
-extern const int     IMU_BAUDRATE;
 extern const int     MOTOR_BAUDRATE;
 extern const char   *DEVICEPORT;
 extern const uint8_t CAL_BUTTON_PIN;
 extern const uint8_t TORQUE_SWITCH_PIN;
-extern const uint8_t IMU_CLK_PIN;
-extern const uint8_t IMU_DATA_PIN;
 
 // Dynamixel Motor Parameters
 extern const uint8_t ID_SHOULDER;

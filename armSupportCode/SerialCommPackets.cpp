@@ -88,7 +88,7 @@ float * SerialPackets::GetExternalForces(){
 /* ---------------------------------------------------------------------------------------/
 / Serial Packet Writer -------------------------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
-void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, IMUWrapper &BNO, unsigned long &loopTime) {
+void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, AdmittanceModel &Model, RobotControl &Robot, unsigned long &loopTime) {
   byte dataPacket[_TX_PKT_LEN] = {0};
   int16_t slotsFilled   = 0;
   int16_t dataPosition  = 44;
@@ -257,14 +257,6 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     slotsFilled += 3;
     dataPosition += (3 * byteLen);
   }
- if (_SEND_ORIENTATION && slotsFilled < _MAX_TX_DATA_SLOTS) {
-   byte * orientation_bytes = BNO.GetOrientationBytes();
-   for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
-     dataPacket[i] = orientation_bytes[i - dataPosition];
-   }
-   slotsFilled += 3;
-   dataPosition += (3 * byteLen);
- }
 
   // looptime
   dataPacket[_TX_PKT_LEN - 6] = DXL_LOBYTE(DXL_LOWORD(loopTime));
@@ -280,11 +272,11 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
   dataPacket[_TX_PKT_LEN - 1] = floor(packetSum % 256);
 
   // write data packet
-  for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
-    // SerialPort_M->write(dataPacket[i]);
-    Serial.print(dataPacket[i]); Serial.print("\t");
-  }
-  Serial.println(" ");
+  SerialPort_M->write(dataPacket,_TX_PKT_LEN);
+//  for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
+//    Serial.print(dataPacket[i]); Serial.print("\t");
+//  }
+//  Serial.println(" ");
 }
 
 /* ---------------------------------------------------------------------------------------/
@@ -348,7 +340,6 @@ void SerialPackets::ConfigPacketRX(byte * RxPacket) {
   if (RxPacket[19]) _SEND_DAMPING       = true;
   if (RxPacket[20]) _SEND_SPRING_F      = true;
   if (RxPacket[21]) _SEND_TOTAL_FORCES  = true;
-  if (RxPacket[22]) _SEND_ORIENTATION   = true;
 }
 
 void SerialPackets::SendFlagResets() {
@@ -369,7 +360,6 @@ void SerialPackets::SendFlagResets() {
   _SEND_DAMPING       = false;
   _SEND_SPRING_F      = false;
   _SEND_TOTAL_FORCES  = false;
-  _SEND_ORIENTATION   = false;
 }
 
 /* ---------------------------------------------------------------------------------------/

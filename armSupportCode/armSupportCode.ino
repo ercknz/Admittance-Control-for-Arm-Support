@@ -20,8 +20,6 @@
 #include "RobotControl.h"
 #include "UtilityFunctions.h"
 #include "SerialCommPackets.h"
-#include "IMUWrapper.h"
-
 
 /* ---------------------------------------------------------------------------------------/
 / DXL port and packets -------------------------------------------------------------------/
@@ -36,7 +34,6 @@ AdmittanceModel AdmitModel      = AdmittanceModel(ASR::initMassXY, ASR::initMass
 ForceSensor     OptoForceSensor = ForceSensor(&Serial1, ASR::SENSOR_BAUDRATE, ASR::SENSOR_FILTER_WEIGHT);
 RobotControl    ArmSupportRobot = RobotControl(ASR::A1_LINK, ASR::L1_LINK, ASR::A2_LINK, ASR::L2_LINK, ASR::LINK_OFFSET);
 SerialPackets   pcComm          = SerialPackets(&Serial, ASR::SERIAL_BAUDRATE);
-IMUWrapper      bno             = IMUWrapper(&Serial2, ASR::SERIAL_BAUDRATE);
 
 /* ---------------------------------------------------------------------------------------/
 / Setup function -------------------------------------------------------------------------/
@@ -65,7 +62,6 @@ void loop() {
   delay(100);
   OptoForceSensor.SensorConfig();
   ArmSupportRobot.MotorConfig(portHandler, packetHandler);
-  bno.StartComm();
   delay(100);
 
   /* Other Variables needed */
@@ -92,22 +88,14 @@ void loop() {
   delay(100);
 
   /* Initialize Robot and Model */
-  Serial.println("1");
   OptoForceSensor.SensorConfig();
-  Serial.println("2");
   previousTime = millis();
-  bno.UpdateOrientation();
-  Serial.println("3");
   ArmSupportRobot.ReadRobot(syncReadPacket);
-  Serial.println("4");
   OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
-  Serial.println("5");
   AdmitModel.SetPosition(ArmSupportRobot.GetPresPos());
-  Serial.println("6");
-  pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, bno, loopTime);
+  pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
 
   /* Main Loop */
-  Serial.println("Entering Main Loop...");
   while (Serial) {
     currentTime = millis();
 
@@ -145,7 +133,6 @@ void loop() {
       previousTime = currentTime;
 
       /* Control */
-      bno.UpdateOrientation();
       ArmSupportRobot.ReadRobot(syncReadPacket);
       OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
       ArmSupportRobot.CalculateSpringForce(OptoForceSensor.GetGlobalF());
@@ -154,7 +141,7 @@ void loop() {
 
       /* Outgoing Data */
       loopTime = millis() - startLoop;
-      pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, bno, loopTime);
+      pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, loopTime);
     }
   }
   if (!Serial) {
