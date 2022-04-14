@@ -16,6 +16,7 @@ namespace ASR
 const float   PROTOCOL_VERSION  = 2.0;
 const int     SENSOR_BAUDRATE   = 1000000;
 const int     SERIAL_BAUDRATE   = 115200;
+const int     IMU_BAUDRATE      = 9600;
 const int     MOTOR_BAUDRATE    = 1000000;
 const char   *DEVICEPORT        = "3";
 const uint8_t CAL_BUTTON_PIN    = 23;

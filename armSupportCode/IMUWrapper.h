@@ -11,13 +11,14 @@
 
 class IMUWrapper {
   public:
-           IMUWrapper(HardwareSerial *ptrSer, const int baudrate);
+           IMUWrapper(UARTClass *ptrSer, const int baudrate);
     float* GetOrientation();
     byte*  GetOrientationBytes();
     void   UpdateOrientation();
+    void   StartComm();
     
   protected:
-    HardwareSerial *m_SensorPort;
+    UARTClass *m_SensorPort;
     const int   _BAUDRATE;
     const byte  _READHEADER[4] = {220, 10, 150, 50};
     const int   _RX_PKT_LEN = 20;

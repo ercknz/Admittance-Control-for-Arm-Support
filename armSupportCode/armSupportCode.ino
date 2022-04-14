@@ -65,6 +65,7 @@ void loop() {
   delay(100);
   OptoForceSensor.SensorConfig();
   ArmSupportRobot.MotorConfig(portHandler, packetHandler);
+  bno.StartComm();
   delay(100);
 
   /* Other Variables needed */
@@ -91,15 +92,22 @@ void loop() {
   delay(100);
 
   /* Initialize Robot and Model */
+  Serial.println("1");
   OptoForceSensor.SensorConfig();
+  Serial.println("2");
   previousTime = millis();
   bno.UpdateOrientation();
+  Serial.println("3");
   ArmSupportRobot.ReadRobot(syncReadPacket);
+  Serial.println("4");
   OptoForceSensor.CalculateGlobalForces(ArmSupportRobot.GetPresQ());
+  Serial.println("5");
   AdmitModel.SetPosition(ArmSupportRobot.GetPresPos());
+  Serial.println("6");
   pcComm.WritePackets(totalTime, OptoForceSensor, AdmitModel, ArmSupportRobot, bno, loopTime);
 
   /* Main Loop */
+  Serial.println("Entering Main Loop...");
   while (Serial) {
     currentTime = millis();
 

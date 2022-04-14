@@ -258,7 +258,7 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
     dataPosition += (3 * byteLen);
   }
  if (_SEND_ORIENTATION && slotsFilled < _MAX_TX_DATA_SLOTS) {
-   byte * orientation_bytes = bno.GetOrientationBytes();
+   byte * orientation_bytes = BNO.GetOrientationBytes();
    for (int16_t i = dataPosition; i < dataPosition + (3 * byteLen); i++) {
      dataPacket[i] = orientation_bytes[i - dataPosition];
    }
@@ -281,8 +281,10 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
 
   // write data packet
   for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
-    SerialPort_M->write(dataPacket[i]);
+    // SerialPort_M->write(dataPacket[i]);
+    Serial.print(dataPacket[i]); Serial.print("\t");
   }
+  Serial.println(" ");
 }
 
 /* ---------------------------------------------------------------------------------------/
