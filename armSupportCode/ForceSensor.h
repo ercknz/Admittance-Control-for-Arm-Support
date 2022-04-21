@@ -41,6 +41,7 @@ class ForceSensor {
     float xyzFilt_M[3]    = {0.0f};
     float xyzLastFilt_M[3]= {0.0f};
     float xyzGlobal_M[3]  = {0.0f};
+    bool calibratingFlag_M = false;
 };
 
 #endif // FORCE_SENSOR_H

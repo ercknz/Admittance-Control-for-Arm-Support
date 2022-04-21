@@ -88,6 +88,7 @@ void ForceSensor::SensorConfig() {
 / Force Sensor Calibration ---------------------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
 void ForceSensor::CalibrateSensor() {
+  calibratingFlag_M = true;
   float newXYZcal[3] = {0.0};
   for (int i = 0; i < 3; i++) {
     _xyzCALIBRATION[i] = 0.0f;
@@ -102,6 +103,7 @@ void ForceSensor::CalibrateSensor() {
   for (int i = 0; i < 3; i++) {
     _xyzCALIBRATION[i] = newXYZcal[i];
   }
+  calibratingFlag_M = false;
 }
 
 /* ---------------------------------------------------------------------------------------/
@@ -187,7 +189,7 @@ void ForceSensor::ReadForceSensor() {
       break;
     }
   }
-  FilterForces();
+  if (!calibratingFlag_M) FilterForces();
 }
 
 /* ---------------------------------------------------------------------------------------/

@@ -67,7 +67,8 @@ void AdmittanceModel::SetPosition(float *newXYZ) {
 /----------------------------------------------------------------------------------------*/
 void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *externalFxyz) {
   for (int i = 0; i < 3; i++) {
-    xyzInit_M[i]    = xyzGoal_M[i];
+    xyzInit_M[i] = 0.0f;
+//    xyzInit_M[i]    = xyzGoal_M[i];
     xyzDotInit_M[i] = xyzDotGoal_M[i];
   }
 
@@ -93,22 +94,22 @@ void AdmittanceModel::UpdateModel(float *forceXYZ, float springFz, float *extern
   xyzDotGoal_M[2] = (totalForces_M[2] / damping_M[1]) - (damping_M[1] / mass_M[1]) * Cz1 * exp(-(damping_M[1] / mass_M[1]) * _DELTAT);
 
   /* Check TaskSpace Limits */
-  if (xyzGoal_M[2] >  _Z_LIMIT) xyzGoal_M[2] =  _Z_LIMIT;
-  if (xyzGoal_M[2] < -_Z_LIMIT) xyzGoal_M[2] = -_Z_LIMIT;
-  float outerRLimit = _A1A2 + _H_OF_L2 + sqrt(pow(ASR::L1_LINK, 2) - pow(xyzGoal_M[2], 2));
-  float Rxy = sqrt(pow(xyzGoal_M[0],2) + pow(xyzGoal_M[1],2));
-  float alpha   = atan2(xyzGoal_M[1], xyzGoal_M[0]);
-  if (alpha < 1.0f) alpha += 2 * PI;
-  if (Rxy < _INNER_R_LIMIT) {
-    Rxy           = _INNER_R_LIMIT;
-    xyzGoal_M[0]  = _INNER_R_LIMIT * cos(alpha);
-    xyzGoal_M[1]  = _INNER_R_LIMIT * sin(alpha);
-  }
-  if (Rxy > outerRLimit) {
-    Rxy           = outerRLimit;
-    xyzGoal_M[0]  = outerRLimit * cos(alpha);
-    xyzGoal_M[1]  = outerRLimit * sin(alpha);
-  } 
+//  if (xyzGoal_M[2] >  _Z_LIMIT) xyzGoal_M[2] =  _Z_LIMIT;
+//  if (xyzGoal_M[2] < -_Z_LIMIT) xyzGoal_M[2] = -_Z_LIMIT;
+//  float outerRLimit = _A1A2 + _H_OF_L2 + sqrt(pow(ASR::L1_LINK, 2) - pow(xyzGoal_M[2], 2));
+//  float Rxy = sqrt(pow(xyzGoal_M[0],2) + pow(xyzGoal_M[1],2));
+//  float alpha   = atan2(xyzGoal_M[1], xyzGoal_M[0]);
+//  if (alpha < 1.0f) alpha += 2 * PI;
+//  if (Rxy < _INNER_R_LIMIT) {
+//    Rxy           = _INNER_R_LIMIT;
+//    xyzGoal_M[0]  = _INNER_R_LIMIT * cos(alpha);
+//    xyzGoal_M[1]  = _INNER_R_LIMIT * sin(alpha);
+//  }
+//  if (Rxy > outerRLimit) {
+//    Rxy           = outerRLimit;
+//    xyzGoal_M[0]  = outerRLimit * cos(alpha);
+//    xyzGoal_M[1]  = outerRLimit * sin(alpha);
+//  } 
 }
 
 /* ---------------------------------------------------------------------------------------/

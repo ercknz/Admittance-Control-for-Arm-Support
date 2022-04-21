@@ -31,11 +31,15 @@ float bytesToFloat(byte byte1, byte byte2, byte byte3, byte byte4) {
 / Float Array to Byte Array Function -----------------------------------------------------/
 /----------------------------------------------------------------------------------------*/
 byte * floatArrayToBytes(float * floatValues) {
-  int32_t int32Data[3];
+  int32_t int32Val;
+  static byte bytesOut[12];
   for (int16_t i = 0; i < 3; i++) {
-    int32Data[i] = (int32_t)(floatValues[i] * 1000.0);
+    int32Val = (int32_t)(floatValues[i] * 1000.0);
+    bytesOut[4 * i]     = DXL_LOBYTE(DXL_LOWORD(int32Val));
+    bytesOut[4 * i + 1] = DXL_HIBYTE(DXL_LOWORD(int32Val));
+    bytesOut[4 * i + 2] = DXL_LOBYTE(DXL_HIWORD(int32Val));
+    bytesOut[4 * i + 3] = DXL_HIBYTE(DXL_HIWORD(int32Val));
   }
-  byte * bytesOut = int32ArrayToBytes(int32Data);
   return bytesOut;
 }
 

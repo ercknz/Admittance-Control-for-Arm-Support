@@ -121,7 +121,7 @@ void RobotControl::iKine(float *modelXYZ, float *modelXYZDot) {
   */
   float L1_XY, OUTER_R, R, alpha, presR, presAlpha, beta, gamma, detJ;
   for (int i=0; i<3; i++){
-    xyz_M[i]    = modelXYZ[i];
+    xyz_M[i]    = xyzPres_M[i] + modelXYZ[i];
     xyzDot_M[i] = modelXYZDot[i];
   }
 
