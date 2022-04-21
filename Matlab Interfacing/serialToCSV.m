@@ -51,7 +51,7 @@ data = nan(numFrames,35);
 
 %% Open Serial Port
 disp('........opening port...........');
-s1 = serialport('COM29',BaudRate);
+s1 = serialport('COM27',BaudRate);
 
 %% start main collection loop
 totalTime = 0; i = 1;
@@ -73,17 +73,17 @@ while(totalTime < timeInSecs )
     end
     % Loop Data
     i = i + 1;
-    totalTime = totalTime + dt;
+    totalTime = totalTime + dt; 
 end
 
 for i = 1:numFrames
     data(i,1) = typecast(uint8(rawData(i,5:8)),'uint32');
     for j = 2:34
-        data(i,j) = 0.001 * double(typecast(uint8(rawData(i,4*j+1:4*j+4)),'int32'));
+        data(i,j) = double(typecast(uint8(rawData(i,4*j+1:4*j+4)),'int32'));
     end
     data(i,35) = typecast(uint8(rawData(i,141:144)),'uint32');
 end
-data(:,1) = data(:,1) ./ 1000;
+data(:,1:34) = data(:,1:34) ./ 1000;
 
 %% post cleanup
 delete(s1);
