@@ -17,6 +17,7 @@ class ForceSensor {
     void  CalculateGlobalForces(float *q);
     float* GetRawF();
     float* GetGlobalF();
+    void   SetFilter(float newFilterValue);
     
   protected:
     void  ReadForceSensor();
@@ -35,7 +36,7 @@ class ForceSensor {
     const float _negXsens[3];
     const float _negYsens[3];
     const float _negZsens[3];
-    const float _FILTERWEIGHT;
+    float FilterWeight_M;
     float xyzRaw_M[3]     = {0.0f};
     float xyzLastRaw_M[3] = {0.0f};
     float xyzFilt_M[3]    = {0.0f};

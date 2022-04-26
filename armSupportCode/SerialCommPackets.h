@@ -24,6 +24,7 @@ class SerialPackets {
     bool ModifyDampingZ();
     bool ModifyScalingFactor();
     bool ModifyMode();
+    bool ModifyFilter();
     float GetNewMassXY();
     float GetNewMassZ();
     float GetNewDampingXY();
@@ -31,6 +32,7 @@ class SerialPackets {
     float GetNewScalingFactor();
     uint8_t GetNewMode();
     float * GetExternalForces();
+    float GetNewFilter();
 
   protected:
     const int   _BAUDRATE;
@@ -74,11 +76,13 @@ class SerialPackets {
     bool _NEW_EXT_FORCE_X     = false;
     bool _NEW_EXT_FORCE_Y     = false;
     bool _NEW_EXT_FORCE_Z     = false;
+    bool _NEW_FILTER          = false;
     float newMassXY_M,    newMassZ_M;
     float newDampingXY_M, newDampingZ_M;
     float newScalingFactor_M;
     uint8_t newMode_M;
     float ExtForces_M[3] = {0.0f};
+    float newFilter_M;
 };
 
 #endif // SERIAL_PACKETS_H

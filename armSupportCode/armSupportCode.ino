@@ -120,6 +120,9 @@ void loop() {
       if (pcComm.ModifyMode()){
         ArmSupportRobot.EnableTorque(portHandler, packetHandler, pcComm.GetNewMode());
       }
+      if (pcComm.ModifyFilter()){
+        OptoForceSensor.SetFilter(pcComm.GetNewFilter());
+      }
     }
 
     /* Calibration button checker */

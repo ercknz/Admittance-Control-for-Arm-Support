@@ -37,14 +37,14 @@ ForceSensor::ForceSensor(HardwareSerial *ptrSer, const int baudrate, const float
     _posZsens{ASR::posZ_SM[0], ASR::posZ_SM[1], ASR::posZ_SM[2]},
     _negXsens{ASR::negX_SM[0], ASR::negX_SM[1], ASR::negX_SM[2]},
     _negYsens{ASR::negY_SM[0], ASR::negY_SM[1], ASR::negY_SM[2]},
-    _negZsens{ASR::negZ_SM[0], ASR::negZ_SM[1], ASR::negZ_SM[2]},
-    _FILTERWEIGHT{filterWeight}
+    _negZsens{ASR::negZ_SM[0], ASR::negZ_SM[1], ASR::negZ_SM[2]}
 {
   SensorPort_M = ptrSer;
+  FilterWeight_M = filterWeight;
 }
 
 /* ---------------------------------------------------------------------------------------/
-/ Force Sensor Memeber Get Functions -----------------------------------------------------/
+/ Force Sensor Memeber Getter and Setter Functions ---------------------------------------/
 /----------------------------------------------------------------------------------------*/
 float* ForceSensor::GetRawF() {
   return xyzRaw_M;
@@ -53,6 +53,18 @@ float* ForceSensor::GetRawF() {
 float* ForceSensor::GetGlobalF() {
   return xyzGlobal_M;
 } 
+
+void ForceSensor::SetFilter(float newFilterValue){
+  if (newFilterValue > 0.99) {
+    FilterWeight_M = 0.99;
+    return;
+  }
+  if (newFilterValue < 0.1) {
+    FilterWeight_M = 0.1;
+    return;
+  }
+  FilterWeight_M = newFilterValue;
+}
 
 /* ---------------------------------------------------------------------------------------/
 / Force Sensor Configuration ---------------------------------------------------------------/
@@ -198,7 +210,7 @@ void ForceSensor::ReadForceSensor() {
 void ForceSensor::FilterForces() {
   for (int i = 0; i < 3; i++) {
     xyzLastFilt_M[i] = xyzFilt_M[i];
-    xyzFilt_M[i] = _FILTERWEIGHT * (xyzRaw_M[i] - _xyzCALIBRATION[i]) + (1 - _FILTERWEIGHT) * xyzLastFilt_M[i];
+    xyzFilt_M[i] = FilterWeight_M * (xyzRaw_M[i] - _xyzCALIBRATION[i]) + (1.0 - FilterWeight_M) * xyzLastFilt_M[i];
   }
 }
 

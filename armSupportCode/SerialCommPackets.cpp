@@ -45,6 +45,9 @@ bool SerialPackets::ModifyScalingFactor() {
 bool SerialPackets::ModifyMode(){
   return _NEW_MODE;
 }
+bool SerialPackets::ModifyFilter() {
+  return _NEW_FILTER;
+}
 float SerialPackets::GetNewMassXY() {
   _NEW_MASS_XY = false;
   return newMassXY_M;
@@ -83,6 +86,10 @@ float * SerialPackets::GetExternalForces(){
   _NEW_EXT_FORCE_Y = false;
   _NEW_EXT_FORCE_Z = false;
   return ExtForces_M;
+}
+float SerialPackets::GetNewFilter() {
+  _NEW_FILTER = false;
+  return newFilter_M;
 }
 
 /* ---------------------------------------------------------------------------------------/
@@ -273,10 +280,6 @@ void SerialPackets::WritePackets(unsigned long &totalTime, ForceSensor &Sensor, 
 
   // write data packet
   SerialPort_M->write(dataPacket,_TX_PKT_LEN);
-//  for (int16_t i = 0; i < _TX_PKT_LEN; i++) {
-//    Serial.print(dataPacket[i]); Serial.print("\t");
-//  }
-//  Serial.println(" ");
 }
 
 /* ---------------------------------------------------------------------------------------/
@@ -368,40 +371,48 @@ void SerialPackets::SendFlagResets() {
 void SerialPackets::ModifierPacketRX(byte * RxPacket) {
   // [0]:MassXY [1]:MassZ [2]:DampingXY [3]:DampingZ [4]:ScalingFactor [5]:eFx [6]:eFy [7]:eFz
   byte mask = 1;
-  byte bitArray[8];
-  for (int16_t i = 0; i < 8; i++) {
-    bitArray[i] = (RxPacket[4] & (mask << i)) != 0;
+  byte bitArrayLarge[7];
+  byte bitArraySmall[2];
+  for (int16_t i = 0; i < 7; i++) {
+    bitArrayLarge[i] = (RxPacket[4] & (mask << i)) != 0;
   }
-  if (bitArray[0] == 1) {
+  for (int16_t i = 0; i < 2; i++){
+    bitArraySmall[i] = (RxPacket[5] & (mask << i)) != 0;
+  }
+  if (bitArrayLarge[0] == 1) {
     _NEW_MASS_XY = true;
-    newMassXY_M = bytesToFloat(RxPacket[5], RxPacket[6], RxPacket[7], RxPacket[8]);
+    newMassXY_M = bytesToFloat(RxPacket[7], RxPacket[8], RxPacket[9], RxPacket[10]);
   }
-  if (bitArray[1] == 1) {
+  if (bitArrayLarge[1] == 1) {
     _NEW_MASS_Z = true;
-    newMassZ_M = bytesToFloat(RxPacket[9], RxPacket[10], RxPacket[11], RxPacket[12]);
+    newMassZ_M = bytesToFloat(RxPacket[11], RxPacket[12], RxPacket[13], RxPacket[14]);
   }
-  if (bitArray[2] == 1) {
+  if (bitArrayLarge[2] == 1) {
     _NEW_DAMPING_XY = true;
-    newDampingXY_M = bytesToFloat(RxPacket[13], RxPacket[14], RxPacket[15], RxPacket[16]);
+    newDampingXY_M = bytesToFloat(RxPacket[15], RxPacket[16], RxPacket[17], RxPacket[18]);
   }
-  if (bitArray[3] == 1) {
+  if (bitArrayLarge[3] == 1) {
     _NEW_DAMPING_Z = true;
-    newDampingZ_M = bytesToFloat(RxPacket[17], RxPacket[18], RxPacket[19], RxPacket[20]);
+    newDampingZ_M = bytesToFloat(RxPacket[19], RxPacket[20], RxPacket[21], RxPacket[22]);
   }
-  if (bitArray[4] == 1) {
-    _NEW_SCALING_FACTOR = true;
-    newScalingFactor_M = bytesToFloat(RxPacket[21], RxPacket[22], RxPacket[23], RxPacket[24]);
-  }
-  if (bitArray[5] == 1) {
+  if (bitArrayLarge[4] == 1) {
     _NEW_EXT_FORCE_X = true;
-    ExtForces_M[0] = bytesToFloat(RxPacket[25], RxPacket[26], RxPacket[27], RxPacket[28]);
+    ExtForces_M[0] = bytesToFloat(RxPacket[23], RxPacket[24], RxPacket[25], RxPacket[26]);
   }
-  if (bitArray[6] == 1) {
+  if (bitArrayLarge[5] == 1) {
     _NEW_EXT_FORCE_Y = true;
-    ExtForces_M[1] = bytesToFloat(RxPacket[29], RxPacket[30], RxPacket[31], RxPacket[32]);
+    ExtForces_M[1] = bytesToFloat(RxPacket[27], RxPacket[28], RxPacket[29], RxPacket[30]);
   }
-  if (bitArray[7] == 1) {
+  if (bitArrayLarge[6] == 1) {
     _NEW_EXT_FORCE_Z = true;
-    ExtForces_M[2] = bytesToFloat(RxPacket[33], RxPacket[34], RxPacket[35], RxPacket[36]);
+    ExtForces_M[2] = bytesToFloat(RxPacket[31], RxPacket[32], RxPacket[33], RxPacket[34]);
+  }
+  if (bitArraySmall[0] == 1) {
+    _NEW_SCALING_FACTOR = true;
+    newScalingFactor_M = (float)(0.01 * RxPacket[35]);
+  }
+  if (bitArraySmall[1] == 1) {
+    _NEW_FILTER = true;
+    newFilter_M = (float)(0.01 * RxPacket[36]);
   }
 }
