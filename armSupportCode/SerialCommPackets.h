@@ -66,6 +66,7 @@ class SerialPackets {
     bool _SEND_DAMPING        = true;
     bool _SEND_SPRING_F       = true;
     bool _SEND_TOTAL_FORCES   = false;
+    bool _SEND_FORCE_FILTER   = true;
 
     bool _NEW_MASS_XY         = false;
     bool _NEW_MASS_Z          = false;

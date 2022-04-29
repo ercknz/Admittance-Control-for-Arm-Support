@@ -54,6 +54,10 @@ float* ForceSensor::GetGlobalF() {
   return xyzGlobal_M;
 } 
 
+float ForceSensor::GetForceFilter(){
+  return FilterWeight_M;
+}
+
 void ForceSensor::SetFilter(float newFilterValue){
   if (newFilterValue > 0.99) {
     FilterWeight_M = 0.99;

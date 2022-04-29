@@ -17,6 +17,7 @@ class ForceSensor {
     void  CalculateGlobalForces(float *q);
     float* GetRawF();
     float* GetGlobalF();
+    float GetForceFilter();
     void   SetFilter(float newFilterValue);
     
   protected:
